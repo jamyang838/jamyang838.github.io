@@ -17,3 +17,12 @@
   .pad-button {
     margin: 10px;
   }
+
+  .example-description {
+    font-size: small;
+    color: grey;
+  }
+
+  .example-a-pad {
+    padding: 10px;
+  }

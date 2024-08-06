@@ -14,7 +14,12 @@
 
 <mat-form-field class="example-form">
   <div>
-    <mat-label>延遲 [aod訊號-開始雷射脈衝]</mat-label>
+    <mat-label
+      >延遲 [aod clock 上升緣 <-> 第一雷射脈衝上升緣]
+      <div class="example-description">
+        1->5.6us | 1000->28.6us | 10000->215.5us
+      </div></mat-label
+    >
     <input matInput type="text" [(ngModel)]="aod_period" />
   </div>
 </mat-form-field>
@@ -28,18 +33,17 @@
 
 <div>
   <mat-card appearance="outlined">
-   <mat-card-header>
-    <mat-card-title>計算結果</mat-card-title>
-  </mat-card-header>
+    <mat-card-header>
+      <mat-card-title>計算結果</mat-card-title>
+    </mat-card-header>
     <mat-card-content class="example-card-content">
       <div>
         {{ convertAODNumberToHex() }}
+        <a class="example-a-pad"></a>
+        <button mat-mini-fab (click)="copyToClipboard(convertAODNumberToHex())">
+          <mat-icon>assignment</mat-icon>
+        </button>
       </div>
     </mat-card-content>
-    <mat-card-footer>
-      <button class="pad-button" (click)="copyToClipboard(convertAODNumberToHex())">
-        Copy to Clipboard
-      </button>
-    </mat-card-footer>
   </mat-card>
 </div>

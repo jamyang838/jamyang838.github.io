@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import {MatCardModule} from '@angular/material/card';
+import {MatButtonModule} from '@angular/material/button';
 @Component({
   selector: 'app-calculate',
   standalone: true,
@@ -14,7 +15,8 @@ import {MatCardModule} from '@angular/material/card';
     FormsModule,
     MatFormFieldModule,
     MatIconModule,
-    MatCardModule
+    MatCardModule,
+    MatButtonModule
   ],
   templateUrl: './calculate.component.html',
   styleUrl: './calculate.component.css',
@@ -81,6 +83,8 @@ export class CalculateComponent {
     textarea.select();
     document.execCommand('copy');
     document.body.removeChild(textarea);
+    
+    alert('內容已複製到剪貼簿');
   }
  
 }
