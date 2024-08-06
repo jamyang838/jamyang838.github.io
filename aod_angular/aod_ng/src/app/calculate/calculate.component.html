@@ -1,0 +1,45 @@
+<mat-form-field class="example-form">
+  <div>
+    <mat-label>雷射脈衝週期 [設定1約為400kHz]</mat-label>
+    <input matInput type="text" [(ngModel)]="laser_pulse_period" />
+  </div>
+</mat-form-field>
+
+<mat-form-field class="example-form">
+  <div>
+    <mat-label>雷射脈衝數量</mat-label>
+    <input matInput type="text" [(ngModel)]="laser_pulse_number" />
+  </div>
+</mat-form-field>
+
+<mat-form-field class="example-form">
+  <div>
+    <mat-label>延遲 [aod訊號-開始雷射脈衝]</mat-label>
+    <input matInput type="text" [(ngModel)]="aod_period" />
+  </div>
+</mat-form-field>
+
+<mat-form-field class="example-form">
+  <div>
+    <mat-label>AOD clock數量 [應依照設定好的aod點數]</mat-label>
+    <input matInput type="text" [(ngModel)]="aod_number" />
+  </div>
+</mat-form-field>
+
+<div>
+  <mat-card appearance="outlined">
+   <mat-card-header>
+    <mat-card-title>計算結果</mat-card-title>
+  </mat-card-header>
+    <mat-card-content class="example-card-content">
+      <div>
+        {{ convertAODNumberToHex() }}
+      </div>
+    </mat-card-content>
+    <mat-card-footer>
+      <button class="pad-button" (click)="copyToClipboard(convertAODNumberToHex())">
+        Copy to Clipboard
+      </button>
+    </mat-card-footer>
+  </mat-card>
+</div>
