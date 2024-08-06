@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add 5 to a Number</title>
+    <script>
+        function addFive() {
+            var x = parseInt(document.getElementById("numberInput").value);
+            var result = x + 55;
+            document.getElementById("result").innerHTML = "Result: " + result;
+        }
+    </script>
+</head>
+<body>
+    <h1>Add 5 to a Number</h1>
+    <label for="numberInput">Enter a number:</label>
+    <input type="number" id="numberInput">
+    <button onclick="addFive()">Add 5</button>
+    <p id="result"></p>
+</body>
+</html>
