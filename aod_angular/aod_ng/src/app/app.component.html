@@ -51,9 +51,9 @@
     line-height: 100%;
     letter-spacing: -0.125rem;
     margin: 0;
-    font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
+    font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
   }
 
   p {
@@ -181,16 +181,47 @@
   <div class="content">
     <!--<div class="left-side"> -->
     <div>
-    <div><h1>AOD電路板設定值</h1></div>
+      <div><h1>AOD電路板設定值</h1></div>
+      <div><h4>有事請找王嘉右 TEL:(06)6939026</h4></div>
+
       <div class="small-title">說明</div>
 
-      <p> *在這裡輸入想要的數值,將最底下的值copy以RS232傳入板子,之後電路會以新的設定值運行(斷電後重新上電也是)</p>
-      <p> *成功輸入之後,會回覆ok</p>
-      <p> *如果要檢視是否設定成功,則可以輸入'$'字元,則回傳設定值,格式與傳入的相同</p>
-      <p> *傳輸baud rate: 38400 </p>
+      <p>
+        *在這裡輸入想要的數值,將最底下的值copy以RS232傳入板子,之後電路會以新的設定值運行(斷電後重新上電也是)
+      </p>
+      <p>*成功輸入之後,會回覆ok</p>
+      <p>
+        *如果要檢視是否設定成功,則可以輸入'$'字元,則回傳設定值,格式與傳入的相同
+      </p>
+      <p>*傳輸baud rate: 38400</p>
       <div class="small-title">輸入設定值</div>
       <app-calculate></app-calculate>
+      <div class="divider"></div>
+
+      <app-codebox
+        title="RS232傳輸程式碼範例(python)"
+        code="
+import time
+import serial
+
+#在下方輸入網頁上的結果
+configValue = '0xff,0x01,0x14,0x00,0x0a,0x00,0x64,0x00,0x14,0x00,0x68'
+#在下方輸入com port
+serialport = '/dev/tty.usbserial-1110'
+
+configList = configValue.split(',')
+configList = [int(value, 16) for value in configList]
+configList = bytes(configList)
+ser = serial.Serial(serialport, 38400, timeout=1)
+ser.write(configList)
+time.sleep(1)
+response = ser.read_all()
+print(&quot;Received:&quot;, response)
+ser.close()
+      "
+      ></app-codebox>
     </div>
-  
   </div>
-<router-outlet />
+
+  <router-outlet />
+</main>

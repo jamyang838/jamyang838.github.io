@@ -62,16 +62,16 @@ export class CalculateComponent {
     const byteCRC = this.calculateCRC8([byte2,byte3,byte4,byte5,byte6,byte7,byte8,byte9]);
     // return byteCRC.toString();
     return `
-    0x${this.converNumbertoHEXString(byte0)},
-    0x${this.converNumbertoHEXString(byte1)},
-    0x${this.converNumbertoHEXString(byte2)},
-    0x${this.converNumbertoHEXString(byte3)},
-    0x${this.converNumbertoHEXString(byte4)},
-    0x${this.converNumbertoHEXString(byte5)},
-    0x${this.converNumbertoHEXString(byte6)},
-    0x${this.converNumbertoHEXString(byte7)},
-    0x${this.converNumbertoHEXString(byte8)},
-    0x${this.converNumbertoHEXString(byte9)},
+    0x${this.converNumbertoHEXString(byte0)},\
+    0x${this.converNumbertoHEXString(byte1)},\
+    0x${this.converNumbertoHEXString(byte2)},\
+    0x${this.converNumbertoHEXString(byte3)},\
+    0x${this.converNumbertoHEXString(byte4)},\
+    0x${this.converNumbertoHEXString(byte5)},\
+    0x${this.converNumbertoHEXString(byte6)},\
+    0x${this.converNumbertoHEXString(byte7)},\
+    0x${this.converNumbertoHEXString(byte8)},\
+    0x${this.converNumbertoHEXString(byte9)},\
     0x${this.converNumbertoHEXString(byteCRC)}
     `;
   }
