@@ -1,1 +1,0 @@
-import{f as n,h as r,i as e}from"./chunk-UBIGMF2K.js";import{V as i,Vb as p,ca as m}from"./chunk-PUOJ2KNZ.js";var a=[{path:"list",component:e},{path:"reg",component:r}],l=(()=>{let t=class t{};t.\u0275fac=function(s){return new(s||t)},t.\u0275mod=m({type:t}),t.\u0275inj=i({providers:[n(a)],imports:[p,e,r]});let o=t;return o})();export{l as FunctionModule};
