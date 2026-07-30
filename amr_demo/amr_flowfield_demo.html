@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMR 人流流向場導航 Demo — 逆流走廊 A/B 對比</title>
+<style>
+  :root{
+    --bg:#0B1220; --panel:#0E1626; --panel-edge:#1C2A40; --wall:#22334D;
+    --ink:#E8EEF7; --ink-dim:#8FA0B8; --accent:#6FB3FF;
+    --oncoming:#FF8A5C; --coflow:#5CC8FF; --good:#7ADFA0; --bad:#FF6B6B;
+    --amber:#FFD166;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+    padding:20px 16px 40px; display:flex; flex-direction:column; align-items:center;
+  }
+  .num{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-variant-numeric:tabular-nums;}
+  header{width:100%; max-width:1140px; margin-bottom:14px;}
+  .eyebrow{color:var(--accent); font-size:12px; letter-spacing:.22em; font-weight:700; margin-bottom:6px;}
+  h1{font-size:22px; font-weight:800; letter-spacing:.02em;}
+  .sub{color:var(--ink-dim); font-size:13px; margin-top:4px; line-height:1.6;}
+  .sub b{color:var(--ink); font-weight:700;}
+
+  .controls{
+    width:100%; max-width:1140px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px;
+    padding:10px 12px; margin-bottom:12px;
+  }
+  button{
+    background:#16233A; color:var(--ink); border:1px solid #2A3E5E; border-radius:8px;
+    padding:8px 16px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  button:hover{background:#1D2E4B;}
+  button.primary{background:var(--accent); color:#06101F; border-color:var(--accent);}
+  button.primary:hover{filter:brightness(1.08);}
+  button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .seg{display:flex; border:1px solid #2A3E5E; border-radius:8px; overflow:hidden;}
+  .seg button{border:none; border-radius:0; padding:8px 12px; background:#101B2E; font-weight:600;}
+  .seg button.on{background:var(--accent); color:#06101F; font-weight:800;}
+  label.chk{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-dim); cursor:pointer; user-select:none;}
+  label.chk input{accent-color:var(--accent); width:15px; height:15px;}
+  .spacer{flex:1;}
+  .legend{display:flex; gap:14px; font-size:12px; color:var(--ink-dim); align-items:center; flex-wrap:wrap;}
+  .dot{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:-1px;}
+
+  .panelWrap{width:100%; max-width:1140px; margin-bottom:10px; position:relative;}
+  .panelLabel{
+    position:absolute; top:10px; left:10px; z-index:2; display:flex; align-items:center; gap:8px;
+    background:rgba(8,14,26,.82); border:1px solid var(--panel-edge); border-radius:8px; padding:6px 10px;
+    font-size:13px; font-weight:700; backdrop-filter:blur(2px);
+  }
+  .tag{font-size:11px; font-weight:800; padding:2px 8px; border-radius:99px; letter-spacing:.06em;}
+  .tagA{background:#3A2A22; color:var(--oncoming);}
+  .tagB{background:#15303F; color:var(--coflow);}
+  .panelStat{
+    position:absolute; top:10px; right:10px; z-index:2;
+    background:rgba(8,14,26,.82); border:1px solid var(--panel-edge); border-radius:8px; padding:6px 10px;
+    font-size:12px; color:var(--ink-dim); text-align:right; line-height:1.55; backdrop-filter:blur(2px);
+  }
+  .panelStat b{color:var(--ink); font-size:13px;}
+  canvas{display:block; width:100%; height:auto; border-radius:10px; border:1px solid var(--panel-edge); background:var(--panel);}
+  .stallFlag{
+    position:absolute; z-index:2; font-size:12px; font-weight:800; color:var(--bad);
+    background:rgba(30,10,12,.85); border:1px solid #5A2430; padding:3px 9px; border-radius:99px;
+    display:none; pointer-events:none; transform:translate(-50%,-140%);
+  }
+
+  .scoreboard{
+    width:100%; max-width:1140px; display:grid; grid-template-columns:150px 1fr 1fr; gap:1px;
+    background:var(--panel-edge); border:1px solid var(--panel-edge); border-radius:10px; overflow:hidden;
+    font-size:14px; margin-top:4px;
+  }
+  .scoreboard>div{background:var(--panel); padding:10px 14px;}
+  .scoreboard .head{font-size:12px; color:var(--ink-dim); font-weight:700; letter-spacing:.05em;}
+  .scoreboard .rowh{color:var(--ink-dim); font-size:13px; display:flex; align-items:center;}
+  .scoreboard .val{font-size:18px; font-weight:800;}
+  .win{color:var(--good);} .lose{color:var(--bad);}
+  .banner{
+    width:100%; max-width:1140px; margin-top:12px; border-radius:10px; padding:14px 18px;
+    background:linear-gradient(90deg,#0F2A1E,#0E1626); border:1px solid #1E4A35;
+    font-size:15px; font-weight:700; color:var(--good); display:none; line-height:1.6;
+  }
+  .banner .num{font-size:17px;}
+  .foot{width:100%; max-width:1140px; color:var(--ink-dim); font-size:12px; margin-top:14px; line-height:1.7;}
+  @media (prefers-reduced-motion:reduce){ .stallFlag{transition:none;} }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" style="display:inline-block;color:#6FB3FF;text-decoration:none;font-size:12.5px;font-weight:700;margin-bottom:10px;border:1px solid #1C2A40;border-radius:999px;padding:5px 14px;background:#0E1626">← 回展示首頁</a>
+  <div class="eyebrow">GLOBAL MOT × AMR NAVIGATION — DEMO 01</div>
+  <h1>逆流走廊:全域人流流向場 vs 傳統密度導航</h1>
+  <div class="sub">
+    同一條開放走廊、無任何實體分隔。上方 75% 區域是迎面而來的逆向人潮、下方 25% 區域是同向人流,人數恆為 3:1 —— 
+    <b>兩區單位密度完全相同,密度資訊在此毫無鑑別力</b>,唯一的差別是「方向」。
+    傳統機器人只有車載 LiDAR,視距外的人潮根本看不見,只能朝目標直線推進、等人撞進視距才停讓;
+    本技術由環境攝影機全域 MOT 即時推導流向場,出發前就知道下緣有一條順流帶,直接貼著它前進。
+    <b>調高密度倍率,可觀察傳統機器人凍結症候群的惡化程度。</b>
+  </div>
+</header>
+
+<div class="controls">
+  <button id="btnPlay" class="primary">▶ 播放</button>
+  <button id="btnReset">↺ 重置</button>
+  <div class="seg" id="speedSeg">
+    <button data-s="1" class="on">1×</button>
+    <button data-s="2">2×</button>
+    <button data-s="4">4×</button>
+  </div>
+  <div class="seg" id="densSeg" title="人流密度(順/逆比例恆為 1:3,故任何密度下兩區單位密度皆相同)">
+    <button data-d="1" class="on">密度 1×</button>
+    <button data-d="2">2×</button>
+    <button data-d="3">3×</button>
+    <button data-d="4">4×</button>
+  </div>
+  <label class="chk"><input type="checkbox" id="chkLayer" checked> 顯示感知圖層(A:LiDAR 感知圈 / B:全域流向場)</label>
+  <label class="chk"><input type="checkbox" id="chkTrail" checked> 行人拖尾</label>
+  <div class="spacer"></div>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--oncoming)"></span>逆向行人</span>
+    <span><span class="dot" style="background:var(--coflow)"></span>同向行人</span>
+    <span><span class="dot" style="background:#fff"></span>AMR</span>
+    <span><span class="dot" style="background:var(--good)"></span>目標</span>
+  </div>
+</div>
+
+<div class="panelWrap" id="wrapA">
+  <div class="panelLabel"><span class="tag tagA">A</span> 傳統:純車載 LiDAR(視距 7m,無全域資訊)</div>
+  <div class="panelStat"><span>停讓次數 <b class="num" id="stallA">0</b></span><br><span>逆向近距遭遇 <b class="num" id="encA">0</b></span></div>
+  <div class="stallFlag" id="flagA">⛔ 逆流受阻,停讓中</div>
+  <canvas id="cvA" width="1140" height="310"></canvas>
+</div>
+
+<div class="panelWrap" id="wrapB">
+  <div class="panelLabel"><span class="tag tagB">B</span> 本技術:全域 MOT 流向場(順流避逆)</div>
+  <div class="panelStat"><span>停讓次數 <b class="num" id="stallB">0</b></span><br><span>逆向近距遭遇 <b class="num" id="encB">0</b></span></div>
+  <div class="stallFlag" id="flagB">⛔ 停讓中</div>
+  <canvas id="cvB" width="1140" height="310"></canvas>
+</div>
+
+<div class="scoreboard">
+  <div class="head">即時記分板</div>
+  <div class="head" style="color:var(--oncoming)">A|純車載 LiDAR</div>
+  <div class="head" style="color:var(--coflow)">B|全域流向場</div>
+  <div class="rowh">行程進度</div>
+  <div class="val num" id="progA">0%</div>
+  <div class="val num" id="progB">0%</div>
+  <div class="rowh">已用時間</div>
+  <div class="val num" id="timeA">0.0 s</div>
+  <div class="val num" id="timeB">0.0 s</div>
+  <div class="rowh">停讓次數</div>
+  <div class="val num" id="stallA2">0</div>
+  <div class="val num" id="stallB2">0</div>
+  <div class="rowh">逆向近距遭遇</div>
+  <div class="val num" id="encA2">0</div>
+  <div class="val num" id="encB2">0</div>
+  <div class="rowh">凍結時間佔比</div>
+  <div class="val num" id="frzA">0%</div>
+  <div class="val num" id="frzB">0%</div>
+</div>
+
+<div class="banner" id="banner"></div>
+
+<div class="foot">
+  說明:終點為一條垂直線,機器人於任一 y 觸線即完成,故兩者不會因終點所在高度而受偏袒。兩面板行人流以相同亂數種子生成,條件完全對等;走廊為單一開放空間,順/逆向人流間無實體分隔,且人數依面積等比配置(逆向區 75%、順向區 25%,人數恆為 3:1),<b>任何密度倍率下全場單位密度皆一致</b> —— 因此任何以密度為依據的方法在此皆無從選擇,唯有「流向」能區分。「凍結時間佔比」為機器人靜止時間佔總行程時間之比例,即機器人凍結症候群(Frozen Robot Syndrome)之直接量化。A 為純車載感知:規劃器只知道 LiDAR 半徑 7m 內的障礙,<b>視距外一律視為可通行</b>(面板中半透明行人即機器人看不見的人),故只能朝目標近似直線推進、被動反應;B 使用同一套 A* 規劃器,但由全域 MOT 取得整場密度與流向,代價函數多了一項
+  <span class="num">w_f·(1−cosθ)</span> 流向衝突成本(θ 為候選行進方向與該處人流主流方向之夾角)。
+  流向場由所有行人之連續軌跡速度向量網格聚合而得 —— 這正是跨鏡頭全域一致身分(Global ID)才能提供的資料。
+</div>
+
+<script>
+(()=>{
+/* ================= 世界設定 ================= */
+const S = 10;                 // px per world unit
+const W = 114, H = 31;        // world size
+const GOAL_X = 108;           // 終點線:x = GOAL_X 之垂直線,抵達任一 y 皆算完成
+const START = {x:5, y:15.5};
+// 單一開放走廊:僅上下外牆,無中央分隔
+const WALLS = [
+  {x:0, y:0, w:W, h:1.2}, {x:0, y:H-1.2, w:W, h:1.2},
+];
+// 走廊內部 y∈[1.2, 29.8],高 28.6;於 75% 處切分,兩區相鄰無間隙
+const SPLIT = 1.2 + 28.6*0.75;   // ≈ 22.65
+const TOP = {y0:1.2,  y1:SPLIT};  // 上 75%:逆向人流
+const BOT = {y0:SPLIT, y1:29.8};  // 下 25%:順向人流
+// 人數依面積等比配置 → 兩區單位密度完全一致(密度資訊為零訊號)
+// 密度倍率可由 UI 調整;比例恆為 3:1,故任何密度下兩區單位密度仍相同
+let densityMult = 1;
+const BASE_TOP = 75, BASE_BOT = 25;
+const nTop = ()=>Math.round(BASE_TOP*densityMult);
+const nBot = ()=>Math.round(BASE_BOT*densityMult);
+
+/* ================= 工具 ================= */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+function inWall(x,y,m=0){for(const w of WALLS){if(x>w.x-m&&x<w.x+w.w+m&&y>w.y-m&&y<w.y+w.h+m)return true}return false}
+
+/* ========== 空間雜湊:高密度下鄰居查詢由 O(n²) 降為 O(n) ========== */
+const HC = 3.5; // 格寬 ≥ 互斥作用截止距離
+class Hash{
+  constructor(){ this.gw=Math.ceil(W/HC); this.gh=Math.ceil(H/HC); this.cells=new Array(this.gw*this.gh); }
+  build(peds){
+    for(let i=0;i<this.cells.length;i++)this.cells[i]=null;
+    for(const p of peds){
+      const cx=clamp(Math.floor(p.x/HC),0,this.gw-1), cy=clamp(Math.floor(p.y/HC),0,this.gh-1);
+      const i=cy*this.gw+cx;
+      (this.cells[i]||(this.cells[i]=[])).push(p);
+    }
+  }
+  near(x,y,out){
+    out.length=0;
+    const cx=clamp(Math.floor(x/HC),0,this.gw-1), cy=clamp(Math.floor(y/HC),0,this.gh-1);
+    for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){
+      const X=cx+ox, Y=cy+oy; if(X<0||Y<0||X>=this.gw||Y>=this.gh)continue;
+      const c=this.cells[Y*this.gw+X]; if(c)for(let k=0;k<c.length;k++)out.push(c[k]);
+    }
+    return out;
+  }
+}
+const _nb=[];
+
+/* ================= 行人 ================= */
+class Ped{
+  constructor(rng, side){
+    this.rng=rng; this.side=side; this.r=0.38;
+    this.trail=[]; this.respawn(true);
+  }
+  respawn(first){
+    const rng=this.rng;
+    if(this.side==='top'){ // 由右向左(逆向)
+      this.x = first? 12+rng()*98 : 108+rng()*6;
+      this.y = TOP.y0+0.5+rng()*(TOP.y1-TOP.y0-1.0);
+      this.dir=-1;
+    }else{               // 由左向右(同向)
+      this.x = first? 6+rng()*104 : 1-rng()*6;
+      this.y = BOT.y0+0.5+rng()*(BOT.y1-BOT.y0-1.0);
+      this.dir=1;
+    }
+    if(first&&Math.hypot(this.x-START.x,this.y-START.y)<7)this.x+=12;
+    this.v0 = 1.0+rng()*0.45;
+    this.vx=this.v0*this.dir; this.vy=0;
+    this.laneY=this.y;
+    this.trail.length=0;
+  }
+  step(dt, neigh, robot){
+    // 目標力:朝行進方向,回歸自己車道
+    let fx=(this.v0*this.dir - this.vx)/0.55;
+    let fy=((this.laneY-this.y)*0.55 - this.vy)/0.55;
+    // 行人互斥(僅鄰近格內)
+    for(let k=0;k<neigh.length;k++){ const p=neigh[k]; if(p===this)continue;
+      const dx=this.x-p.x, dy=this.y-p.y, d2=dx*dx+dy*dy;
+      if(d2>9||d2<1e-6)continue;
+      const d=Math.sqrt(d2), f=2.6*Math.exp((0.85-d)/0.45)/d;
+      fx+=dx*f; fy+=dy*f;
+    }
+    // 機器人互斥(人會禮讓,但密集時讓不開)
+    if(robot){
+      const dx=this.x-robot.x, dy=this.y-robot.y, d2=dx*dx+dy*dy;
+      if(d2<12.25&&d2>1e-6){const d=Math.sqrt(d2),f=2.2*Math.exp((1.0-d)/0.55)/d;fx+=dx*f;fy+=dy*f;}
+    }
+    // 牆
+    for(const w of WALLS){
+      const nx=clamp(this.x,w.x,w.x+w.w), ny=clamp(this.y,w.y,w.y+w.h);
+      const dx=this.x-nx, dy=this.y-ny, d2=dx*dx+dy*dy;
+      if(d2<2.6&&d2>1e-6){const d=Math.sqrt(d2),f=4.5*Math.exp((0.5-d)/0.3)/d;fx+=dx*f;fy+=dy*f;}
+    }
+    this.vx+=fx*dt; this.vy+=fy*dt;
+    const sp=Math.hypot(this.vx,this.vy), mx=this.v0*1.5;
+    if(sp>mx){this.vx*=mx/sp;this.vy*=mx/sp}
+    this.x+=this.vx*dt; this.y+=this.vy*dt;
+    this.y=clamp(this.y,1.6,H-1.6);
+    if((this.side==='top'&&this.x<0.5)||(this.side==='bot'&&this.x>W-0.5))this.respawn(false);
+    this.trail.push([this.x,this.y]); if(this.trail.length>14)this.trail.shift();
+  }
+}
+
+/* ================= 場(密度+流向) ================= */
+const GX=Math.floor(W/2), GY=Math.floor(H/2), CELL=2;
+class Field{
+  constructor(){ this.rho=new Float32Array(GX*GY); this.fx=new Float32Array(GX*GY); this.fy=new Float32Array(GX*GY); }
+  update(peds){
+    const rho=new Float32Array(GX*GY), fx=new Float32Array(GX*GY), fy=new Float32Array(GX*GY);
+    for(const p of peds){
+      const gx=clamp(Math.floor(p.x/CELL),0,GX-1), gy=clamp(Math.floor(p.y/CELL),0,GY-1);
+      for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){
+        const X=gx+ox,Y=gy+oy; if(X<0||Y<0||X>=GX||Y>=GY)continue;
+        const w=(ox===0&&oy===0)?1:0.35, i=Y*GX+X;
+        rho[i]+=w; fx[i]+=p.vx*w; fy[i]+=p.vy*w;
+      }
+    }
+    for(let i=0;i<GX*GY;i++){ // 時間平滑(EMA)
+      this.rho[i]=this.rho[i]*0.9+rho[i]*0.1;
+      this.fx[i]=this.fx[i]*0.9+fx[i]*0.1;
+      this.fy[i]=this.fy[i]*0.9+fy[i]*0.1;
+    }
+  }
+  at(x,y){const i=clamp(Math.floor(y/CELL),0,GY-1)*GX+clamp(Math.floor(x/CELL),0,GX-1);
+    return {rho:this.rho[i], fx:this.fx[i], fy:this.fy[i]};}
+}
+
+/* ================= A* 規劃器 ================= */
+const blocked=new Uint8Array(GX*GY);
+for(let gy=0;gy<GY;gy++)for(let gx=0;gx<GX;gx++){
+  const x=gx*CELL+CELL/2, y=gy*CELL+CELL/2;
+  if(inWall(x,y,0.7)||x<0.8||x>W-0.8||y<1.4||y>H-1.4)blocked[gy*GX+gx]=1;
+}
+function plan(sx,sy,field,useFlow,lidarR){
+  const s=[clamp(Math.floor(sx/CELL),0,GX-1),clamp(Math.floor(sy/CELL),0,GY-1)];
+  const gcol=clamp(Math.floor(GOAL_X/CELL),0,GX-1);   // 終點線所在之網格欄
+  const N=GX*GY, g=new Float32Array(N).fill(1e9), came=new Int32Array(N).fill(-1);
+  const si=s[1]*GX+s[0];
+  const open=[[0,si]]; g[si]=0;
+  const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+  const wR=3.2, wF=8.5;
+  let goalCell=-1;
+  while(open.length){
+    let bi=0; for(let i=1;i<open.length;i++)if(open[i][0]<open[bi][0])bi=i;
+    const [f,cur]=open.splice(bi,1)[0];
+    if(cur%GX>=gcol){goalCell=cur; break;}          // 觸線即完成(終點為線,非點)
+    const cx=cur%GX, cy=(cur/GX)|0;
+    for(const[dx,dy]of dirs){
+      const nx=cx+dx, ny=cy+dy;
+      if(nx<0||ny<0||nx>=GX||ny>=GY)continue;
+      const ni=ny*GX+nx; if(blocked[ni])continue;
+      if(dx&&dy&&(blocked[cy*GX+nx]||blocked[ny*GX+cx]))continue;
+      const len=(dx&&dy)?1.414:1;
+      // 感知範圍:純車載 LiDAR 只知半徑內之障礙,範圍外一律視為可通行(未知即樂觀)
+      const cxw=nx*CELL+CELL/2, cyw=ny*CELL+CELL/2;
+      const known = Math.hypot(cxw-sx,cyw-sy) <= lidarR;
+      const rho = known ? Math.min(field.rho[ni]/2.2,1.4) : 0;
+      let flowC=0;
+      if(useFlow && known){
+        const fx=field.fx[ni], fy=field.fy[ni], mag=Math.hypot(fx,fy);
+        if(mag>0.25){
+          const conf=Math.min(mag/1.6,1)*Math.min(field.rho[ni]/1.2,1);
+          const cos=(dx*fx+dy*fy)/(Math.hypot(dx,dy)*mag);
+          flowC=conf*(1-cos)/2; // 0順流 → 1逆流
+        }
+      }
+      const c=g[cur]+len*(1+wR*rho+wF*flowC);
+      if(c<g[ni]){g[ni]=c; came[ni]=cur;
+        const h=Math.max(gcol-nx,0);               // 終點為垂直線 → 啟發式僅取水平距離
+        open.push([c+h,ni]);}
+    }
+  }
+  if(goalCell<0)return [[GOAL_X,sy]];
+  const path=[]; let cur=goalCell;
+  while(cur>=0){path.push([(cur%GX)*CELL+CELL/2, ((cur/GX)|0)*CELL+CELL/2]); cur=came[cur];}
+  path.reverse();
+  const lastY=path.length?path[path.length-1][1]:sy;
+  path.push([GOAL_X+1.5,lastY]);                   // 延伸至終點線之後,確保確實觸線
+  return path;
+}
+
+/* ================= 機器人 ================= */
+class Robot{
+  constructor(useFlow){
+    this.useFlow=useFlow;
+    this.lidarR = useFlow ? 1e9 : 7; // A:純車載 LiDAR 半徑 7m;B:全域資訊
+    this.reset();
+  }
+  reset(){
+    this.x=START.x; this.y=START.y; this.hd=0; this.speed=0;
+    this.path=null; this.replanT=0; this.done=false; this.time=0;
+    this.stalls=0; this.enc=0; this.stopT=0; this.movedSince=true;
+    this.frozenT=0;
+    this.encCd=new Map(); this.trail=[];
+  }
+  step(dt, peds, field, hash){
+    if(this.done)return;
+    this.time+=dt;
+    this.replanT-=dt;
+    if(!this.path||this.replanT<=0){
+      this.path=plan(this.x,this.y,field,this.useFlow,this.lidarR);
+      this.replanT=this.useFlow?1.4:0.8; // 純車載:進視距才反應,得更頻繁重規劃
+    }
+    // 取前瞻點
+    let li=0, best=1e9;
+    for(let i=0;i<this.path.length;i++){
+      const d=Math.hypot(this.path[i][0]-this.x,this.path[i][1]-this.y);
+      if(d<best){best=d;li=i;}
+    }
+    let look=this.path[Math.min(li+3,this.path.length-1)];
+    const dx=look[0]-this.x, dy=look[1]-this.y, dd=Math.hypot(dx,dy)||1;
+    const hx=dx/dd, hy=dy/dd;
+    this.hd=Math.atan2(hy,hx);
+
+    // 前方安全檢查(車載即時感測層)
+    let mustStop=false, capSpeed=1.5;
+    const near=hash.near(this.x,this.y,_nb);
+    for(let k=0;k<near.length;k++){ const p=near[k];
+      const px=p.x-this.x, py=p.y-this.y, d=Math.hypot(px,py);
+      if(d>3.4)continue;
+      const cos=(px*hx+py*hy)/(d||1);
+      if(cos<0.35)continue; // 只看前方錐
+      const closing=-((p.vx-hx*this.speed)*px+(p.vy-hy*this.speed)*py)/(d||1);
+      if(d<1.5) mustStop=true;
+      else if(d<2.6 && closing>0.55) mustStop=true;
+      else if(cos>0.7){ // 前方同向者 → 跟車調速
+        const pAlong=p.vx*hx+p.vy*hy;
+        if(pAlong>0.2) capSpeed=Math.min(capSpeed, Math.max(pAlong,0.5));
+      }
+      // 逆向近距遭遇統計
+      const pedAlong=p.vx*hx+p.vy*hy;
+      if(d<2.3&&pedAlong<-0.45){
+        const last=this.encCd.get(p)||-9;
+        if(this.time-last>2.2){this.enc++; this.encCd.set(p,this.time);}
+      }
+    }
+    const target=mustStop?0:capSpeed;
+    this.speed+= (target-this.speed)*Math.min(dt*6,1);
+    if(this.speed<0.02)this.speed=0;
+
+    // 停讓計數 + 凍結時間累計
+    if(this.speed<0.08){
+      this.stopT+=dt; this.frozenT+=dt;
+      if(this.stopT>0.35&&this.movedSince){this.stalls++; this.movedSince=false;}
+    }else{ this.stopT=0; if(this.speed>0.5)this.movedSince=true; }
+
+    this.x+=hx*this.speed*dt; this.y+=hy*this.speed*dt;
+    this.trail.push([this.x,this.y]); if(this.trail.length>90)this.trail.shift();
+    if(this.x>=GOAL_X){this.done=true;}
+  }
+}
+
+/* ================= 面板(獨立模擬) ================= */
+class Panel{
+  constructor(canvas, useFlow, seed){
+    this.cv=canvas; this.ctx=canvas.getContext('2d');
+    this.useFlow=useFlow; this.seed=seed;
+    this.reset();
+  }
+  reset(){
+    const rng=mulberry32(this.seed);
+    this.peds=[];
+    const nT=nTop(), nB=nBot();
+    for(let i=0;i<nT;i++)this.peds.push(new Ped(rng,'top'));
+    for(let i=0;i<nB;i++)this.peds.push(new Ped(rng,'bot'));
+    this.hash=new Hash();
+    this.field=new Field();
+    for(let k=0;k<25;k++)this.field.update(this.peds); // 預熱
+    this.robot=new Robot(this.useFlow);
+  }
+  step(dt){
+    this.hash.build(this.peds);
+    for(const p of this.peds)p.step(dt,this.hash.near(p.x,p.y,_nb),this.robot);
+    this.field.update(this.peds);
+    this.hash.build(this.peds);
+    this.robot.step(dt,this.peds,this.field,this.hash);
+  }
+  draw(showLayer, showTrail){
+    const c=this.ctx, r=this.robot;
+    c.clearRect(0,0,this.cv.width,this.cv.height);
+    // 感知圖層
+    if(showLayer){
+      if(!this.useFlow){ // 純車載:僅畫 LiDAR 感知圈,圈外世界對機器人是未知
+        c.fillStyle='rgba(255,209,102,.06)';
+        c.strokeStyle='rgba(255,209,102,.45)'; c.lineWidth=1.5; c.setLineDash([6,6]);
+        c.beginPath(); c.arc(r.x*S,r.y*S,r.lidarR*S,0,7); c.fill(); c.stroke();
+        c.setLineDash([]);
+        c.fillStyle='rgba(255,209,102,.7)'; c.font='700 11px "Noto Sans TC",sans-serif';
+        c.fillText('LiDAR 感知範圍', r.x*S-40, r.y*S-r.lidarR*S-6);
+      }else{ // 流向場箭頭
+        for(let gy=0;gy<GY;gy++)for(let gx=0;gx<GX;gx++){
+          const i=gy*GX+gx, fx=this.field.fx[i], fy=this.field.fy[i];
+          const mag=Math.hypot(fx,fy); if(mag<0.35)continue;
+          const x=(gx*CELL+CELL/2)*S, y=(gy*CELL+CELL/2)*S;
+          const ux=fx/mag, uy=fy/mag, L=Math.min(mag*6.5,11);
+          c.strokeStyle= fx<0? 'rgba(255,138,92,.55)':'rgba(92,200,255,.55)';
+          c.lineWidth=1.6; c.beginPath();
+          c.moveTo(x-ux*L,y-uy*L); c.lineTo(x+ux*L,y+uy*L);
+          c.moveTo(x+ux*L,y+uy*L);
+          c.lineTo(x+ux*L-ux*4+uy*3, y+uy*L-uy*4-ux*3);
+          c.moveTo(x+ux*L,y+uy*L);
+          c.lineTo(x+ux*L-ux*4-uy*3, y+uy*L-uy*4+ux*3);
+          c.stroke();
+        }
+      }
+    }
+    // 牆
+    c.fillStyle='#22334D';
+    for(const w of WALLS)c.fillRect(w.x*S,w.y*S,w.w*S,w.h*S);
+    c.strokeStyle='#2E4463'; c.lineWidth=1;
+    for(const w of WALLS)c.strokeRect(w.x*S,w.y*S,w.w*S,w.h*S);
+    // 區域標籤(同一走廊,無實體分隔,單位密度相同)
+    c.fillStyle='rgba(143,160,184,.75)'; c.font='700 12px "Noto Sans TC",sans-serif';
+    c.fillText(`⟵ 逆向人流 ${nTop()} 人 / 走廊 75%`, 430, (TOP.y0+2.0)*S+4);
+    c.fillText(`順向人流 ${nBot()} 人 / 走廊 25% ⟶`, 430, (BOT.y1-0.6)*S);
+    // 終點線(垂直線,任一 y 觸線即完成)
+    c.strokeStyle='rgba(122,223,160,.85)'; c.lineWidth=3; c.setLineDash([9,7]);
+    c.beginPath(); c.moveTo(GOAL_X*S,1.2*S); c.lineTo(GOAL_X*S,(H-1.2)*S); c.stroke();
+    c.setLineDash([]);
+    c.save();
+    c.translate(GOAL_X*S-13, H*S/2); c.rotate(-Math.PI/2);
+    c.fillStyle='rgba(122,223,160,.95)'; c.font='800 13px "Noto Sans TC",sans-serif';
+    c.textAlign='center'; c.fillText('終點線 FINISH',0,0);
+    c.restore(); c.textAlign='left';
+    // 行人(面板 A:LiDAR 視距外的人以半透明呈現 = 機器人看不見)
+    for(const p of this.peds){
+      const col=p.side==='top'?'255,138,92':'92,200,255';
+      const seen = this.useFlow || Math.hypot(p.x-r.x,p.y-r.y)<=r.lidarR;
+      const bodyA = seen?1:0.28, trailA = seen?0.28:0.08;
+      if(showTrail&&p.trail.length>2){
+        c.strokeStyle=`rgba(${col},${trailA})`; c.lineWidth=2; c.beginPath();
+        c.moveTo(p.trail[0][0]*S,p.trail[0][1]*S);
+        for(const[tx,ty]of p.trail)c.lineTo(tx*S,ty*S);
+        c.stroke();
+      }
+      c.fillStyle=`rgba(${col},${bodyA})`;
+      c.beginPath(); c.arc(p.x*S,p.y*S,p.r*S,0,7); c.fill();
+    }
+    // 機器人路徑
+    if(r.path){
+      c.strokeStyle=this.useFlow?'rgba(92,200,255,.5)':'rgba(255,209,102,.5)';
+      c.setLineDash([5,5]); c.lineWidth=2; c.beginPath();
+      c.moveTo(r.x*S,r.y*S);
+      for(const[px,py]of r.path)c.lineTo(px*S,py*S);
+      c.stroke(); c.setLineDash([]);
+    }
+    // 機器人軌跡
+    if(r.trail.length>2){
+      c.strokeStyle='rgba(232,238,247,.5)'; c.lineWidth=2.5; c.beginPath();
+      c.moveTo(r.trail[0][0]*S,r.trail[0][1]*S);
+      for(const[tx,ty]of r.trail)c.lineTo(tx*S,ty*S);
+      c.stroke();
+    }
+    // 機器人本體
+    const stalled=r.speed<0.08&&!r.done&&r.stopT>0.35;
+    if(stalled){
+      c.strokeStyle='rgba(255,107,107,.9)'; c.lineWidth=3;
+      c.beginPath(); c.arc(r.x*S,r.y*S,13+Math.sin(performance.now()/120)*2,0,7); c.stroke();
+    }
+    c.fillStyle=r.done?'#7ADFA0':'#FFFFFF';
+    c.beginPath(); c.arc(r.x*S,r.y*S,8,0,7); c.fill();
+    c.strokeStyle='#0B1220'; c.lineWidth=2.5; c.beginPath();
+    c.moveTo(r.x*S,r.y*S); c.lineTo(r.x*S+Math.cos(r.hd)*8,r.y*S+Math.sin(r.hd)*8); c.stroke();
+    return stalled;
+  }
+}
+
+/* ================= 主控 ================= */
+const pA=new Panel(document.getElementById('cvA'), false, 20260603);
+const pB=new Panel(document.getElementById('cvB'), true , 20260603);
+let playing=false, speedMult=1, last=null, raf=null;
+
+const $=id=>document.getElementById(id);
+const flagA=$('flagA'), flagB=$('flagB'), banner=$('banner');
+
+function updateHUD(){
+  const totalDist=GOAL_X-START.x;
+  const prA=Math.min((pA.robot.x-START.x)/totalDist*100,100);
+  const prB=Math.min((pB.robot.x-START.x)/totalDist*100,100);
+  $('progA').textContent=prA.toFixed(0)+'%'; $('progB').textContent=prB.toFixed(0)+'%';
+  $('timeA').textContent=pA.robot.time.toFixed(1)+' s'; $('timeB').textContent=pB.robot.time.toFixed(1)+' s';
+  for(const[id,v]of[['stallA',pA.robot.stalls],['stallA2',pA.robot.stalls],['stallB',pB.robot.stalls],['stallB2',pB.robot.stalls],
+                    ['encA',pA.robot.enc],['encA2',pA.robot.enc],['encB',pB.robot.enc],['encB2',pB.robot.enc]])
+    $(id).textContent=v;
+  const frA=pA.robot.time>0?pA.robot.frozenT/pA.robot.time*100:0;
+  const frB=pB.robot.time>0?pB.robot.frozenT/pB.robot.time*100:0;
+  $('frzA').textContent=frA.toFixed(0)+'%'; $('frzB').textContent=frB.toFixed(0)+'%';
+  $('frzA').className='val num'+(frA>25?' lose':''); $('frzB').className='val num'+(frB<15?' win':'');
+  if(pB.robot.done&&!pA.robot.done){
+    banner.style.display='block';
+    const over=pB.robot.time>0?(pA.robot.time-pB.robot.time):0;
+    banner.innerHTML=`✅ <b>B(全域流向場)已抵達</b> — 用時 <span class="num">${pB.robot.time.toFixed(1)}s</span>,停讓 <span class="num">${pB.robot.stalls}</span> 次,凍結時間僅 <span class="num">${frB.toFixed(0)}%</span>。
+      A(純車載 LiDAR)仍卡在逆流中,已多耗 <span class="num">${over.toFixed(1)}s</span>、進度 <span class="num">${prA.toFixed(0)}%</span>、凍結時間佔比 <span class="num">${frA.toFixed(0)}%</span>…`;
+  }
+  if(pA.robot.done&&pB.robot.done){
+    const sav=((pA.robot.time-pB.robot.time)/pA.robot.time*100);
+    banner.style.display='block';
+    banner.innerHTML=`✅ 對比完成 — B(全域流向場)用時 <span class="num">${pB.robot.time.toFixed(1)}s</span> / A(純車載 LiDAR)<span class="num">${pA.robot.time.toFixed(1)}s</span>,
+      <b>快 <span class="num">${sav.toFixed(0)}%</span></b>;停讓 <span class="num">${pB.robot.stalls}</span> vs <span class="num">${pA.robot.stalls}</span> 次,
+      逆向近距遭遇 <span class="num">${pB.robot.enc}</span> vs <span class="num">${pA.robot.enc}</span> 次,
+      凍結時間佔比 <span class="num">${frB.toFixed(0)}%</span> vs <span class="num">${frA.toFixed(0)}%</span>。`;
+    $('timeA').className='val num lose'; $('timeB').className='val num win';
+    playing=false; $('btnPlay').textContent='▶ 播放';
+  }
+}
+function positionFlag(flag, panel, wrap, stalled){
+  if(stalled&&!panel.robot.done){
+    flag.style.display='block';
+    const rect=wrap.querySelector('canvas');
+    const sx=panel.robot.x*S/rect.width*rect.clientWidth;
+    const sy=panel.robot.y*S/rect.height*rect.clientHeight;
+    flag.style.left=sx+'px'; flag.style.top=sy+'px';
+  }else flag.style.display='none';
+}
+function frame(t){
+  raf=requestAnimationFrame(frame);
+  if(last===null)last=t;
+  let dt=Math.min((t-last)/1000,0.05); last=t;
+  if(playing){
+    const steps=Math.max(1,Math.round(speedMult));
+    for(let k=0;k<steps;k++){ pA.step(dt); pB.step(dt); }
+  }
+  const showLayer=$('chkLayer').checked, showTrail=$('chkTrail').checked;
+  const stA=pA.draw(showLayer,showTrail);
+  const stB=pB.draw(showLayer,showTrail);
+  positionFlag(flagA,pA,$('wrapA'),stA);
+  positionFlag(flagB,pB,$('wrapB'),stB);
+  updateHUD();
+}
+$('btnPlay').onclick=()=>{
+  playing=!playing;
+  $('btnPlay').textContent=playing?'⏸ 暫停':'▶ 播放';
+};
+$('btnReset').onclick=()=>{
+  pA.reset(); pB.reset(); playing=false; banner.style.display='none';
+  $('btnPlay').textContent='▶ 播放';
+  $('timeA').className='val num'; $('timeB').className='val num';
+};
+document.querySelectorAll('#speedSeg button').forEach(b=>{
+  b.onclick=()=>{
+    speedMult=+b.dataset.s;
+    document.querySelectorAll('#speedSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  };
+});
+document.querySelectorAll('#densSeg button').forEach(b=>{
+  b.onclick=()=>{
+    densityMult=+b.dataset.d;
+    document.querySelectorAll('#densSeg button').forEach(x=>x.classList.toggle('on',x===b));
+    pA.reset(); pB.reset(); playing=false; banner.style.display='none';
+    $('btnPlay').textContent='▶ 播放';
+    $('timeA').className='val num'; $('timeB').className='val num';
+  };
+});
+raf=requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

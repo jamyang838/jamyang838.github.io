@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMR 間隙穿越 Demo — 預測「到我面前時」的窗口寬度</title>
+<style>
+  :root{
+    --bg:#0B1220; --panel:#0E1626; --panel-edge:#1C2A40;
+    --ink:#E8EEF7; --ink-dim:#8FA0B8; --accent:#6FB3FF;
+    --gap:#5CC8FF; --good:#7ADFA0; --bad:#FF6B6B; --gold:#FFD166;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+    padding:20px 16px 40px; display:flex; flex-direction:column; align-items:center;
+  }
+  .num{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-variant-numeric:tabular-nums;}
+  header{width:100%; max-width:1140px; margin-bottom:14px;}
+  .eyebrow{color:var(--accent); font-size:12px; letter-spacing:.22em; font-weight:700; margin-bottom:6px;}
+  h1{font-size:22px; font-weight:800; letter-spacing:.02em;}
+  .sub{color:var(--ink-dim); font-size:13px; margin-top:4px; line-height:1.65;}
+  .sub b{color:var(--ink); font-weight:700;}
+  .formula{
+    display:inline-block; background:#101B2E; border:1px solid var(--panel-edge); border-radius:6px;
+    padding:2px 8px; margin-top:6px; color:var(--gap);
+    font-family:ui-monospace,monospace; font-size:12.5px;
+  }
+  .controls{
+    width:100%; max-width:1140px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px;
+    padding:10px 12px; margin-bottom:10px;
+  }
+  button{
+    background:#16233A; color:var(--ink); border:1px solid #2A3E5E; border-radius:8px;
+    padding:8px 16px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  button:hover{background:#1D2E4B;}
+  button.primary{background:var(--accent); color:#06101F; border-color:var(--accent);}
+  button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .seg{display:flex; border:1px solid #2A3E5E; border-radius:8px; overflow:hidden;}
+  .seg button{border:none; border-radius:0; padding:8px 12px; background:#101B2E; font-weight:600;}
+  .seg button.on{background:var(--accent); color:#06101F; font-weight:800;}
+  .spacer{flex:1;}
+  .legend{display:flex; gap:14px; font-size:12px; color:var(--ink-dim); align-items:center; flex-wrap:wrap;}
+  .dot{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:-1px;}
+  .narration{
+    width:100%; max-width:1140px; min-height:44px; margin-bottom:10px; border-radius:10px;
+    background:#101B2E; border:1px solid var(--panel-edge); padding:10px 14px;
+    font-size:14px; font-weight:700; display:flex; align-items:center; gap:12px; line-height:1.5;
+  }
+  .narration .step{font-size:11px; color:var(--accent); letter-spacing:.15em; flex-shrink:0; font-family:ui-monospace,monospace;}
+  .panelWrap{width:100%; max-width:1140px; margin-bottom:10px; position:relative;}
+  .panelLabel{
+    position:absolute; top:10px; left:10px; z-index:2; display:flex; align-items:center; gap:8px;
+    background:rgba(8,14,26,.82); border:1px solid var(--panel-edge); border-radius:8px; padding:6px 10px;
+    font-size:13px; font-weight:700; backdrop-filter:blur(2px);
+  }
+  .tag{font-size:11px; font-weight:800; padding:2px 8px; border-radius:99px; letter-spacing:.06em;}
+  .tagA{background:#3A2A22; color:#FF8A5C;}
+  .tagB{background:#15303F; color:#5CC8FF;}
+  .stateChip{
+    position:absolute; top:10px; right:10px; z-index:2; max-width:54%;
+    background:rgba(8,14,26,.85); border:1px solid var(--panel-edge); border-radius:99px;
+    padding:6px 13px; font-size:12px; font-weight:800; backdrop-filter:blur(2px); text-align:right;
+  }
+  canvas{display:block; width:100%; height:auto; border-radius:10px; border:1px solid var(--panel-edge); background:var(--panel);}
+  .scoreboard{
+    width:100%; max-width:1140px; display:grid; grid-template-columns:190px 1fr 1fr; gap:1px;
+    background:var(--panel-edge); border:1px solid var(--panel-edge); border-radius:10px; overflow:hidden;
+    font-size:14px; margin-top:4px;
+  }
+  .scoreboard>div{background:var(--panel); padding:10px 14px;}
+  .scoreboard .head{font-size:12px; color:var(--ink-dim); font-weight:700; letter-spacing:.05em;}
+  .scoreboard .rowh{color:var(--ink-dim); font-size:13px; display:flex; align-items:center;}
+  .scoreboard .val{font-size:18px; font-weight:800;}
+  .win{color:var(--good);} .lose{color:var(--bad);}
+  .banner{
+    width:100%; max-width:1140px; margin-top:12px; border-radius:10px; padding:14px 18px;
+    background:linear-gradient(90deg,#0F2A1E,#0E1626); border:1px solid #1E4A35;
+    font-size:15px; font-weight:700; color:var(--good); display:none; line-height:1.7;
+  }
+  .foot{width:100%; max-width:1140px; color:var(--ink-dim); font-size:12px; margin-top:14px; line-height:1.75;}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" style="display:inline-block;color:#6FB3FF;text-decoration:none;font-size:12.5px;font-weight:700;margin-bottom:10px;border:1px solid #1C2A40;border-radius:999px;padding:5px 14px;background:#0E1626">← 回展示首頁</a>
+  <div class="eyebrow">GLOBAL MOT × AMR NAVIGATION — DEMO 03</div>
+  <h1>不是看「現在多寬」,而是算出「輪到我時會有多寬」</h1>
+  <div class="sub">
+    人流帶中<b>每個人的步速都不同</b>(畫面上以箭頭長度與顏色表示)。因此一道間隙是<b>會張開還是會收合</b>,取決於前後兩人各自的速度 ——
+    這是密度圖或單張快照<b>原理上算不出來</b>的。全域 MOT 為每個人維持連續軌跡與速度,於是可以直接推算:
+    <br><span class="formula">到我面前時的窗口寬度 W* = W_now + (v_前 − v_後) × Δt_抵達</span>
+    <br>並與該道間隙<b>依後方那個人自己的速度</b>所需的寬度 <span class="formula">W_req = 3.0 + v_後 × T_穿越</span> 比較,決定採用或排除。
+  </div>
+</header>
+
+<div class="controls">
+  <button id="btnPlay" class="primary">▶ 播放</button>
+  <button id="btnReset">↺ 重置</button>
+  <div class="seg" id="speedSeg">
+    <button data-s="1">1×</button>
+    <button data-s="2" class="on">2×</button>
+    <button data-s="3">3×</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="legend">
+    <span><span class="dot" style="background:#E8623C"></span>慢行者</span>
+    <span><span class="dot" style="background:#FFC98A"></span>快行者</span>
+    <span><span class="dot" style="background:var(--gap)"></span>被鎖定間隙之兩人</span>
+    <span><span class="dot" style="background:#fff"></span>AMR</span>
+  </div>
+</div>
+
+<div class="narration" id="narration"><span class="step">STEP 0</span><span id="narText">按「播放」開始 —— 人流中每個人速度不同,注意 B 面板左下角的間隙預測表。</span></div>
+
+<div class="panelWrap">
+  <div class="panelLabel"><span class="tag tagA">A</span> 傳統:純車載,只見瞬時位置,等待完全淨空</div>
+  <div class="stateChip" id="chipA">待機</div>
+  <canvas id="cvA" width="1140" height="310"></canvas>
+</div>
+
+<div class="panelWrap">
+  <div class="panelLabel"><span class="tag tagB">B</span> 本技術:每人速度 → 預測「到我面前」之窗口寬度 → 即時層最終決策</div>
+  <div class="stateChip" id="chipB">待機</div>
+  <canvas id="cvB" width="1140" height="310"></canvas>
+</div>
+
+<div class="scoreboard">
+  <div class="head">即時記分板</div>
+  <div class="head" style="color:#FF8A5C">A|等待淨空</div>
+  <div class="head" style="color:#5CC8FF">B|預測式間隙穿越</div>
+  <div class="rowh">總耗時</div>
+  <div class="val num" id="timeA">0.0 s</div>
+  <div class="val num" id="timeB">0.0 s</div>
+  <div class="rowh">邊界等待時間</div>
+  <div class="val num" id="waitA">0.0 s</div>
+  <div class="val num" id="waitB">0.0 s</div>
+  <div class="rowh">預測性排除間隙</div>
+  <div class="val num" id="rejA">不具此能力</div>
+  <div class="val num" id="rejB">0</div>
+  <div class="rowh">即時層安全中止</div>
+  <div class="val num" id="abortA">0</div>
+  <div class="val num" id="abortB">0</div>
+</div>
+
+<div class="banner" id="banner"></div>
+
+<div class="foot">
+  說明:兩面板使用同一份人流序列(相同位置、相同個別步速),條件完全對等;人流於 t=0 已充滿整條走廊並持續流動,行人不會為機器人讓路。
+  <b>三個關鍵段落:</b>(一)一道<b>現在很寬、但後方是快行者</b>的間隙 —— 快照式判斷會一頭撞進去,B 以預測直接排除;
+  (二)一道<b>現在很窄、但正在張開</b>的間隙 —— 快照式判斷會錯過,B 預測其抵達時足寬而採用;
+  (三)一位<b>趕時間的行人於固定時刻加速快步</b>(1.44 → 2.9 m/s)—— 此事件<b>於兩個面板的同一時刻同樣發生</b>,與機器人的行為無關;
+  A 當時仍在等待,故未受影響。預測是依當下速度所做,涵蓋不到這種行為改變,因此由車載即時層以當下觀測重算「我脫離人流帶前,他會不會抵達通道」,
+  判定衝突即否決退回,再改鎖下一道完成穿越。
+  對應揭露書應用分支 C(gap-threading)之請求項 C4「依連續軌跡預測間隙之張開與閉合」與 C5「穿越前以車載即時感測確認間隙仍存且足寬」,
+  以及機制 E 三層權限:戰略層只導引、即時層有最終否決權。注意 W_req 隨<b>後方那一個人</b>的速度而變 —— 後面來的人越快,需要的窗口就越大,
+  這同樣只有逐人身分與速度才算得出來。
+</div>
+
+<script>
+(()=>{
+/* ================= 世界 ================= */
+const S=10, W=114, H=31;
+const BAND={y0:13,y1:17.5};
+const BAND_MID=(BAND.y0+BAND.y1)/2;
+const CLEAR_Y=BAND.y0-1.2;
+const CROSS_X=57;
+const STAGE={x:CROSS_X,y:19.6};
+const GOALP={x:CROSS_X,y:4.2};
+const STARTP={x:46,y:26.0};
+const V_CROSS=1.5, V_FREE=2.2;
+const T_CROSS=(STAGE.y-CLEAR_Y)/V_CROSS;    // 自等待點穿越所需時間 ≈5.2s
+const FRONT_CLR=1.5, REAR_CLR=1.5;
+const A_LEFT=13, A_RIGHT=3;
+const ABORT_MARGIN=0.8;
+const T_RUSH=29.6, V_RUSH=2.9;               // 腳本事件:趕時間者於此時刻加速(兩面板相同)
+const HORIZON=45;                            // 預測視界(秒)
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+/* ---- 人流:空間序列,個別步速 ---- */
+function buildStream(seed){
+  const rng=mulberry32(seed); const out=[]; let id=1;
+  const yy=()=>BAND.y0+0.8+rng()*(BAND.y1-BAND.y0-1.6);
+  const add=(x,v,extra)=>{out.push(Object.assign({x,y:yy(),v,id:id++},extra||{}));};
+  const dense=(a,b)=>{ let x=a; while(x>b){ add(x, 1.12+rng()*0.22); x-=1.3+rng()*2.2; } };
+  dense(100,50);
+  add(48,0.80);            // α 前緣:慢行者
+  dense(46,30);            // (α 內部無人,以下為 α 後緣)
+  add(28,1.80);            // α 後緣:快行者 → 間隙 20m,收合 1.0 m/s
+  dense(26,8);
+  add(6.0,1.85);           // β 前緣:快行者
+  add(4.8,1.44,{tRush:T_RUSH,vRush:V_RUSH});   // β 後緣 → 初始 1.2m,張開 0.41 m/s;此人稍後會趕時間加速
+  dense(3,-10);
+  add(-12,1.55);           // γ 前緣
+  add(-18,1.35);           // γ 後緣 → 張開 0.20 m/s
+  add(-30,1.30);           // δ 前緣(A 的大空檔)
+  add(-52,1.25);           // δ 後緣 → 22m
+  dense(-53.5,-95);
+  return out;
+}
+const STREAM=buildStream(20260603);
+// α 段落內部不可有人:移除 46→30 之填充(以位置過濾)
+const STREAM2=STREAM.filter(p=>!(p.x<47.5&&p.x>28.5&&p.v>0.9&&p.v<1.4));
+
+class Ped{
+  constructor(d){this.x=d.x;this.y=d.y;this.v=d.v;this.v0=d.v;this.id=d.id;this.r=0.4;
+    this.tRush=d.tRush; this.vRush=d.vRush; this.rushing=false;}
+  step(dt,simT){
+    if(this.tRush!=null&&simT>=this.tRush){
+      const k=Math.min((simT-this.tRush)/0.6,1);
+      this.v=this.v0+(this.vRush-this.v0)*k; this.rushing=true;
+    }
+    this.x+=this.v*dt;
+  }
+}
+
+/* ================= 機器人 ================= */
+class Robot{
+  constructor(mode){ this.mode=mode; this.reset(); }
+  reset(){
+    this.x=STARTP.x; this.y=STARTP.y; this.hd=-Math.PI/2; this.speed=0;
+    this.mission='approach'; this.time=0; this.waitT=0; this.aborts=0; this.rejects=0;
+    this.gap=null; this.banned=new Set(); this.rejected=new Set();
+    this.cands=[]; this.state='前往穿越點'; this.trail=[];
+  }
+  /* 核心:推算「到我面前時」之窗口寬度 */
+  evaluate(rear,front){
+    const wNow=front.x-rear.x;
+    const dtArrive=Math.max(0,(CROSS_X+FRONT_CLR-front.x)/front.v);
+    const wStar=wNow+(front.v-rear.v)*dtArrive;      // ★ 到我面前時之寬度
+    const wReq=FRONT_CLR+REAR_CLR+rear.v*T_CROSS;    // ★ 依後方者速度所需之寬度
+    const rate=front.v-rear.v;
+    return {rear,front,wNow,wStar,wReq,rate,dtArrive,ok:wStar>=wReq&&dtArrive<HORIZON};
+  }
+  scan(peds){
+    const s=[...peds].sort((a,b)=>a.x-b.x); const list=[];
+    for(let i=0;i<s.length-1;i++){
+      const rear=s[i], front=s[i+1];
+      if(rear.x>CROSS_X-1)continue;
+      if(front.x<CROSS_X-46)continue;
+      if(this.banned.has(rear.id))continue;
+      const e=this.evaluate(rear,front);
+      if(e.dtArrive>HORIZON)continue;
+      if(e.wNow<2.0&&e.rate<=0)continue;
+      list.push(e);
+    }
+    list.sort((a,b)=>a.dtArrive-b.dtArrive);
+    return list.slice(0,3);
+  }
+  valid(g,peds){
+    if(!g)return false;
+    if(!peds.includes(g.rear)||!peds.includes(g.front))return false;
+    if(g.rear.x>=CROSS_X)return false;
+    for(const p of peds) if(p!==g.rear&&p!==g.front&&p.x>g.rear.x&&p.x<g.front.x)return false;
+    return true;
+  }
+  step(dt, world){
+    if(this.mission==='done')return;
+    this.time+=dt;
+    const peds=world.peds;
+    let gx=this.x, gy=this.y, spd=V_FREE;
+
+    if(this.mission==='approach'){
+      gx=STAGE.x; gy=STAGE.y; this.state='前往穿越點';
+      if(Math.hypot(gx-this.x,gy-this.y)<0.7){this.mission='wait'; world.event('stage');}
+    }
+    else if(this.mission==='wait'){
+      this.waitT+=dt; gx=STAGE.x; gy=STAGE.y; spd=1.0;
+      if(this.mode==='wait-clear'){
+        this.state=`等待完全淨空(左 ${A_LEFT}m / 右 ${A_RIGHT}m 無人)`;
+        let clear=true;
+        for(const p of peds){ if(p.x>CROSS_X-A_LEFT&&p.x<CROSS_X+A_RIGHT){clear=false;break;} }
+        if(clear){this.mission='cross'; world.event('A-cross');}
+      }else{
+        this.cands=this.scan(peds);
+        for(const e of this.cands){
+          if(!e.ok&&!this.rejected.has(e.rear.id)&&e.wNow>6){
+            this.rejected.add(e.rear.id); this.rejects++;
+            world.event(this.rejects===1?'B-reject':'B-reject2');
+          }
+        }
+        if(!this.valid(this.gap,peds)) this.gap=null;
+        if(!this.gap){ const pick=this.cands.find(e=>e.ok); if(pick){this.gap=pick; world.event('B-lock');} }
+        if(this.gap){
+          const g=this.evaluate(this.gap.rear,this.gap.front); this.gap=g;
+          this.state=`鎖定 ID ${g.rear.id}–${g.front.id} · 到我面前 ${g.wStar.toFixed(1)}m / 需 ${g.wReq.toFixed(1)}m`;
+          const need=REAR_CLR+g.rear.v*((this.y-CLEAR_Y)/V_CROSS);
+          if(g.front.x>CROSS_X+FRONT_CLR && g.rear.x<CROSS_X-need){
+            this.mission='cross'; world.event('B-commit');
+          }
+        }else this.state='戰略層搜尋中 — 尚無預測足寬之間隙';
+      }
+    }
+    else if(this.mission==='cross'){
+      gx=GOALP.x; gy=GOALP.y;
+      const inBand=this.y<BAND.y1+0.8&&this.y>CLEAR_Y;
+      spd=this.mode==='gap'?(inBand?V_CROSS:V_FREE):1.7;
+      this.state=this.mode==='gap'?(inBand?'穿越中 · 降速擴大安全餘裕':'進入穿越'):'穿越中';
+      if(this.mode==='gap'){
+        /* 即時層:以車載觀測之當下速度,推算「我脫離前,是否有人會抵達通道」 */
+        const tExit=(this.y-CLEAR_Y)/V_CROSS;
+        let conflict=null;
+        for(const p of peds){
+          if(p.x>=CROSS_X-REAR_CLR)continue;
+          if(p.y<BAND.y0-0.6||p.y>BAND.y1+0.6)continue;
+          const tArr=(CROSS_X-REAR_CLR-p.x)/p.v;
+          if(tArr<tExit+ABORT_MARGIN){conflict=p;break;}
+        }
+        if(conflict){
+          if(this.y>BAND_MID){ this.mission='abort'; this.aborts++; this.banned.add(conflict.id); this.gap=null; world.event('B-abort'); }
+          else spd=V_FREE;               // 已過半 → 加速脫離較停止安全
+        }
+      }
+      if(this.y<=CLEAR_Y){ this.mission='toGoal'; if(this.mode==='gap')world.event('B-through'); }
+    }
+    else if(this.mission==='abort'){
+      gx=STAGE.x; gy=STAGE.y; spd=V_FREE;
+      this.state='⛔ 突發加速致間隙閉合 — 即時層否決,退回等待';
+      if(Math.hypot(gx-this.x,gy-this.y)<0.8)this.mission='wait';
+    }
+    else if(this.mission==='toGoal'){
+      gx=GOALP.x; gy=GOALP.y; spd=V_FREE; this.state='穿越完成,前往目的地';
+      if(Math.hypot(gx-this.x,gy-this.y)<0.8){this.mission='done'; this.state='✅ 已抵達';
+        world.event(this.mode==='gap'?'B-done':'A-done');}
+    }
+
+    const dx=gx-this.x, dy=gy-this.y, dd=Math.hypot(dx,dy)||1;
+    if(dd>0.12)this.hd=Math.atan2(dy/dd,dx/dd);
+    const tgt=Math.min(spd,dd*3);
+    this.speed+=(tgt-this.speed)*Math.min(dt*7,1);
+    this.x+=dx/dd*this.speed*dt; this.y+=dy/dd*this.speed*dt;
+    this.trail.push([this.x,this.y]); if(this.trail.length>160)this.trail.shift();
+  }
+}
+
+/* ================= 面板 ================= */
+function speedColor(v){
+  const t=clamp((v-0.75)/1.15,0,1);
+  const r=Math.round(232+(255-232)*t), g=Math.round(98+(201-98)*t), b=Math.round(60+(138-60)*t);
+  return `rgb(${r},${g},${b})`;
+}
+class World{
+  constructor(cv,mode){ this.cv=cv; this.ctx=cv.getContext('2d'); this.mode=mode; this.reset(); }
+  reset(){ this.simT=0; this.rushFired=false; this.peds=STREAM2.map(d=>new Ped(d)); this.robot=new Robot(this.mode); this.eventCb=null; }
+  step(dt){
+    this.simT+=dt;
+    if(!this.rushFired&&this.simT>=T_RUSH){ this.rushFired=true; this.event('rush'); }
+    for(const p of this.peds)p.step(dt,this.simT);
+    this.peds=this.peds.filter(p=>p.x<W+4);
+    this.robot.step(dt,this);
+  }
+  event(n){ if(this.eventCb)this.eventCb(n); }
+  draw(){
+    const c=this.ctx,r=this.robot;
+    c.clearRect(0,0,this.cv.width,this.cv.height);
+    if(this.mode==='gap'){
+      for(const[cx,cy]of [[24,1.6],[57,1.6],[92,1.6]]){
+        c.fillStyle='rgba(111,179,255,.05)';
+        c.beginPath(); c.moveTo(cx*S,cy*S); c.arc(cx*S,cy*S,26*S,Math.PI*0.14,Math.PI*0.86); c.closePath(); c.fill();
+        c.fillStyle='#6FB3FF'; c.fillRect(cx*S-5,cy*S-4,10,8);
+      }
+      c.fillStyle='rgba(111,179,255,.55)'; c.font='700 11px "Noto Sans TC",sans-serif';
+      c.fillText('環境固定攝影機 × 3(全域 MOT · 逐人 Global ID 與速度)',12,28);
+    }
+    // 人流帶
+    c.fillStyle='rgba(255,138,92,.05)';
+    c.fillRect(0,BAND.y0*S,W*S,(BAND.y1-BAND.y0)*S);
+    c.strokeStyle='rgba(255,138,92,.22)'; c.setLineDash([8,6]); c.lineWidth=1.2;
+    c.beginPath(); c.moveTo(0,BAND.y0*S); c.lineTo(W*S,BAND.y0*S);
+    c.moveTo(0,BAND.y1*S); c.lineTo(W*S,BAND.y1*S); c.stroke(); c.setLineDash([]);
+    c.fillStyle='rgba(255,138,92,.5)'; c.font='700 12px "Noto Sans TC",sans-serif';
+    c.fillText('人流帶 ⟶(各人步速不同)',10,(BAND.y0-0.6)*S);
+    c.fillStyle='rgba(111,179,255,.05)';
+    c.fillRect((CROSS_X-1.3)*S,2*S,2.6*S,(H-4)*S);
+    if(this.mode==='wait-clear'&&r.mission==='wait'){
+      c.strokeStyle='rgba(255,209,102,.4)'; c.setLineDash([4,4]); c.lineWidth=1.4;
+      c.strokeRect((CROSS_X-A_LEFT)*S,BAND.y0*S,(A_LEFT+A_RIGHT)*S,(BAND.y1-BAND.y0)*S); c.setLineDash([]);
+      c.fillStyle='rgba(255,209,102,.7)'; c.font='700 11px "Noto Sans TC",sans-serif';
+      c.fillText('需完全淨空之窗口',(CROSS_X-A_LEFT)*S+4,(BAND.y1+1.1)*S);
+    }
+    // 目的地
+    c.fillStyle='#7ADFA0'; c.beginPath(); c.arc(GOALP.x*S,GOALP.y*S,8,0,7); c.fill();
+    c.fillStyle='#06101F'; c.font='800 10px sans-serif'; c.textAlign='center';
+    c.fillText('G',GOALP.x*S,GOALP.y*S+3.5); c.textAlign='left';
+    // 行人 + 速度箭頭
+    for(const p of this.peds){
+      const col=speedColor(p.v);
+      c.strokeStyle=col; c.lineWidth=1.6; c.globalAlpha=.75;
+      c.beginPath(); c.moveTo(p.x*S,p.y*S); c.lineTo((p.x+p.v*2.2)*S,p.y*S); c.stroke();
+      c.beginPath(); c.moveTo((p.x+p.v*2.2)*S,p.y*S);
+      c.lineTo((p.x+p.v*2.2)*S-4,p.y*S-3); c.moveTo((p.x+p.v*2.2)*S,p.y*S);
+      c.lineTo((p.x+p.v*2.2)*S-4,p.y*S+3); c.stroke(); c.globalAlpha=1;
+      c.fillStyle=col; c.beginPath(); c.arc(p.x*S,p.y*S,p.r*S,0,7); c.fill();
+      if(p.rushing&&p.x<W-14){
+        c.strokeStyle='#FFD166'; c.lineWidth=2;
+        c.beginPath(); c.arc(p.x*S,p.y*S,8,0,7); c.stroke();
+        c.fillStyle='#FFD166'; c.font='800 10px "Noto Sans TC",sans-serif'; c.textAlign='center';
+        c.fillText('趕時間 · 加速中',p.x*S,p.y*S+18); c.textAlign='left';
+      }
+    }
+    // 鎖定間隙
+    if(this.mode==='gap'&&r.gap&&(r.mission==='wait'||r.mission==='cross')){
+      const {front,rear,wNow}=r.gap;
+      for(const p of [front,rear]){
+        c.strokeStyle='#5CC8FF'; c.lineWidth=2.5; c.setLineDash([3,3]);
+        c.beginPath(); c.arc(p.x*S,p.y*S,10,0,7); c.stroke(); c.setLineDash([]);
+        c.fillStyle='#5CC8FF'; c.font='700 10px "Noto Sans TC",sans-serif'; c.textAlign='center';
+        c.fillText(`ID ${p.id} · ${p.v.toFixed(2)} m/s`,p.x*S,p.y*S-14); c.textAlign='left';
+      }
+      const my=(front.y+rear.y)/2;
+      c.strokeStyle='rgba(92,200,255,.7)'; c.lineWidth=1.8;
+      c.beginPath(); c.moveTo(rear.x*S+10,my*S); c.lineTo(front.x*S-10,my*S); c.stroke();
+      c.fillStyle='#5CC8FF'; c.font='800 12px "Noto Sans TC",sans-serif'; c.textAlign='center';
+      c.fillText(`現在 ${wNow.toFixed(1)}m`,(front.x+rear.x)/2*S,my*S-9); c.textAlign='left';
+    }
+    // ★ 間隙預測表(B 專有)
+    if(this.mode==='gap'){
+      const x0=8, y0=214, wBox=560, hBox=86;
+      c.fillStyle='rgba(8,14,26,.86)'; c.strokeStyle='#1C2A40'; c.lineWidth=1;
+      c.fillRect(x0,y0,wBox,hBox); c.strokeRect(x0,y0,wBox,hBox);
+      c.fillStyle='#6FB3FF'; c.font='800 11px "Noto Sans TC",sans-serif';
+      c.fillText('間隙預測(戰略層) — W* = 現在寬度 + (v前 − v後) × Δt抵達',x0+10,y0+16);
+      c.font='700 10.5px ui-monospace,monospace'; c.fillStyle='#8FA0B8';
+      c.fillText('間隙 ID       現在      張/收       到我面前    需要      判定',x0+10,y0+32);
+      const rows=r.cands.slice(0,3);
+      if(!rows.length){ c.fillStyle='#8FA0B8'; c.fillText('（尚無候選）',x0+10,y0+50); }
+      rows.forEach((e,i)=>{
+        const yy=y0+50+i*16;
+        const ok=e.ok;
+        c.fillStyle=ok?'#7ADFA0':'#FF6B6B';
+        const rate=(e.rate>=0?'+':'')+e.rate.toFixed(2);
+        const tag=ok?'✓ 採用':'✗ 排除';
+        const line=`${String(e.rear.id).padStart(3)}–${String(e.front.id).padEnd(3)}  ${e.wNow.toFixed(1).padStart(5)}m  ${rate.padStart(6)}  ${e.wStar.toFixed(1).padStart(7)}m  ${e.wReq.toFixed(1).padStart(5)}m   ${tag}`;
+        c.fillText(line,x0+10,yy);
+      });
+    }else{
+      c.fillStyle='rgba(255,138,92,.55)'; c.font='700 11px "Noto Sans TC",sans-serif';
+      c.fillText('車載感測僅得瞬時位置 — 無逐人身分與速度,無從預測間隙張閉',12,232);
+    }
+    // 機器人
+    if(r.trail.length>2){
+      c.strokeStyle='rgba(232,238,247,.5)'; c.lineWidth=2.5; c.beginPath();
+      c.moveTo(r.trail[0][0]*S,r.trail[0][1]*S);
+      for(const[tx,ty]of r.trail)c.lineTo(tx*S,ty*S); c.stroke();
+    }
+    if(r.mission==='abort'){
+      c.strokeStyle='rgba(255,107,107,.9)'; c.lineWidth=3;
+      c.beginPath(); c.arc(r.x*S,r.y*S,13+Math.sin(performance.now()/110)*2,0,7); c.stroke();
+    }
+    if(r.mission==='wait'&&this.mode==='wait-clear'){
+      c.strokeStyle='rgba(255,209,102,.6)'; c.lineWidth=2;
+      c.beginPath(); c.arc(r.x*S,r.y*S,12+Math.sin(performance.now()/300)*2,0,7); c.stroke();
+    }
+    c.fillStyle=r.mission==='done'?'#7ADFA0':'#FFFFFF';
+    c.beginPath(); c.arc(r.x*S,r.y*S,8,0,7); c.fill();
+    c.strokeStyle='#0B1220'; c.lineWidth=2.5; c.beginPath();
+    c.moveTo(r.x*S,r.y*S); c.lineTo(r.x*S+Math.cos(r.hd)*8,r.y*S+Math.sin(r.hd)*8); c.stroke();
+  }
+}
+
+/* ================= 主控 ================= */
+const wA=new World(document.getElementById('cvA'),'wait-clear');
+const wB=new World(document.getElementById('cvB'),'gap');
+let playing=false,speedMult=2,last=null,stepNo=0;
+const $=id=>document.getElementById(id), banner=$('banner');
+function narrate(n,txt){ if(n<=stepNo)return; stepNo=n;
+  $('narration').querySelector('.step').textContent='STEP '+n;
+  $('narText').textContent=txt;
+}
+const onEvent=n=>{
+  if(n==='stage')     narrate(1,'兩台抵達穿越點。A 等待整個黃框淨空;B 開始逐一評估候選間隙(左下角預測表)。');
+  if(n==='B-reject')  narrate(2,'⚠ 第一道間隙現在看起來很寬 —— 但後方是快行者、前方是慢行者,正以約 1 m/s 收合。預測到我面前時已不足 → 直接排除。快照式判斷會一頭撞進去。');
+  if(n==='B-lock')    narrate(3,'B 改鎖一道「現在很窄、但正在張開」的間隙 —— 預測抵達時足寬,採用並等待對準。快照式判斷會直接忽略這一道。');
+  if(n==='rush')      narrate(4,'⚠ 一位趕時間的行人加速快步 —— 這是兩個面板於同一時刻同樣發生的世界事件,不是針對誰的安排;預測是依當下速度所做,涵蓋不到這種行為改變。');
+  if(n==='B-abort')   narrate(5,'⛔ 車載即時層以當下觀測重算「我脫離前他會不會到」,判定衝突 → 否決穿越、退回等待。預測負責選得好,即時層負責守得住(機制 E)。');
+  if(n==='B-through') narrate(6,'B 改鎖下一道間隙,即時層確認後降速穿越 —— 安全通過人流帶。');
+  if(n==='B-done')    narrate(7,'B 已抵達。A 仍在等待完全淨空 —— 它看得到人,卻不知道每個人多快,也就算不出窗口何時足夠。');
+  if(n==='A-cross')   narrate(8,'人流終於出現罕見的大空檔,A 才得以通過 —— 這一等,差距已經拉開。');
+};
+wA.eventCb=onEvent; wB.eventCb=onEvent;
+
+function updateHUD(){
+  $('timeA').textContent=wA.robot.time.toFixed(1)+' s';
+  $('timeB').textContent=wB.robot.time.toFixed(1)+' s';
+  $('waitA').textContent=wA.robot.waitT.toFixed(1)+' s';
+  $('waitB').textContent=wB.robot.waitT.toFixed(1)+' s';
+  $('rejB').textContent=wB.robot.rejects;
+  $('abortA').textContent=wA.robot.aborts; $('abortB').textContent=wB.robot.aborts;
+  $('chipA').textContent=wA.robot.state; $('chipB').textContent=wB.robot.state;
+  $('waitA').className='val num'+(wA.robot.waitT>20?' lose':'');
+  $('timeB').className='val num'+(wB.robot.mission==='done'?' win':'');
+  if(wA.robot.mission==='done'&&wB.robot.mission==='done'&&banner.style.display!=='block'){
+    const sav=(wA.robot.time-wB.robot.time)/wA.robot.time*100;
+    banner.style.display='block';
+    banner.innerHTML=`✅ 對比完成 —— B 總耗時 <span class="num">${wB.robot.time.toFixed(1)}s</span>(預測性排除 <span class="num">${wB.robot.rejects}</span> 道、即時層中止 <span class="num">${wB.robot.aborts}</span> 次)/
+      A <span class="num">${wA.robot.time.toFixed(1)}s</span>,<b>快 <span class="num">${sav.toFixed(0)}%</span></b>。
+      關鍵能力並非「看得更遠」,而是<b>知道每一個人是誰、走多快</b>,因而能算出窗口在輪到自己時會有多寬 ——
+      這正是跨鏡頭全域一致身分(F1)所提供、而密度圖與單張快照原理上無法提供的資訊。`;
+    narrate(9,'對比完成 —— 逐人身分與速度 → 預測窗口寬度 → 戰略層選擇、即時層守門。');
+    playing=false; $('btnPlay').textContent='▶ 播放';
+  }
+}
+function frame(t){
+  requestAnimationFrame(frame);
+  if(last===null)last=t;
+  const dt=Math.min((t-last)/1000,0.05); last=t;
+  if(playing)for(let k=0;k<speedMult;k++){wA.step(dt);wB.step(dt);}
+  wA.draw(); wB.draw(); updateHUD();
+}
+$('btnPlay').onclick=()=>{playing=!playing;$('btnPlay').textContent=playing?'⏸ 暫停':'▶ 播放';};
+$('btnReset').onclick=()=>{
+  wA.reset(); wB.reset(); wA.eventCb=onEvent; wB.eventCb=onEvent;
+  playing=false; banner.style.display='none'; stepNo=0;
+  $('narration').querySelector('.step').textContent='STEP 0';
+  $('narText').textContent='按「播放」開始 —— 人流中每個人速度不同,注意 B 面板左下角的間隙預測表。';
+  $('btnPlay').textContent='▶ 播放';
+  $('waitA').className='val num'; $('timeB').className='val num';
+};
+document.querySelectorAll('#speedSeg button').forEach(b=>{
+  b.onclick=()=>{speedMult=+b.dataset.s;
+    document.querySelectorAll('#speedSeg button').forEach(x=>x.classList.toggle('on',x===b));};
+});
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
