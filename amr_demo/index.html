@@ -4,529 +4,774 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230E1626'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23ffffff'/%3E%3Ccircle cx='16' cy='16' r='11' stroke='%236FB3FF' stroke-width='2.4' fill='none' stroke-dasharray='4 3'/%3E%3C/svg%3E">
-<title>Demo 05 · 人潮洩洪預測</title>
+<title>給機器人多一顆感測器:整個場域 — 全域 MOT × AMR 技術展示</title>
 <style>
   :root{
-    --bg:#0B1220; --panel:#0E1626; --panel-edge:#1C2A40;
-    --ink:#E8EEF7; --ink-dim:#8FA0B8; --accent:#6FB3FF;
-    --surge:#FF8A5C; --good:#7ADFA0; --bad:#FF6B6B; --gold:#FFD166; --gap:#5CC8FF;
+    --bg:#0A1018; --ink:#E8EEF7; --dim:#7F91AB;
+    --edge:#17222F; --card:#0E1620; --accent:#6FB3FF; --good:#7ADFA0;
+    --warn:#FFB86B; --bad:#FF6B6B; --mag:#E86BD0;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  body{
-    background:var(--bg); color:var(--ink);
-    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
-    padding:20px 16px 40px; display:flex; flex-direction:column; align-items:center;
-  }
-  .num{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-variant-numeric:tabular-nums;}
-  header{width:100%; max-width:1140px; margin-bottom:14px;}
-  .eyebrow{color:var(--accent); font-size:12px; letter-spacing:.22em; font-weight:700; margin-bottom:6px;}
-  h1{font-size:22px; font-weight:800; letter-spacing:.02em;}
-  .sub{color:var(--ink-dim); font-size:13px; margin-top:4px; line-height:1.6;}
-  .sub b{color:var(--ink); font-weight:700;}
-  .controls{
-    width:100%; max-width:1140px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;
-    background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px;
-    padding:10px 12px; margin-bottom:10px;
-  }
-  button{
-    background:#16233A; color:var(--ink); border:1px solid #2A3E5E; border-radius:8px;
-    padding:8px 16px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
-  }
-  button:hover{background:#1D2E4B;}
-  button.primary{background:var(--accent); color:#06101F; border-color:var(--accent);}
-  button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
-  .seg{display:flex; border:1px solid #2A3E5E; border-radius:8px; overflow:hidden;}
-  .seg button{border:none; border-radius:0; padding:8px 12px; background:#101B2E; font-weight:600;}
-  .seg button.on{background:var(--accent); color:#06101F; font-weight:800;}
-  .spacer{flex:1;}
-  .legend{display:flex; gap:14px; font-size:12px; color:var(--ink-dim); align-items:center; flex-wrap:wrap;}
-  .dot{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:-1px;}
-  .narration{
-    width:100%; max-width:1140px; min-height:44px; margin-bottom:10px; border-radius:10px;
-    background:#101B2E; border:1px solid var(--panel-edge); padding:10px 14px;
-    font-size:14px; font-weight:700; display:flex; align-items:center; gap:12px; line-height:1.5;
-  }
-  .narration .step{font-size:11px; color:var(--accent); letter-spacing:.15em; flex-shrink:0; font-family:ui-monospace,monospace;}
-  .panelWrap{width:100%; max-width:1140px; margin-bottom:10px; position:relative;}
-  .panelLabel{
-    position:absolute; top:10px; left:10px; z-index:2; display:flex; align-items:center; gap:8px;
-    background:rgba(8,14,26,.82); border:1px solid var(--panel-edge); border-radius:8px; padding:6px 10px;
-    font-size:13px; font-weight:700; backdrop-filter:blur(2px);
-  }
-  .tag{font-size:11px; font-weight:800; padding:2px 8px; border-radius:99px; letter-spacing:.06em;}
-  .tagA{background:#3A2A22; color:#FF8A5C;}
-  .tagB{background:#15303F; color:#5CC8FF;}
-  .stateChip{
-    position:absolute; top:10px; right:10px; z-index:2; max-width:56%;
-    background:rgba(8,14,26,.85); border:1px solid var(--panel-edge); border-radius:99px;
-    padding:6px 13px; font-size:12px; font-weight:800; backdrop-filter:blur(2px); text-align:right;
-  }
-  canvas{display:block; width:100%; height:auto; border-radius:10px; border:1px solid var(--panel-edge); background:var(--panel);}
-  .scoreboard{
-    width:100%; max-width:1140px; display:grid; grid-template-columns:200px 1fr 1fr; gap:1px;
-    background:var(--panel-edge); border:1px solid var(--panel-edge); border-radius:10px; overflow:hidden;
-    font-size:14px; margin-top:4px;
-  }
-  .scoreboard>div{background:var(--panel); padding:10px 14px;}
-  .scoreboard .head{font-size:12px; color:var(--ink-dim); font-weight:700; letter-spacing:.05em;}
-  .scoreboard .rowh{color:var(--ink-dim); font-size:13px; display:flex; align-items:center;}
-  .scoreboard .val{font-size:18px; font-weight:800;}
-  .win{color:var(--good);} .lose{color:var(--bad);}
-  .banner{
-    width:100%; max-width:1140px; margin-top:12px; border-radius:10px; padding:14px 18px;
-    background:linear-gradient(90deg,#0F2A1E,#0E1626); border:1px solid #1E4A35;
-    font-size:15px; font-weight:700; color:var(--good); display:none; line-height:1.7;
-  }
-  .foot{width:100%; max-width:1140px; color:var(--ink-dim); font-size:12px; margin-top:14px; line-height:1.7;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.7;}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+
+  /* 座標尺規:以世界座標系為結構語彙 */
+  .ruler{position:fixed;top:0;bottom:0;width:34px;z-index:5;pointer-events:none;
+    background:linear-gradient(var(--bg),var(--bg));border-right:1px solid #142030;}
+  .ruler.r{right:0;left:auto;border-right:none;border-left:1px solid #142030;}
+  .ruler.l{left:0;}
+  .ruler span{position:absolute;left:0;width:100%;text-align:center;
+    font-family:var(--mono);font-size:9px;color:#2C3D52;letter-spacing:.05em;}
+  .ruler span::before{content:"";position:absolute;top:50%;left:0;width:7px;height:1px;background:#1E2C3D;}
+  .ruler.r span::before{left:auto;right:0;}
+  @media(max-width:900px){.ruler{display:none;}}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 44px;}
+  section{padding:64px 0;border-bottom:1px solid #131E2A;}
+  section:last-of-type{border-bottom:none;}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.26em;color:var(--accent);
+    text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,#1E3049,transparent);}
+
+  h1{font-size:clamp(28px,4.6vw,50px);font-weight:800;letter-spacing:-.01em;line-height:1.24;}
+  h1 em{font-style:normal;color:var(--accent);}
+  h2{font-size:clamp(21px,2.6vw,29px);font-weight:800;letter-spacing:-.005em;margin-bottom:10px;}
+  h3{font-size:16px;font-weight:800;margin-bottom:6px;}
+  .lede{color:var(--dim);font-size:15.5px;max-width:74ch;margin-top:16px;}
+  .lede b{color:var(--ink);font-weight:700;}
+
+  /* Hero 互動 */
+  .hero{padding-top:72px;}
+  .stage{margin-top:34px;border:1px solid var(--edge);border-radius:12px;background:var(--card);overflow:hidden;}
+  .stagebar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:11px 16px;border-bottom:1px solid var(--edge);background:#0C131C;}
+  .stagebar .t{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.14em;}
+  .toggle{display:flex;border:1px solid #24384F;border-radius:999px;overflow:hidden;}
+  .toggle button{border:none;background:#0F1A26;color:var(--dim);font-family:var(--sans);
+    font-size:12.5px;font-weight:700;padding:7px 15px;cursor:pointer;}
+  .toggle button.on{background:var(--accent);color:#061019;}
+  .toggle button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
+  .readout{margin-left:auto;display:flex;gap:20px;font-family:var(--mono);font-size:12px;}
+  .readout div span{color:var(--dim);}
+  .readout div b{font-size:15px;}
+  canvas{display:block;width:100%;height:auto;}
+  .caption{padding:12px 16px;border-top:1px solid var(--edge);color:var(--dim);font-size:13px;background:#0C131C;}
+  .caption b{color:var(--ink);}
+
+  /* 感測器規格表 */
+  .spec{margin-top:26px;border:1px solid var(--edge);border-radius:12px;overflow:hidden;background:var(--card);}
+  .spec .spec-h{padding:10px 16px;border-bottom:1px solid var(--edge);
+    font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--dim);}
+  .spec .row{display:grid;grid-template-columns:1.25fr .75fr 1.8fr;
+    padding:10px 16px;border-bottom:1px solid #131E2A;font-size:13.5px;color:var(--dim);align-items:center;}
+  .spec .row:last-of-type{border-bottom:none;}
+  .spec .row b{color:var(--ink);}
+  .spec .row.vs{background:linear-gradient(90deg,rgba(111,179,255,.09),transparent);
+    border-left:3px solid var(--accent);}
+  .spec .badge2{font-family:var(--mono);font-size:10px;background:#12301F;color:var(--good);
+    padding:2px 8px;border-radius:999px;margin-left:8px;white-space:nowrap;}
+  .spec .foot{padding:9px 16px;font-size:12.5px;color:var(--dim);border-top:1px solid var(--edge);}
+  .spec .foot b{color:var(--ink);}
+  @media(max-width:700px){.spec .row{grid-template-columns:1fr;gap:2px;}}
+
+  /* 痛點 */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;}
+  @media(max-width:860px){.grid3{grid-template-columns:1fr;}}
+  .pain{border:1px solid var(--edge);border-radius:11px;padding:20px;background:var(--card);
+    border-top:2px solid var(--bad);}
+  .pain .k{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--bad);}
+  .pain p{color:var(--dim);font-size:13.5px;margin-top:6px;}
+  .pain.social{border-top-color:#B99CFF;}
+  .pain.social .k{color:#B99CFF;}
+  .pain .goto{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:11px;
+    color:var(--accent);text-decoration:none;font-weight:700;letter-spacing:.06em;}
+  .pain .goto:hover{text-decoration:underline;}
+  .rowhead{margin-top:34px;font-size:15px;font-weight:800;letter-spacing:.03em;
+    display:flex;align-items:center;gap:10px;}
+  .rowhead:first-of-type{margin-top:26px;}
+  .rowhead .k{font-family:var(--mono);font-size:10.5px;padding:3px 10px;border-radius:999px;font-weight:700;}
+  .k-task{background:#3A2A22;color:#FF8A5C;}
+  .k-soc{background:#2A2140;color:#B99CFF;}
+  .rowlede{color:var(--dim);font-size:13.5px;margin-top:8px;max-width:80ch;line-height:1.7;}
+  .rowlede b{color:var(--ink);font-weight:700;}
+
+  /* Demo 卡 */
+  .demos{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:28px;}
+  a.demo{display:block;text-decoration:none;color:inherit;background:var(--card);
+    border:1px solid var(--edge);border-radius:12px;overflow:hidden;transition:border-color .18s,transform .18s;}
+  a.demo:hover,a.demo:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none;}
+  .demo .thumb{height:104px;position:relative;background:#0B121A;border-bottom:1px solid var(--edge);}
+  .demo .body{padding:16px 18px 18px;}
+  .demo .no{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.2em;}
+  .demo p{color:var(--dim);font-size:13.5px;margin-top:7px;}
+  .demo .go{margin-top:12px;font-size:12.5px;font-weight:800;color:var(--accent);}
+  .chipRow{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px;}
+  .chip{font-family:var(--mono);font-size:10.5px;padding:2px 8px;border-radius:999px;
+    background:#132030;color:var(--dim);border:1px solid #1D2E42;}
+
+  /* 基礎說明 */
+  .f1{display:grid;grid-template-columns:1.15fr 1fr;gap:34px;align-items:start;margin-top:26px;}
+  @media(max-width:900px){.f1{grid-template-columns:1fr;}}
+  .steps{border-left:1px solid #1D2E42;padding-left:20px;}
+  .steps li{list-style:none;margin-bottom:16px;position:relative;}
+  .steps li::before{content:attr(data-n);position:absolute;left:-30px;top:2px;
+    font-family:var(--mono);font-size:10px;color:var(--accent);
+    background:var(--bg);border:1px solid #1D2E42;border-radius:999px;width:20px;height:20px;
+    display:flex;align-items:center;justify-content:center;}
+  .steps p{color:var(--dim);font-size:13.5px;}
+
+  footer{padding:34px 0 60px;color:#4A5D75;font-size:12px;}
 </style>
 </head>
 <body>
+<div class="ruler l" id="rulerL"></div>
+<div class="ruler r" id="rulerR"></div>
 
-<header>
-  <a href="index.html" style="display:inline-block;color:#6FB3FF;text-decoration:none;font-size:12.5px;font-weight:700;margin-bottom:10px;border:1px solid #1C2A40;border-radius:999px;padding:5px 14px;background:#0E1626">← 回展示首頁</a>
-  <div class="eyebrow">GLOBAL MOT × AMR NAVIGATION — DEMO 05</div>
-  <h1>人潮洩洪預測:通道現在是空的,12 秒後是一條河</h1>
-  <div class="sub">
-    車站大廳,機器人在通道邊完成裝載後須<b>橫越閘門前的主通道</b>。此刻通道空無一人 ——
-    但<b>月台上,一班剛到站的列車正把數十位旅客堆在閘門後面</b>。
-    A 的 LiDAR 只看得見七公尺:通道是空的,那就過 —— 於是在通道正中央,被開閘湧出的人浪迎面吞沒;
-    B 的環境攝影機看得見月台:人數持續累積 → 洩流醞釀 → 開閘後即時追蹤<b>波前位置與速度</b>,
-    比較「波前抵達穿越線的時間」與「自己穿越所需的時間」—— 窗口不足即 <b>NO-GO 於邊界待命</b>,波尾通過後再穿越淨空的通道。
-  </div>
-</header>
+<div class="wrap">
 
-<div class="controls">
-  <button id="btnPlay" class="primary">▶ 播放</button>
-  <button id="btnReset">↺ 重置</button>
-  <div class="seg" id="speedSeg">
-    <button data-s="1">1×</button>
-    <button data-s="2" class="on">2×</button>
-    <button data-s="3">3×</button>
-  </div>
-  <div class="spacer"></div>
-  <div class="legend">
-    <span><span class="dot" style="background:var(--surge)"></span>下車旅客(洩流)</span>
-    <span><span class="dot" style="background:#fff"></span>AMR</span>
-    <span><span class="dot" style="background:var(--good)"></span>目的地</span>
-  </div>
-</div>
+  <section class="hero">
+    <div class="eyebrow">環境固定攝影機 × 全域多目標追蹤 × 自主移動機器人</div>
+    <h1>給機器人多加一顆感測器:<br><em>整個場域</em>。</h1>
+    <p class="lede">
+      不加任何新硬體 —— 沿用場域既有的監控攝影機,以全域 MOT 融合成一顆「虛擬感測器」,
+      即時輸出<b>每個人的身分、位置與速度</b>,直送機器人。
+    </p>
 
-<div class="narration" id="narration"><span class="step">STEP 0</span><span id="narText">按「播放」開始 —— 通道現在空無一人,但月台上有事情正在發生。</span></div>
+    <div class="spec">
+      <div class="spec-h">AMR 感測器規格表</div>
+      <div class="row"><div>2D 光達</div><div class="num">~7 m</div><div>障礙點雲</div></div>
+      <div class="row"><div>深度相機</div><div class="num">~5 m</div><div>近距障礙與地面</div></div>
+      <div class="row"><div>超音波</div><div class="num">~2 m</div><div>貼身防撞</div></div>
+      <div class="row vs">
+        <div><b>虛擬全域感測器</b><span class="badge2">本技術 · 純軟體</span></div>
+        <div class="num"><b>整個場域</b></div>
+        <div><b>每人 Global ID · 位置 · 速度 · 連續軌跡</b></div>
+      </div>
+      <div class="foot">安裝方式:<b>接上場域既有監控攝影機</b> —— 0 顆新硬體。下方兩個對比,就是這顆感測器帶來的差別。</div>
+    </div>
 
-<div class="panelWrap">
-  <div class="panelLabel"><span class="tag tagA">A</span> 傳統:純車載 LiDAR — 通道看起來是空的,就過</div>
-  <div class="stateChip" id="chipA">待機</div>
-  <canvas id="cvA" width="1140" height="310"></canvas>
-</div>
+    <div class="stage">
+      <div class="stagebar">
+        <span class="t">對比一 · 看得見多遠 — 車載視角 vs 上帝視角</span>
+        <div class="toggle" id="tg1">
+          <button data-m="old">舊:車載感測</button>
+          <button data-m="new" class="on">新:上帝視角</button>
+        </div>
+        <div class="readout">
+          <div><span>可見人數 </span><b class="num" id="ro1See">0</b></div>
+          <div><span>場域覆蓋率 </span><b class="num" id="ro1Cov">0%</b></div>
+        </div>
+      </div>
+      <canvas id="heroCv1" width="1092" height="240"></canvas>
+      <div class="caption" id="cap1">
+        <b>上帝視角:</b>裝上虛擬感測器 —— 全場皆為量測範圍,14 人全部可見。
+      </div>
+    </div>
 
-<div class="panelWrap">
-  <div class="panelLabel"><span class="tag tagB">B</span> 本技術:全域 MOT 月台監看 — 波前 ETA vs 穿越時間之 GO/NO-GO</div>
-  <div class="stateChip" id="chipB">待機</div>
-  <canvas id="cvB" width="1140" height="310"></canvas>
-</div>
+    <div class="stage" style="margin-top:14px">
+      <div class="stagebar">
+        <span class="t">對比二 · 看得見「誰」 — 瞬間障礙物 vs 連續身分(全域 MOT)</span>
+        <div class="toggle" id="tg2">
+          <button data-m="old">舊:逐幀障礙物</button>
+          <button data-m="new" class="on">新:全域 ID</button>
+        </div>
+        <div class="readout">
+          <div><span>連續軌跡 </span><b class="num" id="ro2Traj">0</b></div>
+          <div><span>具身分者 </span><b class="num" id="ro2Id">0</b></div>
+        </div>
+      </div>
+      <canvas id="heroCv2" width="1092" height="240"></canvas>
+      <div class="caption" id="cap2">
+        <b>全域 ID:</b>跨鏡頭、跨盲區,同一人始終是同一人 —— 有身分、有軌跡、有速度。
+      </div>
+    </div>
+    </div>
+  </section>
 
-<div class="scoreboard">
-  <div class="head">即時記分板</div>
-  <div class="head" style="color:#FF8A5C">A|所見即所行</div>
-  <div class="head" style="color:#5CC8FF">B|洩洪預測</div>
-  <div class="rowh">人浪中暴露時間</div>
-  <div class="val num" id="expA">0.0 s</div>
-  <div class="val num" id="expB">0.0 s</div>
-  <div class="rowh">逆向近距遭遇</div>
-  <div class="val num" id="encA">0</div>
-  <div class="val num" id="encB">0</div>
-  <div class="rowh">凍結時間</div>
-  <div class="val num" id="frzA">0.0 s</div>
-  <div class="val num" id="frzB">0.0 s</div>
-  <div class="rowh">總耗時</div>
-  <div class="val num" id="timeA">0.0 s</div>
-  <div class="val num" id="timeB">0.0 s</div>
-</div>
+  <section>
+    <div class="eyebrow">問題</div>
+    <h2>人潮中的 AMR,六種典型失敗</h2>
 
-<div class="banner" id="banner"></div>
+    <div class="rowhead"><span class="k k-task">1</span>任務失效 —— 做不好事</div>
+    <p class="rowlede">不是感測器不夠好,是<b>資訊維度不足</b>:不知道視線外有誰、剛才那人是誰、每個人多快。</p>
+    <div class="grid3">
+      <div class="pain">
+        <div class="k">凍結</div>
+        <h3>機器人凍結症候群</h3>
+        <p>只見瞬時障礙,在人潮裡走走停停 —— 時間與能耗雙輸。</p>
+        <a class="goto" href="#d01">→ DEMO 01 · 04</a>
+      </div>
+      <div class="pain">
+        <div class="k">跟錯</div>
+        <h3>中斷後跟錯人</h3>
+        <p>中斷後只憑外觀重鎖 —— 遇到相似者就跟錯,毫無自覺。</p>
+        <a class="goto" href="#d02">→ DEMO 02</a>
+      </div>
+      <div class="pain">
+        <div class="k">空等</div>
+        <h3>永遠等不到淨空</h3>
+        <p>等「完全淨空」才走 —— 真實人流裡,這窗口可遇不可求。</p>
+        <a class="goto" href="#d03">→ DEMO 03 · 05</a>
+      </div>
+    </div>
 
-<div class="foot">
-  說明:兩面板旅客以相同亂數種子與時程生成,條件完全對等。時間軸:列車到站後旅客於月台累積(閘門後方),
-  隨後閘門開啟、人浪以步行速度湧入主通道向右洩流;通道在開閘前始終空無一人 —— 這正是純車載感知的認知極限:
-  <b>它看到的「空」是真的,只是即將不再為真</b>。
-  B 的預測為<b>真實計算</b>:開閘前以月台人數判定洩流醞釀(預防性 NO-GO);開閘後由全域軌跡即時取得
-  <b>波前位置與平均速度</b>,推算波前抵達穿越線之時間,與「自身穿越所需時間 + 安全餘裕」比較作 GO/NO-GO 決策
-  (與 Demo 03 之間隙預測同一套邏輯,尺度從兩人之間放大到整個人浪);波尾通過穿越線後窗口成立,方才穿越。
-  「人浪中暴露時間」為機器人身處通道帶且洩流進行中的秒數;「逆向近距遭遇」計 2.3m 內迎面旅客(每人 2 秒冷卻)。
-  結果請注意:<b>A 未必比較慢 —— 但它全程泡在人浪正中央,是河道裡的一塊石頭</b>;
-  對站方而言,洩洪時通道中央的機器人不是效率問題,是安全事件。
+    <div class="rowhead"><span class="k k-soc">2</span>社會失格 —— 不合群</div>
+    <p class="rowlede">任務完成,仍可能失格。排隊、同行、時機是<b>行為與關係</b> —— 幾何讀不懂,連續軌跡才讀得懂。</p>
+    <div class="grid3">
+      <div class="pain social">
+        <div class="k">插隊</div>
+        <h3>看不懂隊伍</h3>
+        <p>隊伍在它眼中只是幾個靜止障礙、中間有縫 —— 當眾穿越,毫無自覺。</p>
+        <a class="goto" href="#d06">→ DEMO 06</a>
+      </div>
+      <div class="pain social">
+        <div class="k">拆散</div>
+        <h3>看不懂同行</h3>
+        <p>情侶與導覽團 =「兩個障礙物,中間有縫」—— 一頭鑽進去,把人隔開。</p>
+        <a class="goto" href="#d07">→ DEMO 07</a>
+      </div>
+      <div class="pain social">
+        <div class="k">打擾</div>
+        <h3>不懂挑時機</h3>
+        <p>顧客正在挑選,它按排程照樣開進來 —— 每次近身都逼人讓路。</p>
+        <a class="goto" href="#d08">→ DEMO 08</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">運作原理</div>
+    <h2>這顆虛擬感測器,怎麼做出來的</h2>
+    <div class="f1">
+      <div>
+        <p class="lede" style="margin-top:0">
+          原料是場域既有攝影機,製程是全域 MOT。輸出一份資料:每個人的
+          <b>Global ID + 連續世界座標軌跡</b> —— 下方八個展示,全部由這一份資料驅動。
+          身分連續,速度才準;速度準,流向、間隙、隊伍、群體才讀得懂。
+        </p>
+        <div class="chipRow" style="margin-top:18px">
+          <span class="chip">單鏡頭 MOT</span>
+          <span class="chip">重疊區幾何接力</span>
+          <span class="chip">盲區時空拓撲 + Re-ID</span>
+          <span class="chip">世界座標投影</span>
+          <span class="chip">線上標定校正</span>
+        </div>
+      </div>
+      <ul class="steps">
+        <li data-n="1"><h3>逐鏡頭偵測與追蹤</h3><p>各攝影機獨立執行多目標追蹤,取得短期軌跡片段。</p></li>
+        <li data-n="2"><h3>重疊區幾何接力</h3><p>投影至共用世界座標,以位置連續性判定為同一人。</p></li>
+        <li data-n="3"><h3>盲區身分接續</h3><p>以可行走拓撲與合理移動時間縮小候選,再以外觀特徵比對完成指派。</p></li>
+        <li data-n="4"><h3>連續全域軌跡</h3><p>輸出跨越盲區的長時連續軌跡與逐人速度,即時下發給機器人。</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">互動展示</div>
+    <h2>八個 A/B 對比 —— 五個解決任務失效,三個解決社會失格</h2>
+    <p class="lede">相同人流、相同亂數種子。上為傳統,下為本技術,記分板即時見差距。</p>
+
+    <div class="rowhead"><span class="k k-task">1</span>任務效能 —— 把事做好</div>
+    <div class="demos">
+      <a class="demo" id="d01" href="amr_flowfield_demo.html">
+        <div class="thumb"><canvas id="th1" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 01</div>
+          <h3>人流流向場路徑規劃</h3>
+          <p>密度相同、方向不同。LiDAR 撞進逆流;本技術貼著順流帶滑過去。</p>
+          <div class="chipRow"><span class="chip">解凍結</span><span class="chip">應用分支 A</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+      <a class="demo" id="d02" href="amr_relay_follow_demo.html">
+        <div class="thumb"><canvas id="th2" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 02</div>
+          <h3>接力跟隨與防跟錯人</h3>
+          <p>暫離任務再回頭,眼前是個一模一樣的人 —— 誰認得出原本那位?</p>
+          <div class="chipRow"><span class="chip">解跟錯</span><span class="chip">Re-ID 特徵錨定</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+      <a class="demo" id="d03" href="amr_gap_threading_demo.html">
+        <div class="thumb"><canvas id="th3" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 03</div>
+          <h3>人際間隙穿越與預測</h3>
+          <p>間隙會張也會收。算出「輪到我時有多寬」,車載即時層保留否決權。</p>
+          <div class="chipRow"><span class="chip">解空等</span><span class="chip">三層權限</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+      <a class="demo" id="d04" href="amr_grid_routing_demo.html">
+        <div class="thumb"><canvas id="th4" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 04</div>
+          <h3>棋盤路網人流繞路</h3>
+          <p>最短的路擠滿人。多走兩成的後巷,反而先到。</p>
+          <div class="chipRow"><span class="chip">解凍結</span><span class="chip">最短≠最快</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+      <a class="demo" id="d05" href="amr_surge_demo.html">
+        <div class="thumb"><canvas id="th8" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 05</div>
+          <h3>人潮洩洪預測</h3>
+          <p>通道現在是空的,12 秒後是一條河。波前 ETA 決定 GO / NO-GO。</p>
+          <div class="chipRow"><span class="chip">解空等</span><span class="chip">車站場景</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="rowhead"><span class="k k-soc">2</span>社會語意 —— 把人當人</div>
+    <div class="demos">
+      <a class="demo" id="d06" href="amr_queue_demo.html">
+        <div class="thumb"><canvas id="th6" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 06</div>
+          <h3>排隊識別:不插隊的機器人</h3>
+          <p>LiDAR 看見「有縫」,連續軌跡看見「這是一條隊」。</p>
+          <div class="chipRow"><span class="chip">解插隊</span><span class="chip">穿越隊伍 = 0</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+      <a class="demo" id="d07" href="amr_group_demo.html">
+        <div class="thumb"><canvas id="th7" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 07</div>
+          <h3>群體識別:哪些縫不該鑽</h3>
+          <p>同伴的縫繞行,陌生人的縫照穿 —— 是分辨,不是保守。</p>
+          <div class="chipRow"><span class="chip">解拆散</span><span class="chip">拆散群體 = 0</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+      <a class="demo" id="d08" href="amr_store_inventory_demo.html">
+        <div class="thumb"><canvas id="th5" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 08</div>
+          <h3>超商點貨錯峰作業</h3>
+          <p>待命等走道淨空才出動點貨 —— 顧客幾乎感覺不到它。</p>
+          <div class="chipRow"><span class="chip">解打擾</span><span class="chip">干擾顧客次數 ↓</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+    </div>
+
+    <p class="lede" style="font-size:13px;margin-top:18px">
+      八個展示皆為單一 HTML 檔,離線可播。Demo 01 與 04 為同一條代價函數的<b>方向項</b>與<b>密度項</b>,部署時同時作用。
+    </p>
+  </section>
+
+  <footer>
+    技術展示原型 · 內部與投資簡報用途。模擬參數與對照組設定於各展示頁頁尾完整揭露。
+  </footer>
 </div>
 
 <script>
 (()=>{
-/* ================= 世界 ================= */
-const S=10, W=114, H=31;
-const GATE_X=8;                            // 閘門牆
-const BAND={y0:10,y1:22};                  // 主通道帶
-const CROSS_X=20;                          // 穿越線
-const STAGE={x:CROSS_X,y:25.6};
-const GOALP={x:CROSS_X,y:4.2};
-const LOAD_T=9;                            // 裝載秒數
-const T_FILL0=2, T_OPEN=9;                 // 月台累積開始 / 閘門開啟
-const N_SURGE=54;
-const V_CROSS=1.5, V_FREE=2.1;
-const clamp=(v,a,b)=>v<a?a:v>b?b:v;
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-
-/* ---- 旅客時程(兩面板共用) ---- */
-function buildSurge(seed){
-  const rng=mulberry32(seed); const out=[];
-  for(let i=0;i<N_SURGE;i++){
-    out.push({
-      tSpawn:T_FILL0+rng()*6.5,
-      px:2+rng()*4, py:BAND.y0+0.8+rng()*(BAND.y1-BAND.y0-1.6),
-      gateY:[12.2,16,19.8][i%3]+(rng()*1.2-0.6),
-      v:1.15+rng()*0.4,
-      dely:rng()*1.6                        // 開閘後起步延遲(魚貫而出)
-    });
+/* ---------- 邊緣座標尺規 ---------- */
+function buildRuler(el,side){
+  const h=document.documentElement.scrollHeight;
+  let s='';
+  for(let y=120;y<window.innerHeight;y+=90){
+    s+=`<span style="top:${y}px">${String(Math.round(y/10)).padStart(3,'0')}</span>`;
   }
-  return out;
+  el.innerHTML=s;
 }
-const SURGE=buildSurge(20260603);
+buildRuler(document.getElementById('rulerL'));
+buildRuler(document.getElementById('rulerR'));
+addEventListener('resize',()=>{
+  buildRuler(document.getElementById('rulerL'));
+  buildRuler(document.getElementById('rulerR'));
+});
 
-class Pax{
-  constructor(d){ Object.assign(this,d); this.state='pre'; this.x=this.px; this.y=this.py;
-    this.vx=0; this.vy=0; this.r=0.38; this.active=false; }
-  step(dt,simT,robot){
-    if(simT>=this.tSpawn&&this.state==='pre'){this.state='wait'; this.active=true;}
-    if(!this.active)return;
-    if(this.state==='wait'){
-      // 月台上小幅騷動
-      this.x=this.px+Math.sin(simT*2+this.py)*0.15;
-      if(simT>=T_OPEN+this.dely)this.state='exit';
-    }else if(this.state==='exit'){
-      // 走向閘門開口
-      const dx=GATE_X+0.8-this.x, dy=this.gateY-this.y, dd=Math.hypot(dx,dy)||1;
-      this.vx=dx/dd*1.1; this.vy=dy/dd*1.1;
-      this.x+=this.vx*dt; this.y+=this.vy*dt;
-      if(this.x>GATE_X+0.6)this.state='flow';
-    }else{
-      // 通道內向右洩流
-      let vy=(this.gateY-this.y)*0.6;
-      if(robot){
-        const ox=this.x-robot.x, oy=this.y-robot.y, d2=ox*ox+oy*oy;
-        if(d2<3.6&&d2>1e-6){const d=Math.sqrt(d2); vy+=oy/d*1.2;}
-      }
-      this.vx=this.v; this.vy=vy;
-      this.x+=this.vx*dt; this.y+=clamp(this.vy,-1,1)*dt;
-      this.y=clamp(this.y,BAND.y0+0.5,BAND.y1-0.5);
-      if(this.x>W+2)this.active=false;
-    }
-  }
-}
-
-/* ================= 機器人 ================= */
-class Robot{
-  constructor(mode){ this.mode=mode; this.reset(); }   // 'lidar' | 'global'
-  reset(){
-    this.x=STAGE.x; this.y=STAGE.y; this.hd=-Math.PI/2; this.speed=0;
-    this.mission='load'; this.loadT=LOAD_T;
-    this.time=0; this.expo=0; this.enc=0; this.frz=0;
-    this.encCd=new Map();
-    this.done=false; this.state='裝載中'; this.trail=[];
-    this.goShown=false;
-  }
-  crossTime(){ return (this.y-(BAND.y0-1.2))/V_CROSS; }
-  /* B:波前/波尾與窗口計算(真實) */
-  surgeInfo(pax){
-    const flowing=pax.filter(p=>p.active&&(p.state==='flow'||p.state==='exit'));
-    const waiting=pax.filter(p=>p.active&&p.state==='wait').length;
-    if(!flowing.length)return {waiting, front:null};
-    let frontX=-1e9, meanV=0, minX=1e9;
-    for(const p of flowing){ if(p.x>frontX)frontX=p.x; if(p.x<minX)minX=p.x; meanV+=p.v; }
-    meanV/=flowing.length;
-    return {waiting, front:frontX, tail:minX, meanV, count:flowing.length};
-  }
-  windowOK(pax){
-    // 我穿越期間,是否有人會抵達穿越線?(依每人位置與速度真實推算)
-    const need=this.crossTime()+1.6;
-    for(const p of pax){
-      if(!p.active)continue;
-      if(p.state==='wait')return false;                       // 月台仍有人待洩流
-      const xRef=p.state==='flow'?p.x:GATE_X;
-      if(xRef>CROSS_X+1.8)continue;                           // 已通過
-      const tArr=(CROSS_X-1.8-xRef)/Math.max(p.v,0.8);
-      if(tArr<need)return false;
-    }
-    return true;
-  }
-  step(dt, world){
-    if(this.done)return;
-    this.time+=dt;
-    const pax=world.pax;
-    let gx=this.x, gy=this.y, spd=V_FREE;
-
-    if(this.mission==='load'){
-      this.loadT-=dt;
-      this.state=`裝載中 ${Math.max(this.loadT,0).toFixed(1)}s`;
-      if(this.loadT<=0)this.mission=this.mode==='global'?'decide':'cross';
-      if(this.mode==='global'&&this.loadT<4){
-        const si=this.surgeInfo(pax);
-        if(si.waiting>=12)this.state=`裝載中 — ⚠ 月台已聚集 ${si.waiting} 人,洩流醞釀`;
-      }
-    }
-    else if(this.mission==='decide'){
-      gx=STAGE.x; gy=STAGE.y; spd=1.0;
-      const ok=this.windowOK(pax);
-      const si=this.surgeInfo(pax);
-      if(ok){
-        this.mission='cross'; this.state='✓ GO — 窗口足夠,開始穿越';
-        if(!this.goShown){this.goShown=true; world.event('B-go');}
-      }else{
-        if(si.front!==null){
-          const eta=Math.max((CROSS_X-si.front)/si.meanV,0);
-          this.state = si.front<CROSS_X-1
-            ? `✗ NO-GO — 波前 ${eta.toFixed(1)}s 後抵達,穿越需 ${(this.crossTime()+1.6).toFixed(1)}s`
-            : `✗ NO-GO — 人浪通過中(尚餘 ${si.count} 人)`;
-          world.event('B-nogo');
-        }else{
-          this.state=`✗ NO-GO — 月台 ${si.waiting} 人待洩流,預防性待命`;
-          world.event('B-nogo');
-        }
-      }
-    }
-    else if(this.mission==='cross'){
-      gx=GOALP.x; gy=GOALP.y;
-      const inBand=this.y<BAND.y1+0.8&&this.y>BAND.y0-0.8;
-      spd=inBand?V_CROSS:V_FREE;
-      this.state=inBand?'穿越主通道中':'前往目的地';
-      if(Math.hypot(gx-this.x,gy-this.y)<1.0){this.done=true; this.state='✅ 已抵達';
-        world.event(this.mode==='global'?'B-done':'A-done');}
-    }
-
-    /* 移動與近距安全 */
-    const dx=gx-this.x, dy=gy-this.y, dd=Math.hypot(dx,dy)||1;
-    if(dd>0.12)this.hd=Math.atan2(dy/dd,dx/dd);
-    let cap=Math.min(spd,dd*3);
-    let blocked=false;
-    for(const p of pax){
-      if(!p.active||p.state==='wait'||p.state==='pre')continue;
-      const px=p.x-this.x,py=p.y-this.y,d=Math.hypot(px,py);
-      if(d<1.4){cap=0;blocked=true;}
-      else if(d<2.4&&(px*(dx/dd)+py*(dy/dd))/d>0.2)cap=Math.min(cap,0.5);
-      // 逆向近距遭遇
-      if(d<2.3){
-        const last=this.encCd.get(p)??-9;
-        if(this.time-last>2){this.enc++;this.encCd.set(p,this.time);}
-      }
-    }
-    this.speed+=(cap-this.speed)*Math.min(dt*6,1);
-    if(this.mission!=='load'&&this.mission!=='decide'){
-      this.x+=dx/dd*this.speed*dt; this.y+=dy/dd*this.speed*dt;
-    }
-    /* 指標 */
-    const inBand=this.y<BAND.y1+0.8&&this.y>BAND.y0-0.8;
-    const surging=pax.some(p=>p.active&&p.state!=='pre');
-    if(inBand&&surging)this.expo+=dt;
-    if(blocked&&this.mission==='cross')this.frz+=dt;
-    this.trail.push([this.x,this.y]); if(this.trail.length>240)this.trail.shift();
-  }
-}
-
-/* ================= 面板 ================= */
-class World{
-  constructor(cv,mode){ this.cv=cv; this.ctx=cv.getContext('2d'); this.mode=mode; this.reset(); }
-  reset(){ this.simT=0; this.pax=SURGE.map(d=>new Pax(d)); this.robot=new Robot(this.mode);
-    this.gateFired=false; this.eventCb=null; }
+/* ---------- Hero 對比一:車載視角 vs 上帝視角 ---------- */
+(()=>{
+const cv=document.getElementById('heroCv1'), c=cv.getContext('2d');
+const Wc=cv.width, Hc=cv.height;
+const LIDAR_R=82;
+let mode='new';
+let stamp=0;                     // 「已啟用」印章動畫倒數
+function rnd(a,b){return a+Math.random()*(b-a);}
+// 巡邏中的機器人
+const bot={x:200,y:150,dir:1,spd:46};
+// 漫遊行人
+class Walker{
+  constructor(){ this.x=rnd(20,Wc-20); this.y=rnd(40,Hc-24); this.pick(); this.sp=rnd(18,42); }
+  pick(){ this.wx=rnd(24,Wc-24); this.wy=rnd(40,Hc-22); }
   step(dt){
-    this.simT+=dt;
-    if(!this.gateFired&&this.simT>=T_OPEN){this.gateFired=true; this.event('gate');}
-    for(const p of this.pax)p.step(dt,this.simT,this.robot);
-    this.robot.step(dt,this);
-  }
-  event(n){ if(this.eventCb)this.eventCb(n); }
-  draw(){
-    const c=this.ctx,r=this.robot;
-    c.clearRect(0,0,this.cv.width,this.cv.height);
-    if(this.mode==='global'){
-      for(const[cx,cy]of [[6,1.4],[40,1.4],[86,1.4]]){
-        c.fillStyle='rgba(111,179,255,.045)';
-        c.beginPath(); c.moveTo(cx*S,cy*S); c.arc(cx*S,cy*S,27*S,Math.PI*0.1,Math.PI*0.9); c.closePath(); c.fill();
-        c.fillStyle='#6FB3FF'; c.fillRect(cx*S-5,cy*S-3,10,8);
-      }
-      c.fillStyle='rgba(111,179,255,.55)'; c.font='700 11px "Noto Sans TC",sans-serif';
-      c.fillText('環境固定攝影機(含月台側 — 全域 MOT)',12,26);
-    }
-    // 牆、月台、閘門
-    c.fillStyle='#1B2A3C'; c.fillRect(0,0,W*S,2*S); c.fillRect(0,29*S,W*S,2*S);
-    c.fillStyle='rgba(255,138,92,.05)'; c.fillRect(0,2*S,GATE_X*S,27*S);
-    c.fillStyle='rgba(255,138,92,.6)'; c.font='700 11px "Noto Sans TC",sans-serif';
-    c.save(); c.translate(2.2*S,15.5*S); c.rotate(-Math.PI/2); c.textAlign='center';
-    c.fillText('月 台(列車到站)',0,0); c.restore(); c.textAlign='left';
-    // 閘門牆與開口
-    const open=this.simT>=T_OPEN;
-    c.fillStyle='#22334D';
-    const gaps=[[11,13.4],[14.8,17.2],[18.6,21]];
-    let prev=2;
-    for(const[g0,g1]of gaps){ c.fillRect(GATE_X*S,prev*S,1.4*S,(g0-prev)*S); prev=g1; }
-    c.fillRect(GATE_X*S,prev*S,1.4*S,(29-prev)*S);
-    if(!open){ c.fillStyle='rgba(255,107,107,.55)';
-      for(const[g0,g1]of gaps)c.fillRect(GATE_X*S,g0*S,1.4*S,(g1-g0)*S); }
-    c.fillStyle=open?'rgba(122,223,160,.85)':'rgba(255,107,107,.85)';
-    c.font='700 10.5px "Noto Sans TC",sans-serif';
-    c.fillText(open?'閘門開啟':'閘門關閉',(GATE_X-0.6)*S,(H-1.6)*S+12);
-    // 主通道帶
-    c.fillStyle='rgba(255,138,92,.04)';
-    c.fillRect((GATE_X+1.4)*S,BAND.y0*S,(W-GATE_X-1.4)*S,(BAND.y1-BAND.y0)*S);
-    c.strokeStyle='rgba(255,138,92,.22)'; c.setLineDash([8,6]); c.lineWidth=1.2;
-    c.beginPath(); c.moveTo((GATE_X+1.4)*S,BAND.y0*S); c.lineTo(W*S,BAND.y0*S);
-    c.moveTo((GATE_X+1.4)*S,BAND.y1*S); c.lineTo(W*S,BAND.y1*S); c.stroke(); c.setLineDash([]);
-    c.fillStyle='rgba(255,138,92,.5)'; c.font='700 12px "Noto Sans TC",sans-serif';
-    c.fillText('主通道(洩流方向 ⟶)',430,(BAND.y0-0.6)*S);
-    // 穿越走廊與目的地
-    c.fillStyle='rgba(111,179,255,.05)';
-    c.fillRect((CROSS_X-1.3)*S,2*S,2.6*S,(H-4)*S);
-    c.fillStyle='#7ADFA0'; c.beginPath(); c.arc(GOALP.x*S,GOALP.y*S,8,0,7); c.fill();
-    c.fillStyle='#06101F'; c.font='800 10px sans-serif'; c.textAlign='center';
-    c.fillText('G',GOALP.x*S,GOALP.y*S+3.5); c.textAlign='left';
-    // 旅客
-    for(const p of this.pax){
-      if(!p.active)continue;
-      const seen=this.mode==='global'||Math.hypot(p.x-r.x,p.y-r.y)<15;
-      c.fillStyle=`rgba(255,138,92,${p.state==='wait'?(seen?0.8:0.15):(seen?0.95:0.28)})`;
-      c.beginPath(); c.arc(p.x*S,p.y*S,p.r*S,0,7); c.fill();
-    }
-    // B:月台計數與波前標示
-    if(this.mode==='global'){
-      const si=r.surgeInfo(this.pax);
-      c.fillStyle='rgba(8,14,26,.85)'; c.strokeStyle='#1C2A40';
-      c.fillRect(10,214,300,58); c.strokeRect(10,214,300,58);
-      c.fillStyle='#6FB3FF'; c.font='800 11px "Noto Sans TC",sans-serif';
-      c.fillText('月台監看(戰略層)',20,232);
-      c.font='700 12px ui-monospace,monospace';
-      c.fillStyle=si.waiting>0?'#FF8A5C':'#8FA0B8';
-      c.fillText(`月台聚集:${si.waiting} 人`,20,250);
-      if(si.front!==null){
-        const eta=Math.max((CROSS_X-si.front)/si.meanV,0);
-        c.fillStyle=si.front<CROSS_X?'#FF6B6B':'#7ADFA0';
-        c.fillText(si.front<CROSS_X? `波前抵達穿越線:~${eta.toFixed(1)}s`:`波前已過穿越線(餘 ${si.count} 人)`,20,266);
-        // 波前線
-        c.strokeStyle='rgba(255,107,107,.7)'; c.setLineDash([4,4]); c.lineWidth=2;
-        c.beginPath(); c.moveTo(si.front*S,BAND.y0*S); c.lineTo(si.front*S,BAND.y1*S); c.stroke();
-        c.setLineDash([]);
-        c.fillStyle='#FF6B6B'; c.font='800 10.5px "Noto Sans TC",sans-serif';
-        c.fillText('波前',si.front*S+5,(BAND.y0+1)*S);
-      }else{
-        c.fillStyle='#8FA0B8'; c.fillText('通道:無洩流',20,266);
-      }
-    }else{
-      c.fillStyle='rgba(255,209,102,.28)';
-      c.strokeStyle='rgba(255,209,102,.35)'; c.setLineDash([5,6]); c.lineWidth=1.4;
-      c.beginPath(); c.arc(r.x*S,r.y*S,7*S,0,7); c.stroke(); c.setLineDash([]);
-      c.fillStyle='rgba(255,138,92,.5)'; c.font='700 11px "Noto Sans TC",sans-serif';
-      c.fillText('LiDAR 視距 7m — 月台上發生什麼,一無所知',12,232);
-    }
-    // 機器人
-    if(r.trail.length>2){
-      c.strokeStyle='rgba(232,238,247,.5)'; c.lineWidth=2.5; c.beginPath();
-      c.moveTo(r.trail[0][0]*S,r.trail[0][1]*S);
-      for(const[tx,ty]of r.trail)c.lineTo(tx*S,ty*S); c.stroke();
-    }
-    if(r.mission==='load'){
-      const frac=1-Math.max(r.loadT,0)/LOAD_T;
-      c.strokeStyle='rgba(255,209,102,.25)'; c.lineWidth=4;
-      c.beginPath(); c.arc(r.x*S,r.y*S,15,0,7); c.stroke();
-      c.strokeStyle='#FFD166'; c.beginPath();
-      c.arc(r.x*S,r.y*S,15,-Math.PI/2,-Math.PI/2+frac*Math.PI*2); c.stroke();
-    }
-    if(r.mission==='decide'){
-      c.strokeStyle='rgba(92,200,255,.6)'; c.lineWidth=2;
-      c.beginPath(); c.arc(r.x*S,r.y*S,12+Math.sin(performance.now()/300)*2,0,7); c.stroke();
-    }
-    const drowned=r.mission==='cross'&&r.speed<0.1&&this.pax.some(p=>p.active&&p.state==='flow'&&Math.hypot(p.x-r.x,p.y-r.y)<3);
-    if(drowned){
-      c.strokeStyle='rgba(255,107,107,.9)'; c.lineWidth=3;
-      c.beginPath(); c.arc(r.x*S,r.y*S,13+Math.sin(performance.now()/110)*2,0,7); c.stroke();
-      c.fillStyle='#FF6B6B'; c.font='900 14px "Noto Sans TC",sans-serif';
-      c.fillText('⛔ 被人浪吞沒',r.x*S+14,r.y*S-10);
-    }
-    c.fillStyle=r.done?'#7ADFA0':'#FFFFFF';
-    c.beginPath(); c.arc(r.x*S,r.y*S,8,0,7); c.fill();
-    c.strokeStyle='#0B1220'; c.lineWidth=2.5; c.beginPath();
-    c.moveTo(r.x*S,r.y*S); c.lineTo(r.x*S+Math.cos(r.hd)*8,r.y*S+Math.sin(r.hd)*8); c.stroke();
+    const dx=this.wx-this.x, dy=this.wy-this.y, dd=Math.hypot(dx,dy)||1;
+    if(dd<8)this.pick();
+    this.x+=dx/dd*this.sp*dt; this.y+=dy/dd*this.sp*dt;
   }
 }
-
-/* ================= 主控 ================= */
-const wA=new World(document.getElementById('cvA'),'lidar');
-const wB=new World(document.getElementById('cvB'),'global');
-let playing=false,speedMult=2,last=null,stepNo=0;
-const $=id=>document.getElementById(id), banner=$('banner');
-function narrate(n,txt){ if(n<=stepNo)return; stepNo=n;
-  $('narration').querySelector('.step').textContent='STEP '+n;
-  $('narText').textContent=txt;
-}
-let nogoOnce=false;
-const onEvent=n=>{
-  if(n==='gate')  narrate(2,'閘門開啟 —— 數十位旅客湧入主通道向右洩流。A 剛好走進通道,而它 12 秒前根本無從知道這裡會變成一條河。');
-  if(n==='B-nogo'&&!nogoOnce){nogoOnce=true;
-    narrate(1,'B 的攝影機看見月台:人數持續累積 → 洩流醞釀。裝載一完成即進入 GO/NO-GO 判定:波前抵達時間 vs 自身穿越時間 — 窗口不足,於邊界待命。');}
-  if(n==='B-go')  narrate(4,'波尾通過穿越線,B 逐人推算「我穿越期間無人會抵達」→ GO,穿越此刻真正淨空的通道。');
-  if(n==='B-done')narrate(5,'B 抵達 — 全程未與任何一位旅客近身。');
-};
-wA.eventCb=onEvent; wB.eventCb=onEvent;
-
-let n3=false;
-function updateHUD(){
-  if(!n3&&wA.robot.frz>2){n3=true;
-    narrate(3,'A 在通道正中央被人浪吞沒 — 凍結、被繞行、成為河道裡的一塊石頭。它的每一秒暴露都是與旅客的碰撞風險。');}
-  $('expA').textContent=wA.robot.expo.toFixed(1)+' s';
-  $('expB').textContent=wB.robot.expo.toFixed(1)+' s';
-  $('encA').textContent=wA.robot.enc; $('encB').textContent=wB.robot.enc;
-  $('frzA').textContent=wA.robot.frz.toFixed(1)+' s';
-  $('frzB').textContent=wB.robot.frz.toFixed(1)+' s';
-  $('timeA').textContent=wA.robot.time.toFixed(1)+' s';
-  $('timeB').textContent=wB.robot.time.toFixed(1)+' s';
-  $('chipA').textContent=wA.robot.state; $('chipB').textContent=wB.robot.state;
-  $('expA').className='val num'+(wA.robot.expo>5?' lose':'');
-  $('expB').className='val num'+(wB.robot.done&&wB.robot.expo<1?' win':'');
-  $('encA').className='val num'+(wA.robot.enc>5?' lose':'');
-  $('encB').className='val num'+(wB.robot.done&&wB.robot.enc===0?' win':'');
-  if(wA.robot.done&&wB.robot.done&&banner.style.display!=='block'){
-    banner.style.display='block';
-    banner.innerHTML=`✅ 對比完成 —— <b>B(洩洪預測)</b>:人浪中暴露 <span class="num">${wB.robot.expo.toFixed(1)}s</span>、
-      近距遭遇 <span class="num">${wB.robot.enc}</span> 次、凍結 <span class="num">${wB.robot.frz.toFixed(1)}s</span>、用時 <span class="num">${wB.robot.time.toFixed(1)}s</span>;
-      <b>A(所見即所行)</b>:暴露 <span class="num">${wA.robot.expo.toFixed(1)}s</span>、近距遭遇 <span class="num">${wA.robot.enc}</span> 次、
-      凍結 <span class="num">${wA.robot.frz.toFixed(1)}s</span>、用時 <span class="num">${wA.robot.time.toFixed(1)}s</span>。
-      時間或許相去不遠 —— 但 A 是數十位旅客從身邊擠過去的那塊石頭,每一次近身都是碰撞風險與通行阻礙;
-      <b>對站方而言,洩洪時通道中央的機器人不是效率問題,是安全事件。而避開它,只需要看得見月台。</b>`;
-    narrate(6,'對比完成 —— 車載感知回答「現在」,全域感知回答「即將」;人潮洩洪是「即將」最貴的一種。');
-    playing=false; $('btnPlay').textContent='▶ 播放';
+const walkers=[]; for(let i=0;i<14;i++)walkers.push(new Walker());
+const covOld=Math.min(Math.PI*LIDAR_R*LIDAR_R/(Wc*(Hc-40))*100,100);
+function draw(){
+  c.clearRect(0,0,Wc,Hc);
+  // 場域邊界
+  c.strokeStyle='rgba(111,179,255,.12)'; c.strokeRect(6,30,Wc-12,Hc-40);
+  if(mode==='new'){
+    // 三支環境攝影機 + 覆蓋
+    const cams=[[180,36],[546,36],[912,36]];
+    for(const[cx,cy]of cams){
+      c.fillStyle='rgba(111,179,255,.05)';
+      c.beginPath(); c.moveTo(cx,cy); c.arc(cx,cy,225,Math.PI*0.12,Math.PI*0.88); c.closePath(); c.fill();
+      c.fillStyle='#6FB3FF'; c.fillRect(cx-6,cy-8,12,9);
+    }
+    c.fillStyle='rgba(111,179,255,.55)'; c.font='600 10px ui-monospace,monospace';
+    c.fillText('環境固定攝影機 × 3 — 全場覆蓋',14,24);
   }
+  // 行人
+  let seen=0;
+  for(const w of walkers){
+    const vis=mode==='new'||Math.hypot(w.x-bot.x,w.y-bot.y)<=LIDAR_R;
+    if(vis)seen++;
+    if(mode==='new'){
+      c.fillStyle='#6FB3FF';
+      c.beginPath(); c.arc(w.x,w.y,5,0,7); c.fill();
+    }else if(vis){
+      c.fillStyle='#FFD166';
+      c.beginPath(); c.arc(w.x,w.y,5,0,7); c.fill();
+    }
+  }
+  // 舊:濃霧(視距外一無所知)
+  if(mode==='old'){
+    c.save();
+    c.fillStyle='rgba(4,8,15,.86)';
+    c.beginPath();
+    c.rect(0,0,Wc,Hc);
+    c.arc(bot.x,bot.y,LIDAR_R,0,7,true);
+    c.fill('evenodd');
+    c.restore();
+    c.strokeStyle='rgba(255,209,102,.6)'; c.setLineDash([5,5]); c.lineWidth=1.5;
+    c.beginPath(); c.arc(bot.x,bot.y,LIDAR_R,0,7); c.stroke(); c.setLineDash([]);
+    c.fillStyle='rgba(255,209,102,.7)'; c.font='600 10px ui-monospace,monospace';
+    c.fillText('車載感測範圍',bot.x-34,bot.y-LIDAR_R-8);
+    c.fillStyle='rgba(143,160,184,.5)'; c.font='600 11px "Noto Sans TC",sans-serif';
+    c.fillText('視距之外 — 一無所知',14,24);
+  }
+  // 機器人
+  c.fillStyle='#FFFFFF'; c.beginPath(); c.arc(bot.x,bot.y,7,0,7); c.fill();
+  c.strokeStyle='#0B1220'; c.lineWidth=2.5;
+  c.beginPath(); c.moveTo(bot.x,bot.y); c.lineTo(bot.x+bot.dir*8,bot.y); c.stroke();
+  // 「+ 虛擬全域感測器 已啟用」印章
+  if(stamp>0&&mode==='new'){
+    const a=Math.min(stamp/0.4,1);
+    c.save(); c.globalAlpha=a;
+    c.font='800 22px "Noto Sans TC",sans-serif'; c.textAlign='center';
+    c.strokeStyle='rgba(111,179,255,.9)'; c.lineWidth=1.5;
+    c.fillStyle='#6FB3FF';
+    const sc=1+Math.max(stamp-1.1,0)*1.6;
+    c.translate(Wc/2,Hc/2); c.scale(sc,sc);
+    c.fillText('+ 虛擬全域感測器 已啟用',0,0);
+    c.strokeRect(-186,-24,372,38);
+    c.restore(); c.textAlign='left';
+  }
+  document.getElementById('ro1See').textContent=seen+' / '+walkers.length;
+  document.getElementById('ro1Cov').textContent=(mode==='new'?100:covOld).toFixed(0)+'%';
 }
-function frame(t){
-  requestAnimationFrame(frame);
+let last=null;
+function loop(t){
+  requestAnimationFrame(loop);
   if(last===null)last=t;
-  const dt=Math.min((t-last)/1000,0.05); last=t;
-  if(playing)for(let k=0;k<speedMult;k++){wA.step(dt);wB.step(dt);}
-  wA.draw(); wB.draw(); updateHUD();
+  const dt=Math.min((t-last)/1000,.05); last=t;
+  bot.x+=bot.dir*bot.spd*dt;
+  if(bot.x>Wc-160)bot.dir=-1;
+  if(bot.x<160)bot.dir=1;
+  for(const w of walkers)w.step(dt);
+  if(stamp>0)stamp-=dt;
+  draw();
 }
-$('btnPlay').onclick=()=>{playing=!playing;$('btnPlay').textContent=playing?'⏸ 暫停':'▶ 播放';};
-$('btnReset').onclick=()=>{
-  wA.reset(); wB.reset(); wA.eventCb=onEvent; wB.eventCb=onEvent;
-  playing=false; banner.style.display='none'; stepNo=0; nogoOnce=false; n3=false;
-  $('narration').querySelector('.step').textContent='STEP 0';
-  $('narText').textContent='按「播放」開始 —— 通道現在空無一人,但月台上有事情正在發生。';
-  $('btnPlay').textContent='▶ 播放';
+requestAnimationFrame(loop);
+const CAP1={
+  new:'<b>上帝視角:</b>裝上虛擬感測器 —— 全場皆為量測範圍,14 人全部可見。',
+  old:'<b>車載視角:</b>圓圈之外一片濃霧。機器人在霧裡開車。'
 };
-document.querySelectorAll('#speedSeg button').forEach(b=>{
-  b.onclick=()=>{speedMult=+b.dataset.s;
-    document.querySelectorAll('#speedSeg button').forEach(x=>x.classList.toggle('on',x===b));};
+document.querySelectorAll('#tg1 button').forEach(b=>{
+  b.onclick=()=>{
+    mode=b.dataset.m==='new'?'new':'old';
+    if(mode==='new')stamp=1.4;
+    document.querySelectorAll('#tg1 button').forEach(x=>x.classList.toggle('on',x===b));
+    document.getElementById('cap1').innerHTML=CAP1[mode];
+  };
 });
-requestAnimationFrame(frame);
 })();
-</script>
-<script>
-document.addEventListener('keydown',e=>{
-  if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT')return;
-  if(e.code==='Space'){e.preventDefault();document.getElementById('btnPlay').click();}
-  else if(e.key==='r'||e.key==='R'){document.getElementById('btnReset').click();}
+
+/* ---------- Hero 對比二:瞬間障礙物 vs 連續身分 ---------- */
+(()=>{
+const cv=document.getElementById('heroCv2'), c=cv.getContext('2d');
+const Wc=cv.width, Hc=cv.height;
+const CAMS=[[40,330],[382,700],[752,1052]];
+const PAL=['#6FB3FF','#7ADFA0','#E86BD0','#FFB86B','#FF6B6B','#9C8CFF','#5CC8FF','#FFD166'];
+let mode='new';
+// 舊技術之「偵測快照」:低更新率、凍結畫格,破除人眼自行腦補的連續性
+const SNAP_T=0.8; let snapT=SNAP_T, snapPts=[], snapN=0;
+function rnd(a,b){return a+Math.random()*(b-a);}
+class P{
+  constructor(x){ this.reset(x); }
+  reset(x){
+    this.x=x!==undefined?x:-rnd(10,260);
+    this.y=rnd(46,Hc-40); this.v=rnd(38,64);
+    this.tid=Math.floor(rnd(0,PAL.length));
+    this.trail=[];
+  }
+  camIndex(){ for(let i=0;i<CAMS.length;i++) if(this.x>=CAMS[i][0]&&this.x<=CAMS[i][1])return i; return -1; }
+  step(dt){
+    this.x+=this.v*dt;
+    this.trail.push({x:this.x,y:this.y,ci:this.camIndex()});
+    if(this.trail.length>240)this.trail.shift();
+    if(this.x>Wc+40)this.reset();
+  }
+}
+const peds=[]; for(let i=0;i<11;i++)peds.push(new P(rnd(-240,Wc)));
+function draw(){
+  c.clearRect(0,0,Wc,Hc);
+  // 盲區
+  c.fillStyle='rgba(255,107,107,.045)';
+  for(let i=0;i<CAMS.length-1;i++) c.fillRect(CAMS[i][1],26,CAMS[i+1][0]-CAMS[i][1],Hc-26);
+  c.fillStyle='rgba(255,107,107,.5)'; c.font='600 10px ui-monospace,monospace'; c.textAlign='center';
+  for(let i=0;i<CAMS.length-1;i++) c.fillText('盲區',(CAMS[i][1]+CAMS[i+1][0])/2,Hc-10);
+  // 鏡頭視野
+  CAMS.forEach((s,i)=>{
+    c.fillStyle='rgba(111,179,255,.05)'; c.fillRect(s[0],26,s[1]-s[0],Hc-26);
+    c.strokeStyle='rgba(111,179,255,.2)'; c.lineWidth=1; c.setLineDash([4,4]);
+    c.beginPath(); c.moveTo(s[0],26); c.lineTo(s[0],Hc-24);
+    c.moveTo(s[1],26); c.lineTo(s[1],Hc-24); c.stroke(); c.setLineDash([]);
+    const cx=(s[0]+s[1])/2;
+    c.fillStyle='#6FB3FF'; c.fillRect(cx-6,12,12,9);
+    c.fillStyle='rgba(111,179,255,.6)'; c.font='600 10px ui-monospace,monospace';
+    c.fillText('CAM '+(i+1),cx,34);
+  });
+  c.textAlign='left';
+  let idCount=0;
+  for(const p of peds){
+    const vis=p.camIndex()>=0;
+    if(mode==='new'){
+      // 連續軌跡(含盲區虛線內插)
+      for(let i=1;i<p.trail.length;i++){
+        const a=p.trail[i-1], b=p.trail[i];
+        const blind=(a.ci<0||b.ci<0);
+        c.strokeStyle=PAL[p.tid];
+        c.globalAlpha=blind?0.28:0.6; c.lineWidth=blind?1.4:2;
+        if(blind)c.setLineDash([3,4]);
+        c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.stroke(); c.setLineDash([]);
+      }
+      c.globalAlpha=1;
+      c.fillStyle=PAL[p.tid]; c.globalAlpha=vis?1:.35;
+      c.beginPath(); c.arc(p.x,p.y,5,0,7); c.fill();
+      if(vis){
+        idCount++;
+        c.font='700 9.5px ui-monospace,monospace'; c.textAlign='center';
+        c.fillText('G'+String(p.tid*7+13).padStart(2,'0'),p.x,p.y-10); c.textAlign='left';
+      }
+      c.globalAlpha=1;
+    }
+  }
+  if(mode==='old'){
+    // 凍結的偵測快照:整整 0.8 秒靜止,再瞬間跳到下一格 —
+    // 沒有平滑移動可供人眼追蹤,系統(與觀眾)眼中就只是一堆點
+    c.fillStyle='#8FA0B8';
+    for(const q of snapPts){
+      c.beginPath(); c.arc(q.x,q.y,4.5,0,7); c.fill();
+    }
+    c.fillStyle='rgba(143,160,184,.65)'; c.font='600 11px "Noto Sans TC",sans-serif';
+    c.fillText('偵測快照 #'+snapN+' — 系統眼中只有 '+snapPts.length+' 個無名的點;上一格的點與這一格的點,誰接誰?無從得知',14,24);
+  }
+  document.getElementById('ro2Traj').textContent = mode==='new'? peds.length : 0;
+  document.getElementById('ro2Id').textContent   = mode==='new'? idCount : 0;
+}
+let last=null;
+function loop(t){
+  requestAnimationFrame(loop);
+  if(last===null)last=t;
+  const dt=Math.min((t-last)/1000,.05); last=t;
+  for(const p of peds)p.step(dt);
+  snapT+=dt;
+  if(snapT>=SNAP_T){
+    snapT=0; snapN++;
+    snapPts=peds.filter(p=>p.camIndex()>=0)
+                .map(p=>({x:p.x+rnd(-3,3), y:p.y+rnd(-3,3)}));   // 含感測雜訊
+  }
+  draw();
+}
+requestAnimationFrame(loop);
+const CAP2={
+  new:'<b>全域 ID:</b>跨鏡頭、跨盲區,同一人始終是同一人 —— 有身分、有軌跡、有速度。',
+  old:'<b>逐幀障礙物:</b>系統眼中只有一堆無名的點。誰接誰?無從得知。'
+};
+document.querySelectorAll('#tg2 button').forEach(b=>{
+  b.onclick=()=>{
+    mode=b.dataset.m==='new'?'new':'old';
+    document.querySelectorAll('#tg2 button').forEach(x=>x.classList.toggle('on',x===b));
+    document.getElementById('cap2').innerHTML=CAP2[mode];
+  };
 });
+})();
+
+/* ---------- Demo 卡片縮圖 ---------- */
+function thumb(id,kind){
+  const cv=document.getElementById(id); if(!cv)return;
+  const g=cv.getContext('2d'), Wt=cv.width, Ht=cv.height;
+  let t=0;
+  (function tick(){
+    requestAnimationFrame(tick); t+=0.012;
+    g.clearRect(0,0,Wt,Ht);
+    if(kind===1){
+      for(let i=0;i<44;i++){
+        const x=(i*31+t*40)%Wt, y=14+((i*37)%52);
+        g.fillStyle='rgba(255,138,92,.55)'; g.beginPath(); g.arc(x,y,2.2,0,7); g.fill();
+      }
+      for(let i=0;i<14;i++){
+        const x=(Wt-((i*47+t*70)%Wt)), y=78+((i*23)%18);
+        g.fillStyle='rgba(92,200,255,.6)'; g.beginPath(); g.arc(x,y,2.2,0,7); g.fill();
+      }
+      g.strokeStyle='rgba(232,238,247,.75)'; g.lineWidth=2; g.beginPath();
+      g.moveTo(10,52); g.bezierCurveTo(120,52,180,86,350,86); g.stroke();
+    }
+    if(kind===2){
+      g.fillStyle='#1B2A3C'; g.fillRect(140,30,80,44);
+      const ph=(t*46)%420;
+      g.strokeStyle='rgba(232,107,208,.55)'; g.lineWidth=2;
+      g.beginPath(); g.moveTo(20,24); g.lineTo(150,24); g.stroke();
+      g.beginPath(); g.moveTo(228,24); g.lineTo(340,24); g.stroke();
+      g.beginPath(); g.moveTo(228,24); g.lineTo(236,86); g.lineTo(340,86); g.stroke();
+      g.fillStyle='#E86BD0';
+      g.beginPath(); g.arc(236+Math.min(ph,100),86,3.4,0,7); g.fill();
+      g.beginPath(); g.arc(236+Math.min(ph*1.2,104),24,3.4,0,7); g.fill();
+      g.strokeStyle='#FFD166'; g.lineWidth=1.6; g.setLineDash([2,2]);
+      g.beginPath(); g.arc(236+Math.min(ph,100),86,7.5,0,7); g.stroke(); g.setLineDash([]);
+    }
+    if(kind===3){
+      g.fillStyle='rgba(255,138,92,.07)'; g.fillRect(0,30,Wt,40);
+      for(let i=0;i<26;i++){
+        const gapAt=(i%13===6);
+        const x=((i*30+t*44)%(Wt+60))-30, y=38+((i*29)%24);
+        if(gapAt)continue;
+        g.fillStyle='rgba(255,150,100,.6)'; g.beginPath(); g.arc(x,y,2.4,0,7); g.fill();
+      }
+      g.strokeStyle='rgba(92,200,255,.75)'; g.lineWidth=1.6; g.setLineDash([3,3]);
+      g.beginPath(); g.moveTo(178,12); g.lineTo(178,92); g.stroke(); g.setLineDash([]);
+      g.fillStyle='#fff'; g.beginPath(); g.arc(178,80-Math.abs(Math.sin(t*1.6))*44,4,0,7); g.fill();
+    }
+    if(kind===4){
+      // 街區
+      g.fillStyle='#1B2A3C';
+      for(const[bx,by]of [[40,26],[150,26],[260,26],[40,62],[150,62],[260,62]])
+        g.fillRect(bx,by,86,16);
+      // 商店街人潮(中列)
+      for(let i=0;i<30;i++){
+        const x=44+((i*37+Math.sin(t*2+i)*6)%(Wt-80));
+        const y=48+((i*13)%10);
+        g.fillStyle='rgba(255,138,92,.6)'; g.beginPath(); g.arc(x,y,2.2,0,7); g.fill();
+      }
+      // 繞路路線(下巷)
+      g.strokeStyle='rgba(92,200,255,.7)'; g.lineWidth=2; g.setLineDash([4,4]);
+      g.beginPath(); g.moveTo(14,52); g.lineTo(14,88); g.lineTo(346,88); g.lineTo(346,52); g.stroke();
+      g.setLineDash([]);
+      // 機器人沿繞路移動
+      const per=(t*0.35)%1, L1=36,L2=332,L3=36, TL=L1+L2+L3;
+      let d=per*TL, rx,ry;
+      if(d<L1){rx=14;ry=52+d;}
+      else if(d<L1+L2){rx=14+(d-L1);ry=88;}
+      else{rx=346;ry=88-(d-L1-L2);}
+      g.fillStyle='#fff'; g.beginPath(); g.arc(rx,ry,4,0,7); g.fill();
+    }
+    if(kind===5){
+      // 三排貨架 → 三條走道
+      g.fillStyle='#1B2A3C';
+      for(const bx of [78,148,218,288]) g.fillRect(bx,22,22,60);
+      // 走道人數徽章與顧客
+      const occ=[Math.sin(t*0.9)>0?1:0, 1, Math.sin(t*0.9+2)>0.3?1:0];
+      const cxs=[111,181,251];
+      cxs.forEach((cx,i)=>{
+        g.fillStyle=occ[i]?'rgba(255,138,92,.85)':'rgba(122,223,160,.85)';
+        g.beginPath(); g.arc(cx,14,3,0,7); g.fill();
+        if(occ[i]){
+          const cy=34+((t*24+i*33)%44);
+          g.fillStyle='rgba(255,138,92,.7)'; g.beginPath(); g.arc(cx+Math.sin(t+i)*4,cy,2.6,0,7); g.fill();
+        }
+      });
+      // 待命點與機器人:走道淨空時衝出
+      g.strokeStyle='rgba(255,209,102,.6)'; g.setLineDash([3,3]);
+      g.strokeRect(14,74,26,20); g.setLineDash([]);
+      const free=occ.findIndex(o=>!o);
+      let rx=27,ry=84;
+      if(free>=0){ const ph=Math.abs(Math.sin(t*1.1)); rx=27+(cxs[free]-27)*ph; ry=84-(ph>0.7?(ph-0.7)/0.3*46:0); }
+      g.fillStyle='#fff'; g.beginPath(); g.arc(rx,ry,4,0,7); g.fill();
+    }
+    if(kind===6){
+      // 櫃台與隊伍
+      g.fillStyle='#22334D'; g.fillRect(160,8,44,12);
+      for(let i=0;i<6;i++){
+        g.fillStyle='rgba(255,138,92,.85)';
+        g.beginPath(); g.arc(182,30+i*11,3,0,7); g.fill();
+      }
+      // 隊伍框
+      g.strokeStyle='rgba(92,200,255,.5)'; g.setLineDash([4,4]); g.lineWidth=1.4;
+      g.strokeRect(170,24,24,72); g.setLineDash([]);
+      // B 繞隊尾路線
+      g.strokeStyle='rgba(92,200,255,.7)'; g.lineWidth=2; g.setLineDash([4,4]);
+      g.beginPath(); g.moveTo(20,58); g.bezierCurveTo(110,58,140,98,182,98);
+      g.bezierCurveTo(230,98,260,58,340,58); g.stroke(); g.setLineDash([]);
+      // 機器人沿繞行路線
+      const ph=(t*0.4)%1;
+      const bx=20+ph*320, by=58+Math.sin(ph*Math.PI)*40;
+      g.fillStyle='#fff'; g.beginPath(); g.arc(bx,by,4,0,7); g.fill();
+    }
+    if(kind===7){
+      // 同伴(粉,連線)與陌生人(灰)
+      const cy1=36, cy2=64;
+      const dx1=250-((t*30)%330), dx2=340-((t*26)%330);
+      g.strokeStyle='rgba(232,107,208,.7)'; g.lineWidth=2;
+      g.beginPath(); g.moveTo(dx1,cy1); g.lineTo(dx1,cy2); g.stroke();
+      g.fillStyle='#E86BD0';
+      g.beginPath(); g.arc(dx1,cy1,3.4,0,7); g.fill();
+      g.beginPath(); g.arc(dx1,cy2,3.4,0,7); g.fill();
+      g.fillStyle='rgba(143,160,184,.8)';
+      g.beginPath(); g.arc(dx2,cy1+4,3.2,0,7); g.fill();
+      g.beginPath(); g.arc(dx2-8,cy2-4,3.2,0,7); g.fill();
+      // 機器人路線:繞過同伴、穿過陌生人
+      g.strokeStyle='rgba(92,200,255,.7)'; g.lineWidth=2; g.setLineDash([4,4]);
+      g.beginPath(); g.moveTo(12,50);
+      g.bezierCurveTo(90,50,110,18,170,18);
+      g.bezierCurveTo(230,18,240,50,348,50); g.stroke(); g.setLineDash([]);
+      const ph=(t*0.4)%1;
+      const bx=12+ph*336, by=50-Math.sin(ph*Math.PI)*32;
+      g.fillStyle='#fff'; g.beginPath(); g.arc(bx,by,4,0,7); g.fill();
+    }
+    if(kind===8){
+      // 閘門牆與月台
+      g.fillStyle='rgba(255,138,92,.07)'; g.fillRect(0,0,34,Ht);
+      g.fillStyle='#22334D'; g.fillRect(34,0,6,26); g.fillRect(34,44,6,16); g.fillRect(34,78,6,26);
+      // 洩流波(週期)
+      const ph=(t*0.5)%1;
+      for(let i=0;i<26;i++){
+        const x=40+((i*23+ph*300)%300);
+        const y=30+((i*17)%44);
+        if(x<340){g.fillStyle='rgba(255,138,92,.65)'; g.beginPath(); g.arc(x,y,2.4,0,7); g.fill();}
+      }
+      // 波前線
+      const fx=40+ph*300;
+      if(fx<340){g.strokeStyle='rgba(255,107,107,.7)'; g.setLineDash([3,3]);
+        g.beginPath(); g.moveTo(fx,26); g.lineTo(fx,74); g.stroke(); g.setLineDash([]);}
+      // 穿越線與待命機器人
+      g.strokeStyle='rgba(92,200,255,.5)'; g.setLineDash([3,3]);
+      g.beginPath(); g.moveTo(120,8); g.lineTo(120,96); g.stroke(); g.setLineDash([]);
+      const hold=fx<160;
+      g.fillStyle='#fff'; g.beginPath();
+      g.arc(120,hold?92:92-((t*0.5)%1)*0,4,0,7); g.fill();
+    }
+  })();
+}
+thumb('th1',1); thumb('th2',2); thumb('th3',3); thumb('th4',4); thumb('th5',5); thumb('th6',6); thumb('th7',7); thumb('th8',8);
+})();
 </script>
 </body>
 </html>

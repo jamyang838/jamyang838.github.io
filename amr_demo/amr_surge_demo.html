@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230E1626'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23ffffff'/%3E%3Ccircle cx='16' cy='16' r='11' stroke='%236FB3FF' stroke-width='2.4' fill='none' stroke-dasharray='4 3'/%3E%3C/svg%3E">
-<title>Demo 08 · 超商點貨錯峰作業</title>
+<title>Demo 05 · 人潮洩洪預測</title>
 <style>
   :root{
-    --bg:#0B1220; --panel:#0E1626; --panel-edge:#1C2A40; --shelf:#1B2A3C;
+    --bg:#0B1220; --panel:#0E1626; --panel-edge:#1C2A40;
     --ink:#E8EEF7; --ink-dim:#8FA0B8; --accent:#6FB3FF;
-    --cust:#FF8A5C; --good:#7ADFA0; --bad:#FF6B6B; --gold:#FFD166;
+    --surge:#FF8A5C; --good:#7ADFA0; --bad:#FF6B6B; --gold:#FFD166; --gap:#5CC8FF;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -26,7 +26,7 @@
   .controls{
     width:100%; max-width:1140px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;
     background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px;
-    padding:10px 12px; margin-bottom:12px;
+    padding:10px 12px; margin-bottom:10px;
   }
   button{
     background:#16233A; color:var(--ink); border:1px solid #2A3E5E; border-radius:8px;
@@ -41,6 +41,12 @@
   .spacer{flex:1;}
   .legend{display:flex; gap:14px; font-size:12px; color:var(--ink-dim); align-items:center; flex-wrap:wrap;}
   .dot{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:-1px;}
+  .narration{
+    width:100%; max-width:1140px; min-height:44px; margin-bottom:10px; border-radius:10px;
+    background:#101B2E; border:1px solid var(--panel-edge); padding:10px 14px;
+    font-size:14px; font-weight:700; display:flex; align-items:center; gap:12px; line-height:1.5;
+  }
+  .narration .step{font-size:11px; color:var(--accent); letter-spacing:.15em; flex-shrink:0; font-family:ui-monospace,monospace;}
   .panelWrap{width:100%; max-width:1140px; margin-bottom:10px; position:relative;}
   .panelLabel{
     position:absolute; top:10px; left:10px; z-index:2; display:flex; align-items:center; gap:8px;
@@ -51,13 +57,13 @@
   .tagA{background:#3A2A22; color:#FF8A5C;}
   .tagB{background:#15303F; color:#5CC8FF;}
   .stateChip{
-    position:absolute; top:10px; right:10px; z-index:2; max-width:52%;
+    position:absolute; top:10px; right:10px; z-index:2; max-width:56%;
     background:rgba(8,14,26,.85); border:1px solid var(--panel-edge); border-radius:99px;
     padding:6px 13px; font-size:12px; font-weight:800; backdrop-filter:blur(2px); text-align:right;
   }
   canvas{display:block; width:100%; height:auto; border-radius:10px; border:1px solid var(--panel-edge); background:var(--panel);}
   .scoreboard{
-    width:100%; max-width:1140px; display:grid; grid-template-columns:190px 1fr 1fr; gap:1px;
+    width:100%; max-width:1140px; display:grid; grid-template-columns:200px 1fr 1fr; gap:1px;
     background:var(--panel-edge); border:1px solid var(--panel-edge); border-radius:10px; overflow:hidden;
     font-size:14px; margin-top:4px;
   }
@@ -78,15 +84,14 @@
 
 <header>
   <a href="index.html" style="display:inline-block;color:#6FB3FF;text-decoration:none;font-size:12.5px;font-weight:700;margin-bottom:10px;border:1px solid #1C2A40;border-radius:999px;padding:5px 14px;background:#0E1626">← 回展示首頁</a>
-  <div class="eyebrow">GLOBAL MOT × AMR NAVIGATION — DEMO 08</div>
-  <h1>超商點貨:在角落待命,等哪條走道沒人才出動</h1>
+  <div class="eyebrow">GLOBAL MOT × AMR NAVIGATION — DEMO 05</div>
+  <h1>人潮洩洪預測:通道現在是空的,12 秒後是一條河</h1>
   <div class="sub">
-    <b>開場時店內滿是顧客</b> —— 三條走道都有人在挑選;隨著大家陸續結帳離店,走道會<b>一條接一條逐漸淨空</b>。
-    點貨機器人的任務是掃完全部三條走道,而零售現場的鐵律是:<b>不要打擾顧客</b>。
-    傳統機器人只有車載 LiDAR,只看得見身邊幾公尺 —— <b>走道裡有沒有人,它根本無從得知</b>,
-    只能按排程一條條進去點貨:走道有人照樣硬掃,每一次近身都逼得顧客側身讓路(畫面紅圈閃爍);
-    本技術由環境攝影機全域 MOT <b>即時掌握每條走道的人數</b>,機器人在角落安靜待命,哪條先淨空、且無人正走向它,才出動點貨 ——
-    <b>顧客越多,「等對時機」的價值越大</b>。
+    車站大廳,機器人在通道邊完成裝載後須<b>橫越閘門前的主通道</b>。此刻通道空無一人 ——
+    但<b>月台上,一班剛到站的列車正把數十位旅客堆在閘門後面</b>。
+    A 的 LiDAR 只看得見七公尺:通道是空的,那就過 —— 於是在通道正中央,被開閘湧出的人浪迎面吞沒;
+    B 的環境攝影機看得見月台:人數持續累積 → 洩流醞釀 → 開閘後即時追蹤<b>波前位置與速度</b>,
+    比較「波前抵達穿越線的時間」與「自己穿越所需的時間」—— 窗口不足即 <b>NO-GO 於邊界待命</b>,波尾通過後再穿越淨空的通道。
   </div>
 </header>
 
@@ -96,429 +101,325 @@
   <div class="seg" id="speedSeg">
     <button data-s="1">1×</button>
     <button data-s="2" class="on">2×</button>
-    <button data-s="4">4×</button>
+    <button data-s="3">3×</button>
   </div>
   <div class="spacer"></div>
   <div class="legend">
-    <span><span class="dot" style="background:var(--cust)"></span>顧客(陸續結帳離店)</span>
+    <span><span class="dot" style="background:var(--surge)"></span>下車旅客(洩流)</span>
     <span><span class="dot" style="background:#fff"></span>AMR</span>
-    <span><span class="dot" style="background:var(--good)"></span>已完成點貨之走道</span>
+    <span><span class="dot" style="background:var(--good)"></span>目的地</span>
   </div>
 </div>
 
+<div class="narration" id="narration"><span class="step">STEP 0</span><span id="narText">按「播放」開始 —— 通道現在空無一人,但月台上有事情正在發生。</span></div>
+
 <div class="panelWrap">
-  <div class="panelLabel"><span class="tag tagA">A</span> 傳統:純車載 LiDAR — 按排程硬掃,有人照樣進</div>
+  <div class="panelLabel"><span class="tag tagA">A</span> 傳統:純車載 LiDAR — 通道看起來是空的,就過</div>
   <div class="stateChip" id="chipA">待機</div>
   <canvas id="cvA" width="1140" height="310"></canvas>
 </div>
 
 <div class="panelWrap">
-  <div class="panelLabel"><span class="tag tagB">B</span> 本技術:全域 MOT 走道人數 — 待命等淨空再出動</div>
+  <div class="panelLabel"><span class="tag tagB">B</span> 本技術:全域 MOT 月台監看 — 波前 ETA vs 穿越時間之 GO/NO-GO</div>
   <div class="stateChip" id="chipB">待機</div>
   <canvas id="cvB" width="1140" height="310"></canvas>
 </div>
 
 <div class="scoreboard">
   <div class="head">即時記分板</div>
-  <div class="head" style="color:#FF8A5C">A|排程巡掃</div>
-  <div class="head" style="color:#5CC8FF">B|待命等淨空</div>
-  <div class="rowh">完成點貨</div>
-  <div class="val num" id="doneA">0 / 3</div>
-  <div class="val num" id="doneB">0 / 3</div>
+  <div class="head" style="color:#FF8A5C">A|所見即所行</div>
+  <div class="head" style="color:#5CC8FF">B|洩洪預測</div>
+  <div class="rowh">人浪中暴露時間</div>
+  <div class="val num" id="expA">0.0 s</div>
+  <div class="val num" id="expB">0.0 s</div>
+  <div class="rowh">逆向近距遭遇</div>
+  <div class="val num" id="encA">0</div>
+  <div class="val num" id="encB">0</div>
+  <div class="rowh">凍結時間</div>
+  <div class="val num" id="frzA">0.0 s</div>
+  <div class="val num" id="frzB">0.0 s</div>
   <div class="rowh">總耗時</div>
   <div class="val num" id="timeA">0.0 s</div>
   <div class="val num" id="timeB">0.0 s</div>
-  <div class="rowh">干擾顧客次數</div>
-  <div class="val num" id="itfA">0</div>
-  <div class="val num" id="itfB">0</div>
-  <div class="rowh">與顧客同走道時間</div>
-  <div class="val num" id="coA">0.0 s</div>
-  <div class="val num" id="coB">0.0 s</div>
-  <div class="rowh">行走距離</div>
-  <div class="val num" id="odoA">0 m</div>
-  <div class="val num" id="odoB">0 m</div>
 </div>
 
 <div class="banner" id="banner"></div>
 
 <div class="foot">
-  說明:兩面板 12 位顧客以相同亂數種子生成,行為完全一致(在哪條走道、停留多久、何時離店皆相同),條件對等。
-  開場三條走道各 4 人;顧客逗留時間長短不一,結帳後由右下出口離店、不再回來,走道因此依序逐漸淨空;
-  過半顧客結帳前會<b>穿越另一條走道</b>前往櫃台,製造走道間的交會人流。
-  A 只有車載 LiDAR:貨架擋住視線,它無從得知走道內有沒有人,只能按排程逐條進場點貨 ——
-  <b>機器人近身 2 公尺內即計一次「干擾顧客」</b>(同一顧客 4 秒內不重複計,畫面以紅圈閃爍標示被打擾的顧客),
-  被打擾的顧客會被迫側身讓路;「與顧客同走道時間」則累計機器人與顧客共處同一走道的秒數。
-  B 由環境攝影機即時取得各走道人數(畫面上方的走道徽章),並以「走道內 0 人、且兩端入口附近無人接近」為出動條件,
-  於待命點按兵不動、哪條先淨空就先掃哪條 —— 對應揭露書應用分支 A 之全域感知(視線外資訊)於室內零售場景之應用。
-  重點指標不是誰快,而是<b>干擾顧客次數與同走道時間</b>:店越滿,排程硬掃對顧客體驗的傷害越大,而待命式幾乎不與顧客相遇。
+  說明:兩面板旅客以相同亂數種子與時程生成,條件完全對等。時間軸:列車到站後旅客於月台累積(閘門後方),
+  隨後閘門開啟、人浪以步行速度湧入主通道向右洩流;通道在開閘前始終空無一人 —— 這正是純車載感知的認知極限:
+  <b>它看到的「空」是真的,只是即將不再為真</b>。
+  B 的預測為<b>真實計算</b>:開閘前以月台人數判定洩流醞釀(預防性 NO-GO);開閘後由全域軌跡即時取得
+  <b>波前位置與平均速度</b>,推算波前抵達穿越線之時間,與「自身穿越所需時間 + 安全餘裕」比較作 GO/NO-GO 決策
+  (與 Demo 03 之間隙預測同一套邏輯,尺度從兩人之間放大到整個人浪);波尾通過穿越線後窗口成立,方才穿越。
+  「人浪中暴露時間」為機器人身處通道帶且洩流進行中的秒數;「逆向近距遭遇」計 2.3m 內迎面旅客(每人 2 秒冷卻)。
+  結果請注意:<b>A 未必比較慢 —— 但它全程泡在人浪正中央,是河道裡的一塊石頭</b>;
+  對站方而言,洩洪時通道中央的機器人不是效率問題,是安全事件。
 </div>
 
 <script>
 (()=>{
-/* ================= 世界:超商 ================= */
+/* ================= 世界 ================= */
 const S=10, W=114, H=31;
-// 貨架四座 → 三條走道
-const SHELVES=[
-  {x:28,y:7,w:6,h:17},{x:46,y:7,w:6,h:17},{x:64,y:7,w:6,h:17},{x:82,y:7,w:6,h:17},
-];
-const WALLS=[...SHELVES,{x:0,y:0,w:W,h:2},{x:0,y:29,w:W,h:2}];
-const AISLES=[
-  {id:1,x0:34,x1:46,cx:40},
-  {id:2,x0:52,x1:64,cx:58},
-  {id:3,x0:70,x1:82,cx:76},
-];
-const AY0=7, AY1=24;                       // 走道縱向範圍
-const DOCK={x:9,y:26.5};
-const ENT=a=>({x:a.cx,y:AY1+1.4});          // 下端入口
-const EXT=a=>({x:a.cx,y:AY0-1.4});          // 上端出口
+const GATE_X=8;                            // 閘門牆
+const BAND={y0:10,y1:22};                  // 主通道帶
+const CROSS_X=20;                          // 穿越線
+const STAGE={x:CROSS_X,y:25.6};
+const GOALP={x:CROSS_X,y:4.2};
+const LOAD_T=9;                            // 裝載秒數
+const T_FILL0=2, T_OPEN=9;                 // 月台累積開始 / 閘門開啟
+const N_SURGE=54;
+const V_CROSS=1.5, V_FREE=2.1;
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function inWall(x,y,m=0){for(const w of WALLS){if(x>w.x-m&&x<w.x+w.w+m&&y>w.y-m&&y<w.y+w.h+m)return true}return false}
-function segRect(x1,y1,x2,y2,r){
-  const inside=(px,py)=>px>r.x&&px<r.x+r.w&&py>r.y&&py<r.y+r.h;
-  if(inside(x1,y1)||inside(x2,y2))return true;
-  const E=[[r.x,r.y,r.x+r.w,r.y],[r.x+r.w,r.y,r.x+r.w,r.y+r.h],[r.x+r.w,r.y+r.h,r.x,r.y+r.h],[r.x,r.y+r.h,r.x,r.y]];
-  for(const[a,b,c,d]of E){
-    const d1=(c-a)*(y1-b)-(d-b)*(x1-a), d2=(c-a)*(y2-b)-(d-b)*(x2-a);
-    const d3=(x2-x1)*(b-y1)-(y2-y1)*(a-x1), d4=(x2-x1)*(d-y1)-(y2-y1)*(c-x1);
-    if(((d1>0)!==(d2>0))&&((d3>0)!==(d4>0)))return true;
-  }
-  return false;
-}
-function hasLOS(x1,y1,x2,y2){ for(const r of SHELVES) if(segRect(x1,y1,x2,y2,r))return false; return true; }
-function aisleOf(x,y){
-  if(y<AY0||y>AY1)return 0;
-  for(const a of AISLES) if(x>=a.x0&&x<=a.x1)return a.id;
-  return 0;
-}
 
-/* ================= 顧客(開場即在店內,逛完陸續離店,兩面板一致) ================= */
-class Cust{
-  constructor(rng, idx){
-    this.rng=rng; this.r=0.38; this.active=true;
-    const a=AISLES[Math.floor(idx/4)];            // 每走道 4 人;離店時間依 idx 遞增
-    this.x=a.cx+(rng()*4-2);
-    this.y=AY0+2+rng()*(AY1-AY0-4);
-    this.speed=0.55+rng()*0.35;
-    // 逗留時間隨 idx 遞增 → 走道 1 → 2 → 3 依序淨空
-    const dwell=()=>3.5+idx*1.6+rng()*1.5;
-    const stops=[];
-    let ys=[this.y, AY0+2+rng()*(AY1-AY0-4)];
-    ys.sort((p,q)=>q-p);
-    for(const y of ys)stops.push([a.cx+(rng()*3-1.5),y,dwell()]);
-    if(rng()<0.55){
-      // 過半顧客結束後穿越另一條走道去結帳(製造走道交會)
-      const b=AISLES[(Math.floor(idx/4)+1+Math.floor(rng()*2))%3];
-      stops.push([a.cx,AY0-1.5,0.2]);
-      stops.push([b.cx,AY0-1.5,0.3]);
-      stops.push([b.cx+(rng()*2-1),AY0+4+rng()*8,0.8+rng()*1.2]);
-      stops.push([b.cx,AY1+1.5,0.2]);
-    }else{
-      stops.push([a.cx,AY1+1.5,0.2]);
-    }
-    stops.push([104,27+rng()*1.5,0.6]);           // 櫃台結帳
-    stops.push([113,27.5,0]);                     // 離店
-    this.plan=stops; this.pi=0; this.pause=rng()*1.5;
+/* ---- 旅客時程(兩面板共用) ---- */
+function buildSurge(seed){
+  const rng=mulberry32(seed); const out=[];
+  for(let i=0;i<N_SURGE;i++){
+    out.push({
+      tSpawn:T_FILL0+rng()*6.5,
+      px:2+rng()*4, py:BAND.y0+0.8+rng()*(BAND.y1-BAND.y0-1.6),
+      gateY:[12.2,16,19.8][i%3]+(rng()*1.2-0.6),
+      v:1.15+rng()*0.4,
+      dely:rng()*1.6                        // 開閘後起步延遲(魚貫而出)
+    });
   }
-  step(dt, others, robot){
+  return out;
+}
+const SURGE=buildSurge(20260603);
+
+class Pax{
+  constructor(d){ Object.assign(this,d); this.state='pre'; this.x=this.px; this.y=this.py;
+    this.vx=0; this.vy=0; this.r=0.38; this.active=false; }
+  step(dt,simT,robot){
+    if(simT>=this.tSpawn&&this.state==='pre'){this.state='wait'; this.active=true;}
     if(!this.active)return;
-    if(this.x>111){this.active=false; return;}
-    if(this.flash>0)this.flash-=dt;
-    if(this.pause>0){
-      this.pause-=dt;
-      // 駐足挑選中的顧客被機器人逼近時,會側身讓開(即「被打擾」的具體樣貌)
+    if(this.state==='wait'){
+      // 月台上小幅騷動
+      this.x=this.px+Math.sin(simT*2+this.py)*0.15;
+      if(simT>=T_OPEN+this.dely)this.state='exit';
+    }else if(this.state==='exit'){
+      // 走向閘門開口
+      const dx=GATE_X+0.8-this.x, dy=this.gateY-this.y, dd=Math.hypot(dx,dy)||1;
+      this.vx=dx/dd*1.1; this.vy=dy/dd*1.1;
+      this.x+=this.vx*dt; this.y+=this.vy*dt;
+      if(this.x>GATE_X+0.6)this.state='flow';
+    }else{
+      // 通道內向右洩流
+      let vy=(this.gateY-this.y)*0.6;
       if(robot){
         const ox=this.x-robot.x, oy=this.y-robot.y, d2=ox*ox+oy*oy;
-        if(d2<4.8&&d2>1e-6){
-          const d=Math.sqrt(d2);
-          this.x+=ox/d*0.8*dt*2.2; this.y+=oy/d*0.8*dt*2.2;
-          this.x=clamp(this.x,2,W-2); this.y=clamp(this.y,2.6,28.4);
-        }
+        if(d2<3.6&&d2>1e-6){const d=Math.sqrt(d2); vy+=oy/d*1.2;}
       }
-      return;
-    }
-    const wp=this.plan[this.pi];
-    if(!wp){this.active=false; return;}
-    let dx=wp[0]-this.x, dy=wp[1]-this.y, dd=Math.hypot(dx,dy);
-    if(dd<0.5){ this.pause=wp[2]; this.pi++; return; }
-    dd=dd||1;
-    let vx=dx/dd*this.speed, vy=dy/dd*this.speed;
-    for(const o of others){ if(o===this||!o.active)continue;
-      const ox=this.x-o.x, oy=this.y-o.y, d2=ox*ox+oy*oy;
-      if(d2<1.2&&d2>1e-6){const d=Math.sqrt(d2);vx+=ox/d*0.5;vy+=oy/d*0.5;}
-    }
-    if(robot){
-      const ox=this.x-robot.x, oy=this.y-robot.y, d2=ox*ox+oy*oy;
-      if(d2<4&&d2>1e-6){const d=Math.sqrt(d2);vx+=ox/d*0.5;vy+=oy/d*0.5;}
-    }
-    this.x+=vx*dt; this.y+=vy*dt;
-    this.x=clamp(this.x,2,W-2); this.y=clamp(this.y,2.6,28.4);
-  }
-}
-
-/* ================= A* ================= */
-const CELL=2, GX=W/CELL|0, GY=Math.ceil(H/CELL);
-const blocked=new Uint8Array(GX*GY);
-for(let gy=0;gy<GY;gy++)for(let gx=0;gx<GX;gx++){
-  const x=gx*CELL+1, y=gy*CELL+1;
-  if(inWall(x,y,0.8)||x<0.8||x>W-0.8)blocked[gy*GX+gx]=1;
-}
-function planTo(sx,sy,tx,ty){
-  const s=[clamp(sx/CELL|0,0,GX-1),clamp(sy/CELL|0,0,GY-1)];
-  const t=[clamp(tx/CELL|0,0,GX-1),clamp(ty/CELL|0,0,GY-1)];
-  const N=GX*GY,g=new Float32Array(N).fill(1e9),came=new Int32Array(N).fill(-1);
-  const si=s[1]*GX+s[0]; let ti=t[1]*GX+t[0];
-  const open=[[0,si]]; g[si]=0;
-  const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
-  while(open.length){
-    let bi=0;for(let i=1;i<open.length;i++)if(open[i][0]<open[bi][0])bi=i;
-    const[,cur]=open.splice(bi,1)[0];
-    if(cur===ti)break;
-    const cx=cur%GX, cy=cur/GX|0;
-    for(const[dx,dy]of dirs){
-      const nx=cx+dx,ny=cy+dy;
-      if(nx<0||ny<0||nx>=GX||ny>=GY)continue;
-      const ni=ny*GX+nx; if(blocked[ni])continue;
-      if(dx&&dy&&(blocked[cy*GX+nx]||blocked[ny*GX+cx]))continue;
-      const c=g[cur]+((dx&&dy)?1.414:1);
-      if(c<g[ni]){g[ni]=c;came[ni]=cur;open.push([c+Math.hypot(nx-t[0],ny-t[1]),ni]);}
+      this.vx=this.v; this.vy=vy;
+      this.x+=this.vx*dt; this.y+=clamp(this.vy,-1,1)*dt;
+      this.y=clamp(this.y,BAND.y0+0.5,BAND.y1-0.5);
+      if(this.x>W+2)this.active=false;
     }
   }
-  const path=[];let cur=ti;
-  if(came[ti]<0&&ti!==si)return[[tx,ty]];
-  while(cur>=0){path.push([(cur%GX)*CELL+1,(cur/GX|0)*CELL+1]);cur=came[cur];}
-  path.reverse(); path.push([tx,ty]); return path;
 }
 
 /* ================= 機器人 ================= */
 class Robot{
-  constructor(mode){ this.mode=mode; this.reset(); }   // 'patrol' | 'global'
+  constructor(mode){ this.mode=mode; this.reset(); }   // 'lidar' | 'global'
   reset(){
-    this.x=DOCK.x; this.y=DOCK.y; this.hd=0; this.speed=0;
-    this.scanned=new Set(); this.mission='idle'; this.targetAisle=null;
-    this.time=0; this.coT=0; this.odo=0;
-    this.disturb=0; this.dCd=new Map();
-    this.path=null; this.replanT=0; this.done=false;
-    this.state='待命中'; this.trail=[]; this.doneT=null;
+    this.x=STAGE.x; this.y=STAGE.y; this.hd=-Math.PI/2; this.speed=0;
+    this.mission='load'; this.loadT=LOAD_T;
+    this.time=0; this.expo=0; this.enc=0; this.frz=0;
+    this.encCd=new Map();
+    this.done=false; this.state='裝載中'; this.trail=[];
+    this.goShown=false;
   }
-  occ(aid,custs){ let n=0; for(const c of custs) if(c.active&&aisleOf(c.x,c.y)===aid)n++; return n; }
-  nearEntrance(a,custs){
-    for(const c of custs){
-      if(!c.active)continue;
-      const d1=Math.hypot(c.x-a.cx,c.y-(AY1+1.4));
-      const d2=Math.hypot(c.x-a.cx,c.y-(AY0-1.4));
-      if(d1<6||d2<6)return true;
-    }
-    return false;
+  crossTime(){ return (this.y-(BAND.y0-1.2))/V_CROSS; }
+  /* B:波前/波尾與窗口計算(真實) */
+  surgeInfo(pax){
+    const flowing=pax.filter(p=>p.active&&(p.state==='flow'||p.state==='exit'));
+    const waiting=pax.filter(p=>p.active&&p.state==='wait').length;
+    if(!flowing.length)return {waiting, front:null};
+    let frontX=-1e9, meanV=0, minX=1e9;
+    for(const p of flowing){ if(p.x>frontX)frontX=p.x; if(p.x<minX)minX=p.x; meanV+=p.v; }
+    meanV/=flowing.length;
+    return {waiting, front:frontX, tail:minX, meanV, count:flowing.length};
   }
-  goTo(tx,ty,dt,spd,custs){
-    this.replanT-=dt;
-    if(!this.path||this.replanT<=0){this.path=planTo(this.x,this.y,tx,ty);this.replanT=0.6;}
-    let li=0,best=1e9;
-    for(let i=0;i<this.path.length;i++){
-      const d=Math.hypot(this.path[i][0]-this.x,this.path[i][1]-this.y);
-      if(d<best){best=d;li=i;}
+  windowOK(pax){
+    // 我穿越期間,是否有人會抵達穿越線?(依每人位置與速度真實推算)
+    const need=this.crossTime()+1.6;
+    for(const p of pax){
+      if(!p.active)continue;
+      if(p.state==='wait')return false;                       // 月台仍有人待洩流
+      const xRef=p.state==='flow'?p.x:GATE_X;
+      if(xRef>CROSS_X+1.8)continue;                           // 已通過
+      const tArr=(CROSS_X-1.8-xRef)/Math.max(p.v,0.8);
+      if(tArr<need)return false;
     }
-    const look=this.path[Math.min(li+2,this.path.length-1)];
-    const dx=look[0]-this.x,dy=look[1]-this.y,dd=Math.hypot(dx,dy)||1;
-    const hx=dx/dd,hy=dy/dd; this.hd=Math.atan2(hy,hx);
-    let cap=spd;
-    for(const c of custs){
-      if(!c.active)continue;
-      const px=c.x-this.x,py=c.y-this.y,d=Math.hypot(px,py);
-      if(d<1.6&&(px*hx+py*hy)/d>0.3){cap=0;break;}
-      if(d<2.6)cap=Math.min(cap,0.6);
-    }
-    this.speed+=(cap-this.speed)*Math.min(dt*6,1);
-    this.x+=hx*this.speed*dt; this.y+=hy*this.speed*dt;
-    this.odo+=this.speed*dt;
-    return Math.hypot(tx-this.x,ty-this.y)<1.0;
+    return true;
   }
   step(dt, world){
-    const custs=world.custs;
-    if(this.done){ return; }
+    if(this.done)return;
     this.time+=dt;
-    // 同走道共處時間
-    const myA=aisleOf(this.x,this.y);
-    if(myA>0&&this.occ(myA,custs)>0)this.coT+=dt;
-    // 干擾顧客:近身(<2.0m)即構成一次打擾,對同一顧客 4 秒內不重複計
-    for(const cst of custs){
-      if(!cst.active)continue;
-      if(Math.hypot(cst.x-this.x,cst.y-this.y)<2.0){
-        const lastT=this.dCd.get(cst)??-9;
-        if(this.time-lastT>4){ this.disturb++; this.dCd.set(cst,this.time); cst.flash=1.2; }
+    const pax=world.pax;
+    let gx=this.x, gy=this.y, spd=V_FREE;
+
+    if(this.mission==='load'){
+      this.loadT-=dt;
+      this.state=`裝載中 ${Math.max(this.loadT,0).toFixed(1)}s`;
+      if(this.loadT<=0)this.mission=this.mode==='global'?'decide':'cross';
+      if(this.mode==='global'&&this.loadT<4){
+        const si=this.surgeInfo(pax);
+        if(si.waiting>=12)this.state=`裝載中 — ⚠ 月台已聚集 ${si.waiting} 人,洩流醞釀`;
       }
+    }
+    else if(this.mission==='decide'){
+      gx=STAGE.x; gy=STAGE.y; spd=1.0;
+      const ok=this.windowOK(pax);
+      const si=this.surgeInfo(pax);
+      if(ok){
+        this.mission='cross'; this.state='✓ GO — 窗口足夠,開始穿越';
+        if(!this.goShown){this.goShown=true; world.event('B-go');}
+      }else{
+        if(si.front!==null){
+          const eta=Math.max((CROSS_X-si.front)/si.meanV,0);
+          this.state = si.front<CROSS_X-1
+            ? `✗ NO-GO — 波前 ${eta.toFixed(1)}s 後抵達,穿越需 ${(this.crossTime()+1.6).toFixed(1)}s`
+            : `✗ NO-GO — 人浪通過中(尚餘 ${si.count} 人)`;
+          world.event('B-nogo');
+        }else{
+          this.state=`✗ NO-GO — 月台 ${si.waiting} 人待洩流,預防性待命`;
+          world.event('B-nogo');
+        }
+      }
+    }
+    else if(this.mission==='cross'){
+      gx=GOALP.x; gy=GOALP.y;
+      const inBand=this.y<BAND.y1+0.8&&this.y>BAND.y0-0.8;
+      spd=inBand?V_CROSS:V_FREE;
+      this.state=inBand?'穿越主通道中':'前往目的地';
+      if(Math.hypot(gx-this.x,gy-this.y)<1.0){this.done=true; this.state='✅ 已抵達';
+        world.event(this.mode==='global'?'B-done':'A-done');}
     }
 
-    if(this.mode==='patrol'){
-      if(this.mission==='idle'){
-        // 排程式作業:選最近的未掃走道,直接前往執行(車載無從得知裡面有沒有人)
-        let best=null,bd=1e9;
-        for(const a of AISLES){ if(this.scanned.has(a.id))continue;
-          const d=Math.abs(a.cx-this.x); if(d<bd){bd=d;best=a;} }
-        if(!best){ this.mission='home'; }
-        else{ this.targetAisle=best; this.mission='toEnt'; this.path=null; }
-      }
-      else if(this.mission==='toEnt'){
-        const a=this.targetAisle, e=ENT(a);
-        this.state=`前往走道 ${a.id} 點貨(不知裡面是否有人)`;
-        if(this.goTo(e.x,e.y,dt,1.5,custs)){ this.mission='scan'; this.path=null; }
-      }
-      else if(this.mission==='scan'){
-        const a=this.targetAisle, xEnd=EXT(a);
-        const n=this.occ(a.id,custs);
-        this.state = n>0? `走道 ${a.id} 點貨中 — 與 ${n} 位顧客擠同一走道` : `走道 ${a.id} 點貨中(掃描貨架)`;
-        if(this.goTo(a.cx,xEnd.y,dt,0.85,custs)){
-          this.scanned.add(a.id); this.mission='idle'; this.path=null;
-        }
-      }
-      else if(this.mission==='home'){
-        this.state='任務完成,返回待命點';
-        if(this.goTo(DOCK.x,DOCK.y,dt,1.6,custs)){ this.done=true; this.doneT=this.time; this.state='✅ 全部完成'; }
+    /* 移動與近距安全 */
+    const dx=gx-this.x, dy=gy-this.y, dd=Math.hypot(dx,dy)||1;
+    if(dd>0.12)this.hd=Math.atan2(dy/dd,dx/dd);
+    let cap=Math.min(spd,dd*3);
+    let blocked=false;
+    for(const p of pax){
+      if(!p.active||p.state==='wait'||p.state==='pre')continue;
+      const px=p.x-this.x,py=p.y-this.y,d=Math.hypot(px,py);
+      if(d<1.4){cap=0;blocked=true;}
+      else if(d<2.4&&(px*(dx/dd)+py*(dy/dd))/d>0.2)cap=Math.min(cap,0.5);
+      // 逆向近距遭遇
+      if(d<2.3){
+        const last=this.encCd.get(p)??-9;
+        if(this.time-last>2){this.enc++;this.encCd.set(p,this.time);}
       }
     }
-    else{ /* global:待命等淨空 */
-      if(this.mission==='idle'){
-        this.state='待命中 — 監看各走道人數(環境攝影機)';
-        let pick=null;
-        for(const a of AISLES){
-          if(this.scanned.has(a.id))continue;
-          if(this.occ(a.id,custs)===0&&!this.nearEntrance(a,custs)){pick=a;break;}
-        }
-        if(pick){ this.targetAisle=pick; this.mission='toEnt'; this.path=null; }
-        else if(this.scanned.size>=3){ this.mission='home'; }
-      }
-      else if(this.mission==='toEnt'){
-        const a=this.targetAisle, e=ENT(a);
-        this.state=`走道 ${a.id} 淨空 — 出動點貨`;
-        // 途中若淨空條件被破壞 → 放棄返回待命
-        if(this.occ(a.id,custs)>0){ this.mission='back'; this.path=null; }
-        else if(this.goTo(e.x,e.y,dt,1.7,custs)){ this.mission='scan'; this.path=null; }
-      }
-      else if(this.mission==='scan'){
-        const a=this.targetAisle, xEnd=EXT(a);
-        this.state=`走道 ${a.id} 點貨中(掃描貨架)`;
-        if(this.goTo(a.cx,xEnd.y,dt,0.85,custs)){
-          this.scanned.add(a.id); this.mission= this.scanned.size>=3?'home':'idle2'; this.path=null;
-        }
-      }
-      else if(this.mission==='idle2'){
-        // 掃完一條後於後場就近待命,不必回角落
-        this.state='後場待命 — 監看剩餘走道';
-        let pick=null;
-        for(const a of AISLES){
-          if(this.scanned.has(a.id))continue;
-          if(this.occ(a.id,custs)===0&&!this.nearEntrance(a,custs)){pick=a;break;}
-        }
-        if(pick){
-          this.targetAisle=pick; this.mission='toExt'; this.path=null;
-        }
-      }
-      else if(this.mission==='toExt'){
-        const a=this.targetAisle, e=EXT(a);
-        this.state=`走道 ${a.id} 淨空 — 出動點貨`;
-        if(this.occ(a.id,custs)>0){ this.mission='idle2'; this.path=null; }
-        else if(this.goTo(e.x,e.y,dt,1.7,custs)){ this.mission='scanDown'; this.path=null; }
-      }
-      else if(this.mission==='scanDown'){
-        const a=this.targetAisle;
-        this.state=`走道 ${a.id} 點貨中(掃描貨架)`;
-        if(this.goTo(a.cx,AY1+1.4,dt,0.85,custs)){
-          this.scanned.add(a.id); this.mission=this.scanned.size>=3?'home':'idle2'; this.path=null;
-        }
-      }
-      else if(this.mission==='back'){
-        this.state='淨空條件消失 — 返回待命';
-        if(this.goTo(DOCK.x,DOCK.y,dt,1.6,custs))this.mission='idle';
-      }
-      else if(this.mission==='home'){
-        this.state='任務完成,返回待命點';
-        if(this.goTo(DOCK.x,DOCK.y,dt,1.6,custs)){ this.done=true; this.doneT=this.time; this.state='✅ 全部完成'; }
-      }
+    this.speed+=(cap-this.speed)*Math.min(dt*6,1);
+    if(this.mission!=='load'&&this.mission!=='decide'){
+      this.x+=dx/dd*this.speed*dt; this.y+=dy/dd*this.speed*dt;
     }
-    this.trail.push([this.x,this.y]); if(this.trail.length>320)this.trail.shift();
+    /* 指標 */
+    const inBand=this.y<BAND.y1+0.8&&this.y>BAND.y0-0.8;
+    const surging=pax.some(p=>p.active&&p.state!=='pre');
+    if(inBand&&surging)this.expo+=dt;
+    if(blocked&&this.mission==='cross')this.frz+=dt;
+    this.trail.push([this.x,this.y]); if(this.trail.length>240)this.trail.shift();
   }
 }
 
 /* ================= 面板 ================= */
-class Panel{
-  constructor(cv,mode,seed){ this.cv=cv; this.ctx=cv.getContext('2d'); this.mode=mode; this.seed=seed; this.reset(); }
-  reset(){
-    const rng=mulberry32(this.seed);
-    this.custs=[]; for(let i=0;i<12;i++)this.custs.push(new Cust(rng,i));
-    this.robot=new Robot(this.mode);
-  }
+class World{
+  constructor(cv,mode){ this.cv=cv; this.ctx=cv.getContext('2d'); this.mode=mode; this.reset(); }
+  reset(){ this.simT=0; this.pax=SURGE.map(d=>new Pax(d)); this.robot=new Robot(this.mode);
+    this.gateFired=false; this.eventCb=null; }
   step(dt){
-    for(const c of this.custs)c.step(dt,this.custs,this.robot);
+    this.simT+=dt;
+    if(!this.gateFired&&this.simT>=T_OPEN){this.gateFired=true; this.event('gate');}
+    for(const p of this.pax)p.step(dt,this.simT,this.robot);
     this.robot.step(dt,this);
   }
+  event(n){ if(this.eventCb)this.eventCb(n); }
   draw(){
     const c=this.ctx,r=this.robot;
     c.clearRect(0,0,this.cv.width,this.cv.height);
-    // B:環境攝影機
     if(this.mode==='global'){
-      for(const[cx,cy]of [[22,1.4],[58,1.4],[94,1.4]]){
+      for(const[cx,cy]of [[6,1.4],[40,1.4],[86,1.4]]){
         c.fillStyle='rgba(111,179,255,.045)';
-        c.beginPath(); c.moveTo(cx*S,cy*S); c.arc(cx*S,cy*S,25*S,Math.PI*0.12,Math.PI*0.88); c.closePath(); c.fill();
+        c.beginPath(); c.moveTo(cx*S,cy*S); c.arc(cx*S,cy*S,27*S,Math.PI*0.1,Math.PI*0.9); c.closePath(); c.fill();
         c.fillStyle='#6FB3FF'; c.fillRect(cx*S-5,cy*S-3,10,8);
       }
+      c.fillStyle='rgba(111,179,255,.55)'; c.font='700 11px "Noto Sans TC",sans-serif';
+      c.fillText('環境固定攝影機(含月台側 — 全域 MOT)',12,26);
     }
-    // 貨架
-    for(const w of SHELVES){
-      c.fillStyle='#1B2A3C'; c.fillRect(w.x*S,w.y*S,w.w*S,w.h*S);
-      c.strokeStyle='#28405C'; c.lineWidth=1; c.strokeRect(w.x*S,w.y*S,w.w*S,w.h*S);
-      c.save(); c.translate((w.x+w.w/2)*S,(w.y+w.h/2)*S); c.rotate(-Math.PI/2);
-      c.fillStyle='rgba(143,160,184,.5)'; c.font='700 11px "Noto Sans TC",sans-serif'; c.textAlign='center';
-      c.fillText('貨 架',0,4); c.restore(); c.textAlign='left';
-    }
-    // 外牆
+    // 牆、月台、閘門
     c.fillStyle='#1B2A3C'; c.fillRect(0,0,W*S,2*S); c.fillRect(0,29*S,W*S,2*S);
-    // 走道徽章
-    for(const a of AISLES){
-      const occ=r.occ(a.id,this.custs);
-      const done=r.scanned.has(a.id);
-      let label,color;
-      if(this.mode==='global'){
-        label=done?`走道${a.id} ✓ 已點貨`:`走道${a.id}:${occ} 人`;
-        color=done?'#7ADFA0':(occ===0?'#7ADFA0':'#FF8A5C');
-      }else{
-        const seen=hasLOS(r.x,r.y,a.cx,(AY0+AY1)/2)||aisleOf(r.x,r.y)===a.id||Math.abs(r.y-(AY1+1.4))<1.6&&Math.abs(r.x-a.cx)<2;
-        label=done?`走道${a.id} ✓ 已點貨`:(seen?`走道${a.id}:${occ} 人`:`走道${a.id}:?`);
-        color=done?'#7ADFA0':(seen?(occ===0?'#7ADFA0':'#FF8A5C'):'#8FA0B8');
-      }
-      c.fillStyle='rgba(8,14,26,.85)';
-      c.strokeStyle='#1C2A40';
-      const bw=92;
-      c.fillRect(a.cx*S-bw/2,4.4*S,bw,20); c.strokeRect(a.cx*S-bw/2,4.4*S,bw,20);
-      c.fillStyle=color; c.font='700 11px "Noto Sans TC",sans-serif'; c.textAlign='center';
-      c.fillText(label,a.cx*S,4.4*S+14); c.textAlign='left';
-      if(done){
-        c.fillStyle='rgba(122,223,160,.07)';
-        c.fillRect(a.x0*S,AY0*S,(a.x1-a.x0)*S,(AY1-AY0)*S);
-      }
-    }
-    // 出口與店內人數
-    c.fillStyle='rgba(122,223,160,.12)'; c.fillRect(108*S,25*S,5.5*S,4*S);
-    c.fillStyle='rgba(122,223,160,.8)'; c.font='700 11px "Noto Sans TC",sans-serif';
-    c.fillText('出口/櫃台',108.4*S,24.4*S);
-    const inStore=this.custs.filter(p=>p.active).length;
-    c.fillStyle='rgba(143,160,184,.85)'; c.font='700 12px "Noto Sans TC",sans-serif';
-    c.fillText(`店內顧客:${inStore} 人`,12,(H-1.9)*S+14);
-    // 待命點
-    c.strokeStyle='rgba(255,209,102,.6)'; c.setLineDash([5,4]); c.lineWidth=1.6;
-    c.strokeRect((DOCK.x-2.2)*S,(DOCK.y-1.8)*S,4.4*S,3.6*S); c.setLineDash([]);
-    c.fillStyle='rgba(255,209,102,.85)'; c.font='700 11px "Noto Sans TC",sans-serif';
-    c.fillText('待命點',(DOCK.x-1.7)*S,(DOCK.y-2.3)*S);
-    // 顧客(A:視線被貨架擋住者半透明;已離店者不繪;被打擾者閃紅圈)
-    for(const p of this.custs){
+    c.fillStyle='rgba(255,138,92,.05)'; c.fillRect(0,2*S,GATE_X*S,27*S);
+    c.fillStyle='rgba(255,138,92,.6)'; c.font='700 11px "Noto Sans TC",sans-serif';
+    c.save(); c.translate(2.2*S,15.5*S); c.rotate(-Math.PI/2); c.textAlign='center';
+    c.fillText('月 台(列車到站)',0,0); c.restore(); c.textAlign='left';
+    // 閘門牆與開口
+    const open=this.simT>=T_OPEN;
+    c.fillStyle='#22334D';
+    const gaps=[[11,13.4],[14.8,17.2],[18.6,21]];
+    let prev=2;
+    for(const[g0,g1]of gaps){ c.fillRect(GATE_X*S,prev*S,1.4*S,(g0-prev)*S); prev=g1; }
+    c.fillRect(GATE_X*S,prev*S,1.4*S,(29-prev)*S);
+    if(!open){ c.fillStyle='rgba(255,107,107,.55)';
+      for(const[g0,g1]of gaps)c.fillRect(GATE_X*S,g0*S,1.4*S,(g1-g0)*S); }
+    c.fillStyle=open?'rgba(122,223,160,.85)':'rgba(255,107,107,.85)';
+    c.font='700 10.5px "Noto Sans TC",sans-serif';
+    c.fillText(open?'閘門開啟':'閘門關閉',(GATE_X-0.6)*S,(H-1.6)*S+12);
+    // 主通道帶
+    c.fillStyle='rgba(255,138,92,.04)';
+    c.fillRect((GATE_X+1.4)*S,BAND.y0*S,(W-GATE_X-1.4)*S,(BAND.y1-BAND.y0)*S);
+    c.strokeStyle='rgba(255,138,92,.22)'; c.setLineDash([8,6]); c.lineWidth=1.2;
+    c.beginPath(); c.moveTo((GATE_X+1.4)*S,BAND.y0*S); c.lineTo(W*S,BAND.y0*S);
+    c.moveTo((GATE_X+1.4)*S,BAND.y1*S); c.lineTo(W*S,BAND.y1*S); c.stroke(); c.setLineDash([]);
+    c.fillStyle='rgba(255,138,92,.5)'; c.font='700 12px "Noto Sans TC",sans-serif';
+    c.fillText('主通道(洩流方向 ⟶)',430,(BAND.y0-0.6)*S);
+    // 穿越走廊與目的地
+    c.fillStyle='rgba(111,179,255,.05)';
+    c.fillRect((CROSS_X-1.3)*S,2*S,2.6*S,(H-4)*S);
+    c.fillStyle='#7ADFA0'; c.beginPath(); c.arc(GOALP.x*S,GOALP.y*S,8,0,7); c.fill();
+    c.fillStyle='#06101F'; c.font='800 10px sans-serif'; c.textAlign='center';
+    c.fillText('G',GOALP.x*S,GOALP.y*S+3.5); c.textAlign='left';
+    // 旅客
+    for(const p of this.pax){
       if(!p.active)continue;
-      const seen=this.mode==='global'||(Math.hypot(p.x-r.x,p.y-r.y)<15&&hasLOS(r.x,r.y,p.x,p.y));
-      if(p.flash>0){
-        c.strokeStyle=`rgba(255,107,107,${Math.min(p.flash,0.9)})`; c.lineWidth=2.5;
-        c.beginPath(); c.arc(p.x*S,p.y*S,9,0,7); c.stroke();
-      }
-      c.fillStyle=`rgba(255,138,92,${seen?0.95:0.25})`;
+      const seen=this.mode==='global'||Math.hypot(p.x-r.x,p.y-r.y)<15;
+      c.fillStyle=`rgba(255,138,92,${p.state==='wait'?(seen?0.8:0.15):(seen?0.95:0.28)})`;
       c.beginPath(); c.arc(p.x*S,p.y*S,p.r*S,0,7); c.fill();
+    }
+    // B:月台計數與波前標示
+    if(this.mode==='global'){
+      const si=r.surgeInfo(this.pax);
+      c.fillStyle='rgba(8,14,26,.85)'; c.strokeStyle='#1C2A40';
+      c.fillRect(10,214,300,58); c.strokeRect(10,214,300,58);
+      c.fillStyle='#6FB3FF'; c.font='800 11px "Noto Sans TC",sans-serif';
+      c.fillText('月台監看(戰略層)',20,232);
+      c.font='700 12px ui-monospace,monospace';
+      c.fillStyle=si.waiting>0?'#FF8A5C':'#8FA0B8';
+      c.fillText(`月台聚集:${si.waiting} 人`,20,250);
+      if(si.front!==null){
+        const eta=Math.max((CROSS_X-si.front)/si.meanV,0);
+        c.fillStyle=si.front<CROSS_X?'#FF6B6B':'#7ADFA0';
+        c.fillText(si.front<CROSS_X? `波前抵達穿越線:~${eta.toFixed(1)}s`:`波前已過穿越線(餘 ${si.count} 人)`,20,266);
+        // 波前線
+        c.strokeStyle='rgba(255,107,107,.7)'; c.setLineDash([4,4]); c.lineWidth=2;
+        c.beginPath(); c.moveTo(si.front*S,BAND.y0*S); c.lineTo(si.front*S,BAND.y1*S); c.stroke();
+        c.setLineDash([]);
+        c.fillStyle='#FF6B6B'; c.font='800 10.5px "Noto Sans TC",sans-serif';
+        c.fillText('波前',si.front*S+5,(BAND.y0+1)*S);
+      }else{
+        c.fillStyle='#8FA0B8'; c.fillText('通道:無洩流',20,266);
+      }
+    }else{
+      c.fillStyle='rgba(255,209,102,.28)';
+      c.strokeStyle='rgba(255,209,102,.35)'; c.setLineDash([5,6]); c.lineWidth=1.4;
+      c.beginPath(); c.arc(r.x*S,r.y*S,7*S,0,7); c.stroke(); c.setLineDash([]);
+      c.fillStyle='rgba(255,138,92,.5)'; c.font='700 11px "Noto Sans TC",sans-serif';
+      c.fillText('LiDAR 視距 7m — 月台上發生什麼,一無所知',12,232);
     }
     // 機器人
     if(r.trail.length>2){
@@ -526,17 +427,23 @@ class Panel{
       c.moveTo(r.trail[0][0]*S,r.trail[0][1]*S);
       for(const[tx,ty]of r.trail)c.lineTo(tx*S,ty*S); c.stroke();
     }
-    if(r.path&&r.mission!=='idle'&&r.mission!=='idle2'&&!r.done){
-      c.strokeStyle=this.mode==='global'?'rgba(92,200,255,.5)':'rgba(255,209,102,.45)';
-      c.setLineDash([5,5]); c.lineWidth=2; c.beginPath();
-      c.moveTo(r.x*S,r.y*S);
-      for(const[px,py]of r.path)c.lineTo(px*S,py*S);
-      c.stroke(); c.setLineDash([]);
+    if(r.mission==='load'){
+      const frac=1-Math.max(r.loadT,0)/LOAD_T;
+      c.strokeStyle='rgba(255,209,102,.25)'; c.lineWidth=4;
+      c.beginPath(); c.arc(r.x*S,r.y*S,15,0,7); c.stroke();
+      c.strokeStyle='#FFD166'; c.beginPath();
+      c.arc(r.x*S,r.y*S,15,-Math.PI/2,-Math.PI/2+frac*Math.PI*2); c.stroke();
     }
-    // 掃描光
-    if(r.mission==='scan'||r.mission==='scanDown'){
-      c.fillStyle='rgba(122,223,160,.13)';
-      c.beginPath(); c.arc(r.x*S,r.y*S,22,0,7); c.fill();
+    if(r.mission==='decide'){
+      c.strokeStyle='rgba(92,200,255,.6)'; c.lineWidth=2;
+      c.beginPath(); c.arc(r.x*S,r.y*S,12+Math.sin(performance.now()/300)*2,0,7); c.stroke();
+    }
+    const drowned=r.mission==='cross'&&r.speed<0.1&&this.pax.some(p=>p.active&&p.state==='flow'&&Math.hypot(p.x-r.x,p.y-r.y)<3);
+    if(drowned){
+      c.strokeStyle='rgba(255,107,107,.9)'; c.lineWidth=3;
+      c.beginPath(); c.arc(r.x*S,r.y*S,13+Math.sin(performance.now()/110)*2,0,7); c.stroke();
+      c.fillStyle='#FF6B6B'; c.font='900 14px "Noto Sans TC",sans-serif';
+      c.fillText('⛔ 被人浪吞沒',r.x*S+14,r.y*S-10);
     }
     c.fillStyle=r.done?'#7ADFA0':'#FFFFFF';
     c.beginPath(); c.arc(r.x*S,r.y*S,8,0,7); c.fill();
@@ -546,34 +453,49 @@ class Panel{
 }
 
 /* ================= 主控 ================= */
-const pA=new Panel(document.getElementById('cvA'),'patrol',20260603);
-const pB=new Panel(document.getElementById('cvB'),'global',20260603);
-let playing=false,speedMult=2,last=null;
+const wA=new World(document.getElementById('cvA'),'lidar');
+const wB=new World(document.getElementById('cvB'),'global');
+let playing=false,speedMult=2,last=null,stepNo=0;
 const $=id=>document.getElementById(id), banner=$('banner');
+function narrate(n,txt){ if(n<=stepNo)return; stepNo=n;
+  $('narration').querySelector('.step').textContent='STEP '+n;
+  $('narText').textContent=txt;
+}
+let nogoOnce=false;
+const onEvent=n=>{
+  if(n==='gate')  narrate(2,'閘門開啟 —— 數十位旅客湧入主通道向右洩流。A 剛好走進通道,而它 12 秒前根本無從知道這裡會變成一條河。');
+  if(n==='B-nogo'&&!nogoOnce){nogoOnce=true;
+    narrate(1,'B 的攝影機看見月台:人數持續累積 → 洩流醞釀。裝載一完成即進入 GO/NO-GO 判定:波前抵達時間 vs 自身穿越時間 — 窗口不足,於邊界待命。');}
+  if(n==='B-go')  narrate(4,'波尾通過穿越線,B 逐人推算「我穿越期間無人會抵達」→ GO,穿越此刻真正淨空的通道。');
+  if(n==='B-done')narrate(5,'B 抵達 — 全程未與任何一位旅客近身。');
+};
+wA.eventCb=onEvent; wB.eventCb=onEvent;
 
+let n3=false;
 function updateHUD(){
-  $('doneA').textContent=pA.robot.scanned.size+' / 3';
-  $('doneB').textContent=pB.robot.scanned.size+' / 3';
-  $('timeA').textContent=(pA.robot.doneT??pA.robot.time).toFixed(1)+' s';
-  $('timeB').textContent=(pB.robot.doneT??pB.robot.time).toFixed(1)+' s';
-  $('itfA').textContent=pA.robot.disturb; $('itfB').textContent=pB.robot.disturb;
-  $('coA').textContent=pA.robot.coT.toFixed(1)+' s';
-  $('coB').textContent=pB.robot.coT.toFixed(1)+' s';
-  $('odoA').textContent=pA.robot.odo.toFixed(0)+' m';
-  $('odoB').textContent=pB.robot.odo.toFixed(0)+' m';
-  $('chipA').textContent=pA.robot.state; $('chipB').textContent=pB.robot.state;
-  $('coA').className='val num'+(pA.robot.coT>3?' lose':'');
-  $('coB').className='val num'+(pB.robot.done&&pB.robot.coT<1?' win':'');
-  $('itfA').className='val num'+(pA.robot.disturb>2?' lose':'');
-  $('itfB').className='val num'+(pB.robot.done&&pB.robot.disturb===0?' win':'');
-  if(pA.robot.done&&pB.robot.done&&banner.style.display!=='block'){
+  if(!n3&&wA.robot.frz>2){n3=true;
+    narrate(3,'A 在通道正中央被人浪吞沒 — 凍結、被繞行、成為河道裡的一塊石頭。它的每一秒暴露都是與旅客的碰撞風險。');}
+  $('expA').textContent=wA.robot.expo.toFixed(1)+' s';
+  $('expB').textContent=wB.robot.expo.toFixed(1)+' s';
+  $('encA').textContent=wA.robot.enc; $('encB').textContent=wB.robot.enc;
+  $('frzA').textContent=wA.robot.frz.toFixed(1)+' s';
+  $('frzB').textContent=wB.robot.frz.toFixed(1)+' s';
+  $('timeA').textContent=wA.robot.time.toFixed(1)+' s';
+  $('timeB').textContent=wB.robot.time.toFixed(1)+' s';
+  $('chipA').textContent=wA.robot.state; $('chipB').textContent=wB.robot.state;
+  $('expA').className='val num'+(wA.robot.expo>5?' lose':'');
+  $('expB').className='val num'+(wB.robot.done&&wB.robot.expo<1?' win':'');
+  $('encA').className='val num'+(wA.robot.enc>5?' lose':'');
+  $('encB').className='val num'+(wB.robot.done&&wB.robot.enc===0?' win':'');
+  if(wA.robot.done&&wB.robot.done&&banner.style.display!=='block'){
     banner.style.display='block';
-    banner.innerHTML=`✅ 三條走道皆完成點貨 —— <b>B(待命等淨空)</b>:干擾顧客 <span class="num">${pB.robot.disturb}</span> 次、
-      與顧客同走道 <span class="num">${pB.robot.coT.toFixed(1)}s</span>、行走 <span class="num">${pB.robot.odo.toFixed(0)}m</span>、用時 <span class="num">${pB.robot.doneT.toFixed(1)}s</span>;
-      <b>A(排程巡掃)</b>:干擾顧客 <span class="num">${pA.robot.disturb}</span> 次、同走道 <span class="num">${pA.robot.coT.toFixed(1)}s</span>、
-      行走 <span class="num">${pA.robot.odo.toFixed(0)}m</span>、用時 <span class="num">${pA.robot.doneT.toFixed(1)}s</span>。
-      A 或許早一點掃完,但每一次紅圈都是一位被迫側身讓路的顧客 ——
-      <b>零售場域真正的成本不是機器人的工時,是顧客的體驗</b>;而分辨「何時該出動」需要的正是貨架後面、視線之外的走道人數。`;
+    banner.innerHTML=`✅ 對比完成 —— <b>B(洩洪預測)</b>:人浪中暴露 <span class="num">${wB.robot.expo.toFixed(1)}s</span>、
+      近距遭遇 <span class="num">${wB.robot.enc}</span> 次、凍結 <span class="num">${wB.robot.frz.toFixed(1)}s</span>、用時 <span class="num">${wB.robot.time.toFixed(1)}s</span>;
+      <b>A(所見即所行)</b>:暴露 <span class="num">${wA.robot.expo.toFixed(1)}s</span>、近距遭遇 <span class="num">${wA.robot.enc}</span> 次、
+      凍結 <span class="num">${wA.robot.frz.toFixed(1)}s</span>、用時 <span class="num">${wA.robot.time.toFixed(1)}s</span>。
+      時間或許相去不遠 —— 但 A 是數十位旅客從身邊擠過去的那塊石頭,每一次近身都是碰撞風險與通行阻礙;
+      <b>對站方而言,洩洪時通道中央的機器人不是效率問題,是安全事件。而避開它,只需要看得見月台。</b>`;
+    narrate(6,'對比完成 —— 車載感知回答「現在」,全域感知回答「即將」;人潮洩洪是「即將」最貴的一種。');
     playing=false; $('btnPlay').textContent='▶ 播放';
   }
 }
@@ -581,12 +503,15 @@ function frame(t){
   requestAnimationFrame(frame);
   if(last===null)last=t;
   const dt=Math.min((t-last)/1000,0.05); last=t;
-  if(playing)for(let k=0;k<speedMult;k++){pA.step(dt);pB.step(dt);}
-  pA.draw(); pB.draw(); updateHUD();
+  if(playing)for(let k=0;k<speedMult;k++){wA.step(dt);wB.step(dt);}
+  wA.draw(); wB.draw(); updateHUD();
 }
 $('btnPlay').onclick=()=>{playing=!playing;$('btnPlay').textContent=playing?'⏸ 暫停':'▶ 播放';};
 $('btnReset').onclick=()=>{
-  pA.reset(); pB.reset(); playing=false; banner.style.display='none';
+  wA.reset(); wB.reset(); wA.eventCb=onEvent; wB.eventCb=onEvent;
+  playing=false; banner.style.display='none'; stepNo=0; nogoOnce=false; n3=false;
+  $('narration').querySelector('.step').textContent='STEP 0';
+  $('narText').textContent='按「播放」開始 —— 通道現在空無一人,但月台上有事情正在發生。';
   $('btnPlay').textContent='▶ 播放';
 };
 document.querySelectorAll('#speedSeg button').forEach(b=>{

@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230E1626'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23ffffff'/%3E%3Ccircle cx='16' cy='16' r='11' stroke='%236FB3FF' stroke-width='2.4' fill='none' stroke-dasharray='4 3'/%3E%3C/svg%3E">
-<title>Demo 07 · 群體識別:哪些縫不該鑽</title>
+<title>Demo 06 · 排隊識別:不插隊的機器人</title>
 <style>
   :root{
     --bg:#0B1220; --panel:#0E1626; --panel-edge:#1C2A40;
     --ink:#E8EEF7; --ink-dim:#8FA0B8; --accent:#6FB3FF;
-    --duo:#E86BD0; --str:#8FA0B8; --good:#7ADFA0; --bad:#FF6B6B; --gold:#FFD166; --gap:#5CC8FF;
+    --q:#FF8A5C; --gap:#5CC8FF; --good:#7ADFA0; --bad:#FF6B6B; --gold:#FFD166;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -63,7 +63,7 @@
   }
   canvas{display:block; width:100%; height:auto; border-radius:10px; border:1px solid var(--panel-edge); background:var(--panel);}
   .scoreboard{
-    width:100%; max-width:1140px; display:grid; grid-template-columns:200px 1fr 1fr; gap:1px;
+    width:100%; max-width:1140px; display:grid; grid-template-columns:180px 1fr 1fr; gap:1px;
     background:var(--panel-edge); border:1px solid var(--panel-edge); border-radius:10px; overflow:hidden;
     font-size:14px; margin-top:4px;
   }
@@ -84,14 +84,13 @@
 
 <header>
   <a href="index.html" style="display:inline-block;color:#6FB3FF;text-decoration:none;font-size:12.5px;font-weight:700;margin-bottom:10px;border:1px solid #1C2A40;border-radius:999px;padding:5px 14px;background:#0E1626">← 回展示首頁</a>
-  <div class="eyebrow">GLOBAL MOT × AMR NAVIGATION — DEMO 07</div>
-  <h1>群體識別:會鑽縫是技術,知道哪些縫不該鑽是智慧</h1>
+  <div class="eyebrow">GLOBAL MOT × AMR NAVIGATION — DEMO 06</div>
+  <h1>排隊識別:LiDAR 看到的是「有縫可以過」,我們看到的是「一條隊」</h1>
   <div class="sub">
-    機器人前方會先後遇到兩組「中間有縫」的行人:一對<b>並肩同行的同伴</b>(間距穩定、同速同向),
-    和兩位<b>恰好走在一起的陌生人</b>(速度不同、間距漸變)。幾何上兩道縫一模一樣 ——
-    LiDAR 的答案也一樣:都能過,於是 A 兩道都鑽,把同行的兩人硬生生隔開;
-    本技術由全域 MOT 的連續軌跡計算<b>兩兩關聯度</b>(同速、同向、間距穩定的持續時間):
-    同伴判定為<b>不可分割的群體</b>而繞行,陌生人則照樣安全穿越 —— <b>是分辨,不是保守</b>。
+    櫃台前排著一條人龍,前後間距一公尺多 —— 對車載 LiDAR 而言,這只是<b>幾個稀疏的靜止障礙物,中間全是可通行的縫</b>,
+    於是最短路徑大剌剌地從隊伍中間穿過去;
+    本技術由全域 MOT 的連續軌跡看出<b>語意</b>:這群人長時間靜止、排成一線、朝向櫃台、整體緩慢前移 —— <b>這是一條隊伍</b>,
+    是一個不可穿越的社會結構,於是繞到<b>隊尾後方</b>通過。任務為往返一趟取件,A 會穿越隊伍兩次。
   </div>
 </header>
 
@@ -105,37 +104,37 @@
   </div>
   <div class="spacer"></div>
   <div class="legend">
-    <span><span class="dot" style="background:var(--duo)"></span>同行同伴(群體)</span>
-    <span><span class="dot" style="background:var(--str)"></span>陌生人(無關聯)</span>
+    <span><span class="dot" style="background:var(--q)"></span>排隊者(隊伍緩慢前移)</span>
+    <span><span class="dot" style="background:#8FA0B8"></span>路過行人</span>
     <span><span class="dot" style="background:#fff"></span>AMR</span>
   </div>
 </div>
 
-<div class="narration" id="narration"><span class="step">STEP 0</span><span id="narText">按「播放」開始 —— 前方先後有兩道幾何上完全相同的「人與人之間的縫」。</span></div>
+<div class="narration" id="narration"><span class="step">STEP 0</span><span id="narText">按「播放」開始 —— 兩台機器人須往返對面取件,一條排隊人龍橫在中間。</span></div>
 
 <div class="panelWrap">
-  <div class="panelLabel"><span class="tag tagA">A</span> 傳統:純車載 LiDAR — 有縫就鑽,分不出誰跟誰一起</div>
+  <div class="panelLabel"><span class="tag tagA">A</span> 傳統:純車載 LiDAR — 有縫就走最短路</div>
   <div class="stateChip" id="chipA">待機</div>
   <canvas id="cvA" width="1140" height="310"></canvas>
 </div>
 
 <div class="panelWrap">
-  <div class="panelLabel"><span class="tag tagB">B</span> 本技術:全域 MOT 關聯度 — 群體繞行,陌生人間隙照穿</div>
+  <div class="panelLabel"><span class="tag tagB">B</span> 本技術:全域 MOT 隊伍識別 — 由隊尾後方繞行</div>
   <div class="stateChip" id="chipB">待機</div>
   <canvas id="cvB" width="1140" height="310"></canvas>
 </div>
 
 <div class="scoreboard">
   <div class="head">即時記分板</div>
-  <div class="head" style="color:#FF8A5C">A|純幾何</div>
-  <div class="head" style="color:#5CC8FF">B|關聯度判別</div>
-  <div class="rowh">拆散群體次數</div>
-  <div class="val num" id="splitA">0</div>
-  <div class="val num" id="splitB">0</div>
-  <div class="rowh">陌生人間隙穿越</div>
-  <div class="val num" id="thrA">0</div>
-  <div class="val num" id="thrB">0</div>
-  <div class="rowh">總耗時</div>
+  <div class="head" style="color:#FF8A5C">A|最短路</div>
+  <div class="head" style="color:#5CC8FF">B|隊伍識別</div>
+  <div class="rowh">穿越隊伍次數</div>
+  <div class="val num" id="cutA">0</div>
+  <div class="val num" id="cutB">0</div>
+  <div class="rowh">干擾排隊者次數</div>
+  <div class="val num" id="itfA">0</div>
+  <div class="val num" id="itfB">0</div>
+  <div class="rowh">總耗時(往返)</div>
   <div class="val num" id="timeA">0.0 s</div>
   <div class="val num" id="timeB">0.0 s</div>
   <div class="rowh">行走距離</div>
@@ -146,105 +145,177 @@
 <div class="banner" id="banner"></div>
 
 <div class="foot">
-  說明:兩面板行人以相同腳本行進,條件完全對等。兩道縫的寬度刻意設計為相同(約 2.6m),幾何上無從區分。
-  B 的關聯度是<b>真實計算</b>:對每一對行人持續累計「距離介於 0.5–2.5m、速度差 &lt; 0.3 m/s、方向差 &lt; 20°」的成立時間,
-  持續逾 3 秒即判定為群體(畫面顯示關聯度百分比與連結線),群體之連線帶寫入代價地圖為不可穿越;
-  陌生人組因速度不同、間距漸變,關聯度始終偏低,其間隙照常視為可通行 —— 若 B 只是「看到兩個人就繞」,那是保守;
-  <b>對群體繞行、對陌生人穿越,才是判別</b>。A 拆散群體時,兩位同伴會被迫分開、待機器人通過後重新靠攏(紅圈閃爍);
-  「拆散群體」在導覽、親子、長照場域即是客訴,在機場則可能是把旅客與同行者隔開的安全事件。
+  說明:兩面板隊伍與行人以相同亂數種子生成,條件完全對等。隊伍會動:櫃台每隔數秒服務完一位、全隊前移一格,途中並有新顧客走來加入隊尾 ——
+  隊伍的長度與隊尾位置持續變化。
+  B 的隊伍識別是<b>真實計算</b>而非標記:對全域軌跡中「持續低速(&lt;0.25 m/s)」之人員做鄰近鏈結聚類,
+  四人以上排成一線即判定為隊伍,並將隊伍帶狀範圍寫入路徑代價地圖為不可穿越;
+  剛走來還在移動的加入者不會被誤判,待其於隊尾停下、軌跡轉為靜止,隊伍範圍才向後延伸 —— B 的繞行點會跟著隊尾即時調整。
+  A 的 LiDAR 只見幾何:間距一公尺多的靜止人形之間就是可通行空間,最短路徑自然從中穿越;
+  穿越時近身 2 公尺內即計一次「干擾排隊者」(紅圈閃爍,同一人 4 秒內不重複計)。
+  本 demo 展示的是感知的<b>語意層</b>:LiDAR 給的是幾何,全域 MOT 的連續軌跡給的是行為 —— 而「這是一條隊伍」是行為,不是幾何。
 </div>
 
 <script>
 (()=>{
 /* ================= 世界 ================= */
 const S=10, W=114, H=31;
-const WALLS=[{x:0,y:0,w:W,h:2},{x:0,y:29,w:W,h:2}];
-const START={x:6,y:15.5}, GOAL={x:108,y:15.5};
+const COUNTER={x:52,y:2,w:10,h:3.4};            // 櫃台
+const WALLS=[COUNTER,{x:0,y:0,w:W,h:2},{x:0,y:29,w:W,h:2}];
+const QX=57;                                      // 隊伍所在直線 x
+const QHEAD_Y=7.0, QSPACE=2.3;                    // 隊首位置與間距
+const A_START={x:6,y:15.5}, A_GOAL={x:108,y:15.5};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function inWall(x,y,m=0){for(const w of WALLS){if(x>w.x-m&&x<w.x+w.w+m&&y>w.y-m&&y<w.y+w.h+m)return true}return false}
 
-/* ================= 行人(腳本化) ================= */
-class Ped{
-  constructor(x,y,vx,kind,mate){
-    this.x=x;this.y=y;this.baseY=y;this.vx=vx;this.vy=0;
-    this.kind=kind; this.mate=mate||null;      // 'duo' | 'str'
-    this.r=0.4; this.active=true; this.flash=0;
-  }
-  step(dt,robot){
-    if(!this.active)return;
-    if(this.flash>0)this.flash-=dt;
-    // 機器人逼近 → 側身避開(群體被拆散的具體樣貌)
-    let ry=0;
-    if(robot){
-      const dx=this.x-robot.x, dy=this.y-robot.y, d2=dx*dx+dy*dy;
-      if(d2<5.3&&d2>1e-6){ const d=Math.sqrt(d2); ry=dy/d*1.4; }
+/* ================= 人物 ================= */
+class Person{
+  constructor(x,y,kind){ this.x=x;this.y=y;this.kind=kind; this.vx=0;this.vy=0;
+    this.r=0.38; this.active=true; this.flash=0; this.speedHist=1; }
+  seek(tx,ty,spd,dt,others,robot){
+    let dx=tx-this.x, dy=ty-this.y, dd=Math.hypot(dx,dy);
+    if(dd<0.15){ this.vx=0;this.vy=0; return true; }
+    dd=dd||1;
+    let vx=dx/dd*spd, vy=dy/dd*spd;
+    for(const o of others){ if(o===this||!o.active)continue;
+      const ox=this.x-o.x, oy=this.y-o.y, d2=ox*ox+oy*oy;
+      if(d2<1.1&&d2>1e-6){const d=Math.sqrt(d2);vx+=ox/d*0.5;vy+=oy/d*0.5;}
     }
-    // 回歸自己的行進線(通過後重新靠攏)
-    const targetY=this.baseY+ry;
-    this.vy=(targetY-this.y)*2.2;
-    this.x+=this.vx*dt; this.y+=this.vy*dt;
-    if(this.x<-4)this.active=false;
+    if(robot){
+      const ox=this.x-robot.x, oy=this.y-robot.y, d2=ox*ox+oy*oy;
+      if(d2<3.6&&d2>1e-6){const d=Math.sqrt(d2);vx+=ox/d*0.55;vy+=oy/d*0.55;}
+    }
+    this.vx=vx; this.vy=vy;
+    this.x+=vx*dt; this.y+=vy*dt;
+    return false;
   }
-  get v(){ return Math.hypot(this.vx,this.vy); }
+  updSpeed(dt){ // 低通速度大小,供隊伍識別
+    const s=Math.hypot(this.vx,this.vy);
+    this.speedHist=this.speedHist*0.92+s*0.08;
+    if(this.flash>0)this.flash-=dt;
+  }
 }
 
-/* ================= 關聯度(真實計算) ================= */
-class Affinity{
-  constructor(){ this.score=new Map(); }
-  key(a,b){ return a.id<b.id? a.id+'-'+b.id : b.id+'-'+a.id; }
-  update(peds,dt){
-    for(let i=0;i<peds.length;i++)for(let j=i+1;j<peds.length;j++){
-      const a=peds[i], b=peds[j];
-      if(!a.active||!b.active)continue;
-      const k=this.key(a,b);
-      const d=Math.hypot(a.x-b.x,a.y-b.y);
-      const dv=Math.hypot(a.vx-b.vx,a.vy-b.vy);
-      const ha=Math.atan2(a.vy,a.vx), hb=Math.atan2(b.vy,b.vx);
-      let dh=Math.abs(ha-hb); if(dh>Math.PI)dh=2*Math.PI-dh;
-      const together = d>0.5&&d<2.9&&dv<0.35&&dh<0.35&&a.v>0.2&&b.v>0.2;
-      let s=this.score.get(k)||0;
-      s = together? Math.min(s+dt,8) : Math.max(s-dt*1.5,0);
-      this.score.set(k,s);
+/* ================= 隊伍管理 ================= */
+class Queue{
+  constructor(rng){
+    this.rng=rng;
+    this.members=[];                       // 依排隊順序
+    for(let i=0;i<8;i++){
+      const p=new Person(QX+(rng()*0.8-0.4), QHEAD_Y+i*QSPACE, 'queue');
+      this.members.push(p);
+    }
+    this.serveT=5+rng()*3;
+    this.leavers=[];
+    this.joiners=[];                       // {p, spawnT}
+    this.joinTimes=[9,24,38];
+    this.spawned=0;
+    this.t=0;
+  }
+  all(){ return [...this.members,...this.leavers,...this.joiners.map(j=>j.p)]; }
+  step(dt, others, robot){
+    this.t+=dt;
+    // 新顧客走來加入隊尾
+    if(this.spawned<this.joinTimes.length&&this.t>=this.joinTimes[this.spawned]){
+      const p=new Person(16+this.rng()*6, 27, 'joiner');
+      this.joiners.push({p});
+      this.spawned++;
+    }
+    // 隊員就位(緩慢前移)
+    this.members.forEach((p,i)=>{
+      p.seek(QX, QHEAD_Y+i*QSPACE, 0.55, dt, others, robot);
+      p.updSpeed(dt);
+    });
+    // 加入者走向隊尾;抵達即入列
+    for(let i=this.joiners.length-1;i>=0;i--){
+      const j=this.joiners[i], tailY=QHEAD_Y+this.members.length*QSPACE;
+      const arrived=j.p.seek(QX, tailY, 0.95, dt, others, robot);
+      j.p.updSpeed(dt);
+      if(arrived){ j.p.kind='queue'; this.members.push(j.p); this.joiners.splice(i,1); }
+    }
+    // 服務:隊首完成 → 離開,全隊前移
+    if(this.members.length>0){
+      const head=this.members[0];
+      if(Math.abs(head.y-QHEAD_Y)<0.4){
+        this.serveT-=dt;
+        if(this.serveT<=0){
+          this.serveT=6+this.rng()*3;
+          head.kind='leaver'; this.leavers.push(head); this.members.shift();
+        }
+      }
+    }
+    // 離開者走向右上出口
+    for(let i=this.leavers.length-1;i>=0;i--){
+      const p=this.leavers[i];
+      const tx=p.y>5.5?66:113, ty=p.y>5.5?4:3.4;
+      p.seek(tx,ty,1.2,dt,others,robot);
+      p.updSpeed(dt);
+      if(p.x>111){p.active=false; this.leavers.splice(i,1);}
     }
   }
-  pct(a,b){ const s=this.score.get(this.key(a,b))||0; return Math.min(s/8*100,99); }
-  isGroup(a,b){ return (this.score.get(this.key(a,b))||0)>3; }
+}
+
+/* ================= 路過行人 ================= */
+class Wanderer extends Person{
+  constructor(rng,region){ super(region.x0+rng()*(region.x1-region.x0), region.y0+rng()*(region.y1-region.y0),'walk');
+    this.rng=rng; this.rg=region; this.pick(); this.sp=0.5+rng()*0.4; }
+  pick(){ this.wx=this.rg.x0+this.rng()*(this.rg.x1-this.rg.x0);
+          this.wy=this.rg.y0+this.rng()*(this.rg.y1-this.rg.y0); }
+  step(dt,others,robot){
+    if(this.seek(this.wx,this.wy,this.sp,dt,others,robot))this.pick();
+    this.updSpeed(dt);
+  }
+}
+
+/* ================= 隊伍識別(B,真實聚類) ================= */
+function detectQueues(people){
+  const still=people.filter(p=>p.active&&p.speedHist<0.25);
+  const used=new Set(), clusters=[];
+  for(const p of still){
+    if(used.has(p))continue;
+    const cl=[p]; used.add(p);
+    let grew=true;
+    while(grew){ grew=false;
+      for(const q of still){ if(used.has(q))continue;
+        for(const m of cl){ if(Math.hypot(q.x-m.x,q.y-m.y)<3.2){cl.push(q);used.add(q);grew=true;break;} }
+      }
+    }
+    if(cl.length>=4)clusters.push(cl);
+  }
+  return clusters;
 }
 
 /* ================= A* ================= */
 const CELL=2, GX=W/CELL|0, GY=Math.ceil(H/CELL);
 const blockedBase=new Uint8Array(GX*GY);
 for(let gy=0;gy<GY;gy++)for(let gx=0;gx<GX;gx++){
-  const y=gy*CELL+1, x=gx*CELL+1;
-  if(y<2.6||y>H-2.6||x<0.8||x>W-0.8)blockedBase[gy*GX+gx]=1;
+  const x=gx*CELL+1, y=gy*CELL+1;
+  if(inWall(x,y,0.8)||x<0.8||x>W-0.8)blockedBase[gy*GX+gx]=1;
 }
-function plan(sx,sy,tx,ty,peds,mode,aff,lidarR){
+function plan(sx,sy,tx,ty,people,mode,lidarR,queues){
   const cost=new Float32Array(GX*GY);
-  const act=peds.filter(p=>p.active);
   if(mode==='global'){
-    // 群體連線帶 → 不可穿越
-    for(let i=0;i<act.length;i++)for(let j=i+1;j<act.length;j++){
-      const a=act[i],b=act[j];
-      if(!aff.isGroup(a,b))continue;
+    for(const cl of queues){
+      // 隊伍帶狀範圍 → 高成本(不可穿越)
+      let y0=1e9,y1=-1e9,xc=0;
+      for(const m of cl){y0=Math.min(y0,m.y);y1=Math.max(y1,m.y);xc+=m.x;}
+      xc/=cl.length;
       for(let gy=0;gy<GY;gy++)for(let gx=0;gx<GX;gx++){
         const x=gx*CELL+1, y=gy*CELL+1;
-        // 點到線段距離
-        const dx=b.x-a.x, dy=b.y-a.y, L2=dx*dx+dy*dy||1;
-        let t=((x-a.x)*dx+(y-a.y)*dy)/L2; t=clamp(t,0,1);
-        const px=a.x+dx*t, py=a.y+dy*t;
-        if(Math.hypot(x-px,y-py)<2.0)cost[gy*GX+gx]+=60;
+        if(Math.abs(x-xc)<2.2&&y>y0-1.6&&y<y1+1.6)cost[gy*GX+gx]+=60;
       }
     }
-    for(const p of act){
+    for(const p of people){ if(!p.active)continue;
       const gx=clamp(p.x/CELL|0,0,GX-1),gy=clamp(p.y/CELL|0,0,GY-1);
-      cost[gy*GX+gx]+=7;
+      cost[gy*GX+gx]+=6;
     }
   }else{
-    for(const p of act){
-      if(Math.hypot(p.x-sx,p.y-sy)>lidarR)continue;
+    for(const p of people){ if(!p.active)continue;
+      if(Math.hypot(p.x-sx,p.y-sy)>lidarR)continue;   // 視距外未知
       for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){
         const gx=clamp((p.x/CELL|0)+ox,0,GX-1),gy=clamp((p.y/CELL|0)+oy,0,GY-1);
         const cx=gx*CELL+1,cy=gy*CELL+1;
-        if(Math.hypot(cx-p.x,cy-p.y)<1.0)cost[gy*GX+gx]+=9;
+        if(Math.hypot(cx-p.x,cy-p.y)<1.0)cost[gy*GX+gx]+=9;  // 人身周圍高成本,縫仍便宜
       }
     }
   }
@@ -279,90 +350,106 @@ function plan(sx,sy,tx,ty,peds,mode,aff,lidarR){
 class Robot{
   constructor(mode){ this.mode=mode; this.lidarR=7; this.reset(); }
   reset(){
-    this.x=START.x; this.y=START.y; this.hd=0; this.speed=0;
-    this.time=0; this.odo=0; this.splits=0; this.threads=0;
-    this.inDuo=false; this.inStr=false;
+    this.x=A_START.x; this.y=A_START.y; this.hd=0; this.speed=0;
+    this.leg='go';                      // go | pick | back | done
+    this.pickT=0;
+    this.time=0; this.odo=0; this.cuts=0; this.itf=0;
+    this.inBand=false; this.dCd=new Map();
     this.path=null; this.replanT=0; this.done=false;
-    this.state='出發'; this.trail=[];
-  }
-  between(a,b){
-    if(!a.active||!b.active)return false;
-    const dx=b.x-a.x, dy=b.y-a.y, L2=dx*dx+dy*dy||1;
-    let t=((this.x-a.x)*dx+(this.y-a.y)*dy)/L2;
-    if(t<0.12||t>0.88)return false;
-    const px=a.x+dx*t, py=a.y+dy*t;
-    return Math.hypot(this.x-px,this.y-py)<1.0;
+    this.state='出發前往取件點'; this.trail=[];
   }
   step(dt, world){
-    if(this.done)return;
+    if(this.leg==='done')return;
     this.time+=dt;
-    const peds=world.peds, aff=world.aff;
+    const people=world.people, queues=world.queues;
+    // 目標
+    let tx,ty;
+    if(this.leg==='go'){tx=A_GOAL.x;ty=A_GOAL.y;}
+    else if(this.leg==='pick'){tx=A_GOAL.x;ty=A_GOAL.y;}
+    else{tx=A_START.x;ty=A_START.y;}
+    // 規劃
     this.replanT-=dt;
     if(!this.path||this.replanT<=0){
-      this.path=plan(this.x,this.y,GOAL.x,GOAL.y,peds,this.mode,aff,this.lidarR);
-      this.replanT=this.mode==='global'?0.9:0.6;
+      this.path=plan(this.x,this.y,tx,ty,people,this.mode,this.lidarR,queues);
+      this.replanT=this.mode==='global'?1.0:0.7;
     }
-    let li=0,best=1e9;
-    for(let i=0;i<this.path.length;i++){
-      const d=Math.hypot(this.path[i][0]-this.x,this.path[i][1]-this.y);
-      if(d<best){best=d;li=i;}
-    }
-    const look=this.path[Math.min(li+2,this.path.length-1)];
-    const dx=look[0]-this.x,dy=look[1]-this.y,dd=Math.hypot(dx,dy)||1;
-    const hx=dx/dd,hy=dy/dd; this.hd=Math.atan2(hy,hx);
-    let cap=1.8;
-    for(const p of peds){ if(!p.active)continue;
-      const px=p.x-this.x,py=p.y-this.y,d=Math.hypot(px,py);
-      if(d<1.2&&(px*hx+py*hy)/d>0.4){cap=0;break;}
-      if(d<2.2)cap=Math.min(cap,0.8);
-    }
-    this.speed+=(cap-this.speed)*Math.min(dt*6,1);
-    this.x+=hx*this.speed*dt; this.y+=hy*this.speed*dt;
-    this.odo+=this.speed*dt;
-    // 事件判定
-    const [d1,d2]=world.duo, [s1,s2]=world.strangers;
-    const inD=this.between(d1,d2);
-    if(inD&&!this.inDuo){this.splits++; d1.flash=1.4; d2.flash=1.4;
-      world.event(this.mode==='global'?'B-split':'A-split');}
-    this.inDuo=inD;
-    const inS=this.between(s1,s2);
-    if(inS&&!this.inStr){this.threads++;
-      world.event(this.mode==='global'?'B-thread':'A-thread');}
-    this.inStr=inS;
-    // 狀態
-    if(this.mode==='global'){
-      if(aff.isGroup(d1,d2)&&d1.active&&Math.abs(d1.x-this.x)<26&&d1.x>this.x-4)
-        this.state=`偵測到群體(關聯度 ${aff.pct(d1,d2).toFixed(0)}%)— 繞行不穿越`;
-      else if(s1.active&&Math.abs(s1.x-this.x)<22&&s1.x>this.x-4)
-        this.state=`兩位行人關聯度 ${aff.pct(s1,s2).toFixed(0)}% — 非群體,間隙可穿越`;
-      else this.state='前往目的地';
+    // 狀態文字
+    if(this.leg==='pick'){
+      this.pickT-=dt; this.state='取件中…';
+      if(this.pickT<=0){this.leg='back'; this.path=null;}
+    }else if(this.mode==='global'){
+      const q=queues[0];
+      if(q){ this.state=`偵測到隊伍(${q.length} 人)— 由隊尾後方繞行`; }
+      else this.state=this.leg==='go'?'前往取件點':'返回中';
     }else{
-      this.state=inD||inS?'穿越人與人之間的縫':'前往目的地(最短路)';
+      this.state=this.inBand?'⚠ 正從隊伍中間穿越!':(this.leg==='go'?'前往取件點(最短路)':'返回中(最短路)');
     }
-    if(Math.hypot(GOAL.x-this.x,GOAL.y-this.y)<1.4){this.done=true;this.state='✅ 已抵達';}
+    // 移動
+    if(this.leg!=='pick'){
+      let li=0,best=1e9;
+      for(let i=0;i<this.path.length;i++){
+        const d=Math.hypot(this.path[i][0]-this.x,this.path[i][1]-this.y);
+        if(d<best){best=d;li=i;}
+      }
+      const look=this.path[Math.min(li+2,this.path.length-1)];
+      const dx=look[0]-this.x,dy=look[1]-this.y,dd=Math.hypot(dx,dy)||1;
+      const hx=dx/dd,hy=dy/dd; this.hd=Math.atan2(hy,hx);
+      let cap=1.7;
+      for(const p of people){ if(!p.active)continue;
+        const px=p.x-this.x,py=p.y-this.y,d=Math.hypot(px,py);
+        if(d<1.3&&(px*hx+py*hy)/d>0.35){cap=0;break;}
+        if(d<2.2)cap=Math.min(cap,0.7);
+      }
+      this.speed+=(cap-this.speed)*Math.min(dt*6,1);
+      this.x+=hx*this.speed*dt; this.y+=hy*this.speed*dt;
+      this.odo+=this.speed*dt;
+      // 抵達判定
+      if(this.leg==='go'&&Math.hypot(A_GOAL.x-this.x,A_GOAL.y-this.y)<1.4){this.leg='pick';this.pickT=1.5;}
+      if(this.leg==='back'&&Math.hypot(A_START.x-this.x,A_START.y-this.y)<1.4){
+        this.leg='done'; this.done=true; this.state='✅ 往返完成';
+      }
+    }
+    // 穿越隊伍判定(帶狀範圍)
+    const q=world.queues[0];
+    if(q&&q.length>=4){
+      let y0=1e9,y1=-1e9,xc=0;
+      for(const m of q){y0=Math.min(y0,m.y);y1=Math.max(y1,m.y);xc+=m.x;}
+      xc/=q.length;
+      const inside=Math.abs(this.x-xc)<1.6&&this.y>y0-0.8&&this.y<y1+0.8;
+      if(inside&&!this.inBand){this.cuts++; world.event(this.mode==='global'?'B-cut':'A-cut');}
+      this.inBand=inside;
+    }else this.inBand=false;
+    // 干擾排隊者(近身 2m,冷卻 4s)
+    for(const p of people){
+      if(!p.active||p.kind!=='queue')continue;
+      if(Math.hypot(p.x-this.x,p.y-this.y)<2.0){
+        const last=this.dCd.get(p)??-9;
+        if(this.time-last>4){this.itf++;this.dCd.set(p,this.time);p.flash=1.2;}
+      }
+    }
     this.trail.push([this.x,this.y]); if(this.trail.length>300)this.trail.shift();
   }
 }
 
 /* ================= 面板 ================= */
-let PID=0;
-function mk(x,y,vx,kind){ const p=new Ped(x,y,vx,kind); p.id=++PID; return p; }
 class World{
-  constructor(cv,mode){ this.cv=cv; this.ctx=cv.getContext('2d'); this.mode=mode; this.reset(); }
+  constructor(cv,mode,seed){ this.cv=cv; this.ctx=cv.getContext('2d'); this.mode=mode; this.seed=seed; this.reset(); }
   reset(){
-    PID=0;
-    // 同行同伴:同速同向、間距 2.6m 穩定
-    this.duo=[ mk(52,14.2,-1.0,'duo'), mk(52,16.8,-1.0,'duo') ];
-    // 陌生人:速度不同、上下錯位,縫寬同為 ~2.6m
-    this.strangers=[ mk(100,14.2,-1.18,'str'), mk(98,16.8,-0.78,'str') ];
-    this.peds=[...this.duo,...this.strangers];
-    this.aff=new Affinity();
+    const rng=mulberry32(this.seed);
+    this.queue=new Queue(rng);
+    this.walkers=[
+      new Wanderer(rng,{x0:10,x1:40,y0:22,y1:28}),
+      new Wanderer(rng,{x0:75,x1:105,y0:20,y1:28}),
+      new Wanderer(rng,{x0:70,x1:100,y0:8,y1:13}),
+    ];
     this.robot=new Robot(this.mode);
-    this.eventCb=null;
+    this.queues=[]; this.eventCb=null;
   }
+  get people(){ return [...this.queue.all(),...this.walkers]; }
   step(dt){
-    for(const p of this.peds)p.step(dt,this.robot);
-    this.aff.update(this.peds,dt);
+    this.queue.step(dt,this.people,this.robot);
+    for(const w of this.walkers)w.step(dt,this.people,this.robot);
+    this.queues=detectQueues(this.people);
     this.robot.step(dt,this);
   }
   event(n){ if(this.eventCb)this.eventCb(n); }
@@ -370,60 +457,66 @@ class World{
     const c=this.ctx,r=this.robot;
     c.clearRect(0,0,this.cv.width,this.cv.height);
     if(this.mode==='global'){
-      for(const[cx,cy]of [[24,1.4],[84,1.4]]){
+      for(const[cx,cy]of [[20,1.4],[80,1.4]]){
         c.fillStyle='rgba(111,179,255,.045)';
         c.beginPath(); c.moveTo(cx*S,cy*S); c.arc(cx*S,cy*S,27*S,Math.PI*0.12,Math.PI*0.88); c.closePath(); c.fill();
         c.fillStyle='#6FB3FF'; c.fillRect(cx*S-5,cy*S-3,10,8);
       }
       c.fillStyle='rgba(111,179,255,.55)'; c.font='700 11px "Noto Sans TC",sans-serif';
-      c.fillText('環境固定攝影機(全域 MOT · 兩兩關聯度即時計算)',12,26);
+      c.fillText('環境固定攝影機(全域 MOT · 連續軌跡與速度)',12,26);
     }
+    // 櫃台與牆
     c.fillStyle='#1B2A3C'; c.fillRect(0,0,W*S,2*S); c.fillRect(0,29*S,W*S,2*S);
-    // 目的地
-    c.fillStyle='#7ADFA0'; c.beginPath(); c.arc(GOAL.x*S,GOAL.y*S,7,0,7); c.fill();
+    c.fillStyle='#22334D'; c.fillRect(COUNTER.x*S,COUNTER.y*S,COUNTER.w*S,COUNTER.h*S);
+    c.strokeStyle='#2E4463'; c.strokeRect(COUNTER.x*S,COUNTER.y*S,COUNTER.w*S,COUNTER.h*S);
+    c.fillStyle='rgba(143,160,184,.75)'; c.font='700 11px "Noto Sans TC",sans-serif'; c.textAlign='center';
+    c.fillText('櫃 台',(COUNTER.x+COUNTER.w/2)*S,(COUNTER.y+2.1)*S); c.textAlign='left';
+    // 取件點/起點
+    c.fillStyle='#7ADFA0'; c.beginPath(); c.arc(A_GOAL.x*S,A_GOAL.y*S,7,0,7); c.fill();
     c.fillStyle='rgba(122,223,160,.9)'; c.font='700 10px "Noto Sans TC",sans-serif';
-    c.fillText('目的地',GOAL.x*S-16,GOAL.y*S-11);
-    // 關聯度視覺(B)
-    if(this.mode==='global'){
-      const pairs=[[this.duo[0],this.duo[1]],[this.strangers[0],this.strangers[1]]];
-      for(const[a,b]of pairs){
-        if(!a.active||!b.active)continue;
-        const grp=this.aff.isGroup(a,b), pct=this.aff.pct(a,b);
-        c.strokeStyle=grp?'rgba(232,107,208,.8)':'rgba(143,160,184,.35)';
-        c.lineWidth=grp?2.5:1.4; if(!grp)c.setLineDash([3,4]);
-        c.beginPath(); c.moveTo(a.x*S,a.y*S); c.lineTo(b.x*S,b.y*S); c.stroke(); c.setLineDash([]);
-        const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
-        c.fillStyle=grp?'#E86BD0':'#8FA0B8'; c.font='800 11px "Noto Sans TC",sans-serif'; c.textAlign='center';
-        c.fillText(grp?`群體 · 關聯度 ${pct.toFixed(0)}%`:`關聯度 ${pct.toFixed(0)}% · 非群體`, mx*S, my*S-14);
-        c.textAlign='left';
-        if(grp){
-          // 群體外框
-          const x0=Math.min(a.x,b.x)-1.4, x1=Math.max(a.x,b.x)+1.4;
-          const y0=Math.min(a.y,b.y)-1.4, y1=Math.max(a.y,b.y)+1.4;
-          c.strokeStyle='rgba(232,107,208,.45)'; c.setLineDash([6,5]); c.lineWidth=1.8;
-          c.strokeRect(x0*S,y0*S,(x1-x0)*S,(y1-y0)*S); c.setLineDash([]);
-        }
+    c.fillText('取件點',A_GOAL.x*S-16,A_GOAL.y*S-11);
+    c.strokeStyle='rgba(255,209,102,.55)'; c.setLineDash([4,4]);
+    c.strokeRect((A_START.x-1.6)*S,(A_START.y-1.6)*S,3.2*S,3.2*S); c.setLineDash([]);
+    c.fillStyle='rgba(255,209,102,.8)'; c.fillText('起點',A_START.x*S-10,A_START.y*S-19);
+    // 隊伍識別視覺(B)
+    if(this.mode==='global'&&this.queues[0]){
+      const cl=this.queues[0];
+      let y0=1e9,y1=-1e9,xc=0;
+      for(const m of cl){y0=Math.min(y0,m.y);y1=Math.max(y1,m.y);xc+=m.x;}
+      xc/=cl.length;
+      c.strokeStyle='rgba(92,200,255,.65)'; c.lineWidth=2; c.setLineDash([6,5]);
+      c.strokeRect((xc-2.0)*S,(y0-1.4)*S,4.0*S,(y1-y0+2.8)*S); c.setLineDash([]);
+      c.fillStyle='#5CC8FF'; c.font='800 11.5px "Noto Sans TC",sans-serif';
+      c.fillText(`偵測為隊伍(${cl.length} 人,朝櫃台)`,(xc+2.6)*S,(y0+1)*S);
+      c.fillStyle='rgba(92,200,255,.85)';
+      c.fillText('隊尾 ↓ 由此後方通過',(xc+2.6)*S,(y1+1.6)*S);
+      // 鏈結線
+      const sorted=[...cl].sort((a,b)=>a.y-b.y);
+      c.strokeStyle='rgba(92,200,255,.35)'; c.lineWidth=1.5; c.beginPath();
+      for(let i=1;i<sorted.length;i++){
+        c.moveTo(sorted[i-1].x*S,sorted[i-1].y*S); c.lineTo(sorted[i].x*S,sorted[i].y*S);
       }
+      c.stroke();
     }
-    // 行人
-    for(const p of this.peds){
+    // 人
+    for(const p of this.people){
       if(!p.active)continue;
-      const seen=this.mode==='global'||Math.hypot(p.x-r.x,p.y-r.y)<15;
+      const seen=this.mode==='global'||(Math.hypot(p.x-r.x,p.y-r.y)<15);
       if(p.flash>0){
         c.strokeStyle=`rgba(255,107,107,${Math.min(p.flash,0.9)})`; c.lineWidth=2.5;
         c.beginPath(); c.arc(p.x*S,p.y*S,9,0,7); c.stroke();
       }
-      const col=p.kind==='duo'?'232,107,208':'143,160,184';
+      const col=p.kind==='queue'?'255,138,92':(p.kind==='walk'?'143,160,184':'255,170,120');
       c.fillStyle=`rgba(${col},${seen?0.95:0.3})`;
       c.beginPath(); c.arc(p.x*S,p.y*S,p.r*S,0,7); c.fill();
     }
-    // 視距(A)
+    // 機器人視距(A)
     if(this.mode!=='global'){
       c.strokeStyle='rgba(255,209,102,.28)'; c.setLineDash([5,6]); c.lineWidth=1.4;
       c.beginPath(); c.arc(r.x*S,r.y*S,r.lidarR*S,0,7); c.stroke(); c.setLineDash([]);
     }
     // 路徑與機器人
-    if(r.path&&!r.done){
+    if(r.path&&r.leg!=='done'&&r.leg!=='pick'){
       c.strokeStyle=this.mode==='global'?'rgba(92,200,255,.5)':'rgba(255,209,102,.5)';
       c.setLineDash([5,5]); c.lineWidth=2; c.beginPath();
       c.moveTo(r.x*S,r.y*S);
@@ -435,9 +528,9 @@ class World{
       c.moveTo(r.trail[0][0]*S,r.trail[0][1]*S);
       for(const[tx,ty]of r.trail)c.lineTo(tx*S,ty*S); c.stroke();
     }
-    if(r.inDuo){
+    if(r.inBand){
       c.fillStyle='#FF6B6B'; c.font='900 14px "Noto Sans TC",sans-serif';
-      c.fillText('✗ 拆散同行者!',r.x*S+14,r.y*S-10);
+      c.fillText('✗ 插隊穿越!',r.x*S+14,r.y*S-10);
     }
     c.fillStyle=r.done?'#7ADFA0':'#FFFFFF';
     c.beginPath(); c.arc(r.x*S,r.y*S,8,0,7); c.fill();
@@ -447,46 +540,49 @@ class World{
 }
 
 /* ================= 主控 ================= */
-const wA=new World(document.getElementById('cvA'),'lidar');
-const wB=new World(document.getElementById('cvB'),'global');
+const wA=new World(document.getElementById('cvA'),'lidar',20260603);
+const wB=new World(document.getElementById('cvB'),'global',20260603);
 let playing=false,speedMult=2,last=null,stepNo=0;
 const $=id=>document.getElementById(id), banner=$('banner');
 function narrate(n,txt){ if(n<=stepNo)return; stepNo=n;
   $('narration').querySelector('.step').textContent='STEP '+n;
   $('narText').textContent=txt;
 }
+let aCut=0;
 const onEvent=n=>{
-  if(n==='A-split') narrate(2,'✗ A 從兩位同伴中間鑽了過去,把他們硬生生隔開(紅圈)—— 對 LiDAR 而言那只是一道 2.6 公尺的縫;兩人待機器人通過後才重新靠攏。');
-  if(n==='B-thread')narrate(4,'B 穿越了陌生人之間的縫 —— 幾何上與剛才那道一模一樣,差別只在關聯度。這證明 B 是「分辨」,不是「保守」。');
-  if(n==='A-thread'&&stepNo<4)narrate(4,'兩台都穿越了陌生人之間的縫 —— 這道縫幾何上與剛才一模一樣;差別只在:B 知道剛才那道不能鑽、這道可以。');
+  if(n==='A-cut'){ aCut++;
+    if(aCut===1)narrate(2,'✗ A 從隊伍中間穿了過去 —— 對 LiDAR 而言那只是兩個靜止障礙物之間的縫;被打擾的排隊者紅圈閃爍。');
+    if(aCut===2)narrate(4,'✗ 返程,A 又從隊伍中間穿了一次 —— 它永遠不會知道自己做錯了什麼。');
+  }
 };
 wA.eventCb=onEvent; wB.eventCb=onEvent;
 
 let n1=false,n3=false;
 function updateHUD(){
-  if(!n1&&playing&&wB.aff.isGroup(wB.duo[0],wB.duo[1])){n1=true;
-    narrate(1,'B 由連續軌跡累計兩兩關聯度:前方兩人同速同向、間距穩定逾 3 秒 → 判定為群體(粉框),其連線帶寫入代價地圖為不可穿越。');}
-  if(!n3&&wB.robot.x>58&&wB.robot.splits===0){n3=true;
-    narrate(3,'B 從群體外側繞行 —— 多走了一小段,但兩位同伴的同行狀態未被打斷。');}
-  $('splitA').textContent=wA.robot.splits; $('splitB').textContent=wB.robot.splits;
-  $('thrA').textContent=wA.robot.threads; $('thrB').textContent=wB.robot.threads;
+  if(!n1&&wB.queues.length>0&&playing){n1=true;
+    narrate(1,'B 由全域軌跡完成聚類:一群人持續靜止、排成一線、朝向櫃台 → 判定為隊伍(藍框),整條帶狀範圍寫入代價地圖為不可穿越。');}
+  if(!n3&&wB.robot.leg==='back'){n3=true;
+    narrate(3,'B 繞到隊尾後方通過 —— 注意隊伍是活的:櫃台持續服務、有人離開、有新顧客入列,B 的繞行點跟著隊尾即時調整。');}
+  $('cutA').textContent=wA.robot.cuts; $('cutB').textContent=wB.robot.cuts;
+  $('itfA').textContent=wA.robot.itf; $('itfB').textContent=wB.robot.itf;
   $('timeA').textContent=wA.robot.time.toFixed(1)+' s';
   $('timeB').textContent=wB.robot.time.toFixed(1)+' s';
   $('odoA').textContent=wA.robot.odo.toFixed(0)+' m';
   $('odoB').textContent=wB.robot.odo.toFixed(0)+' m';
   $('chipA').textContent=wA.robot.state; $('chipB').textContent=wB.robot.state;
-  $('splitA').className='val num'+(wA.robot.splits>0?' lose':'');
-  $('splitB').className='val num'+(wB.robot.done&&wB.robot.splits===0?' win':'');
-  $('thrB').className='val num'+(wB.robot.threads>0?' win':'');
+  $('cutA').className='val num'+(wA.robot.cuts>0?' lose':'');
+  $('cutB').className='val num'+(wB.robot.done&&wB.robot.cuts===0?' win':'');
+  $('itfA').className='val num'+(wA.robot.itf>0?' lose':'');
+  $('itfB').className='val num'+(wB.robot.done&&wB.robot.itf===0?' win':'');
   if(wA.robot.done&&wB.robot.done&&banner.style.display!=='block'){
     banner.style.display='block';
-    banner.innerHTML=`✅ 對比完成 —— <b>B(關聯度判別)</b>:拆散群體 <span class="num">${wB.robot.splits}</span> 次、
-      陌生人間隙穿越 <span class="num">${wB.robot.threads}</span> 次、用時 <span class="num">${wB.robot.time.toFixed(1)}s</span>;
-      <b>A(純幾何)</b>:拆散群體 <span class="num">${wA.robot.splits}</span> 次、穿越 <span class="num">${wA.robot.threads}</span> 次、
-      用時 <span class="num">${wA.robot.time.toFixed(1)}s</span>。
-      兩道縫幾何上完全相同,答案卻不同 ——
-      <b>會鑽縫是技術(Demo 03),知道哪些縫不該鑽是智慧;而分辨的依據,是每個人的連續軌跡。</b>`;
-    narrate(5,'對比完成 —— 同一道縫,對幾何是空間,對人是關係;看得見關係,機器人才真正融入人的場域。');
+    banner.innerHTML=`✅ 往返完成 —— <b>B(隊伍識別)</b>:穿越隊伍 <span class="num">${wB.robot.cuts}</span> 次、干擾排隊者 <span class="num">${wB.robot.itf}</span> 次、
+      行走 <span class="num">${wB.robot.odo.toFixed(0)}m</span>、用時 <span class="num">${wB.robot.time.toFixed(1)}s</span>;
+      <b>A(最短路)</b>:穿越隊伍 <span class="num">${wA.robot.cuts}</span> 次、干擾排隊者 <span class="num">${wA.robot.itf}</span> 次、
+      行走 <span class="num">${wA.robot.odo.toFixed(0)}m</span>、用時 <span class="num">${wA.robot.time.toFixed(1)}s</span>。
+      A 快了幾秒,但每一次穿越都是一場公開的失禮 ——
+      <b>LiDAR 給的是幾何,連續軌跡給的是行為;而「這是一條隊伍」是行為,不是幾何。</b>`;
+    narrate(5,'對比完成 —— 機器人要在人的世界工作,就得看懂人的規矩;看懂規矩的前提,是看得見每個人的連續行為。');
     playing=false; $('btnPlay').textContent='▶ 播放';
   }
 }
@@ -500,9 +596,9 @@ function frame(t){
 $('btnPlay').onclick=()=>{playing=!playing;$('btnPlay').textContent=playing?'⏸ 暫停':'▶ 播放';};
 $('btnReset').onclick=()=>{
   wA.reset(); wB.reset(); wA.eventCb=onEvent; wB.eventCb=onEvent;
-  playing=false; banner.style.display='none'; stepNo=0; n1=false; n3=false;
+  playing=false; banner.style.display='none'; stepNo=0; aCut=0; n1=false; n3=false;
   $('narration').querySelector('.step').textContent='STEP 0';
-  $('narText').textContent='按「播放」開始 —— 前方先後有兩道幾何上完全相同的「人與人之間的縫」。';
+  $('narText').textContent='按「播放」開始 —— 兩台機器人須往返對面取件,一條排隊人龍橫在中間。';
   $('btnPlay').textContent='▶ 播放';
 };
 document.querySelectorAll('#speedSeg button').forEach(b=>{
