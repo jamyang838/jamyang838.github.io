@@ -102,6 +102,7 @@
 <div class="controls">
   <button id="btnPlay" class="primary">▶ 播放</button>
   <button id="btnReset">↺ 重置</button>
+  <button id="btnRec" title="錄製本分頁畫面,停止後自動下載 .webm 影片">⏺ 錄影</button>
   <div class="seg" id="speedSeg">
     <button data-s="1">1×</button>
     <button data-s="2" class="on">2×</button>
@@ -535,6 +536,43 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Space'){e.preventDefault();document.getElementById('btnPlay').click();}
   else if(e.key==='r'||e.key==='R'){document.getElementById('btnReset').click();}
 });
+</script>
+<script>
+(()=>{ /* 分頁錄影:MediaRecorder + getDisplayMedia */
+const btn=document.getElementById('btnRec');
+if(!btn||!navigator.mediaDevices?.getDisplayMedia){ if(btn)btn.style.display='none'; return; }
+let rec=null, chunks=[], stream=null;
+function setOn(on){
+  btn.textContent=on?'⏹ 停止並下載':'⏺ 錄影';
+  btn.style.borderColor=on?'#FF6B6B':'';
+  btn.style.color=on?'#FF6B6B':'';
+  btn.style.background=on?'#2A1418':'';
+}
+btn.onclick=async()=>{
+  if(rec&&rec.state==='recording'){ rec.stop(); return; }
+  try{
+    stream=await navigator.mediaDevices.getDisplayMedia({
+      video:{frameRate:30}, audio:false,
+      preferCurrentTab:true, selfBrowserSurface:'include'
+    });
+  }catch(e){ return; }               // 使用者取消選取
+  chunks=[];
+  const mime=MediaRecorder.isTypeSupported('video/webm;codecs=vp9')?'video/webm;codecs=vp9':'video/webm';
+  rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:8_000_000});
+  rec.ondataavailable=e=>{ if(e.data.size)chunks.push(e.data); };
+  rec.onstop=()=>{
+    stream.getTracks().forEach(t=>t.stop());
+    const blob=new Blob(chunks,{type:'video/webm'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=document.title.replace(/[^\w\u4e00-\u9fff]+/g,'_')+'.webm';
+    a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    setOn(false); rec=null;
+  };
+  stream.getVideoTracks()[0].addEventListener('ended',()=>{ if(rec&&rec.state==='recording')rec.stop(); });
+  rec.start(); setOn(true);
+};
+})();
 </script>
 </body>
 </html>
