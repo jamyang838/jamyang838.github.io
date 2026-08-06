@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AMR 接力跟隨 Demo — 遮蔽凹室側任務後之重擷取</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230E1626'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23ffffff'/%3E%3Ccircle cx='16' cy='16' r='11' stroke='%236FB3FF' stroke-width='2.4' fill='none' stroke-dasharray='4 3'/%3E%3C/svg%3E">
+<title>Demo 06 · 排隊識別:不插隊的機器人</title>
 <style>
   :root{
     --bg:#0B1220; --panel:#0E1626; --panel-edge:#1C2A40;
     --ink:#E8EEF7; --ink-dim:#8FA0B8; --accent:#6FB3FF;
-    --target:#E86BD0; --gold:#FFD166; --good:#7ADFA0; --bad:#FF6B6B;
+    --q:#FF8A5C; --gap:#5CC8FF; --good:#7ADFA0; --bad:#FF6B6B; --gold:#FFD166;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -22,7 +23,6 @@
   h1{font-size:22px; font-weight:800; letter-spacing:.02em;}
   .sub{color:var(--ink-dim); font-size:13px; margin-top:4px; line-height:1.6;}
   .sub b{color:var(--ink); font-weight:700;}
-
   .controls{
     width:100%; max-width:1140px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;
     background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px;
@@ -41,14 +41,12 @@
   .spacer{flex:1;}
   .legend{display:flex; gap:14px; font-size:12px; color:var(--ink-dim); align-items:center; flex-wrap:wrap;}
   .dot{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:-1px;}
-
   .narration{
     width:100%; max-width:1140px; min-height:44px; margin-bottom:10px; border-radius:10px;
     background:#101B2E; border:1px solid var(--panel-edge); padding:10px 14px;
     font-size:14px; font-weight:700; display:flex; align-items:center; gap:12px; line-height:1.5;
   }
   .narration .step{font-size:11px; color:var(--accent); letter-spacing:.15em; flex-shrink:0; font-family:ui-monospace,monospace;}
-
   .panelWrap{width:100%; max-width:1140px; margin-bottom:10px; position:relative;}
   .panelLabel{
     position:absolute; top:10px; left:10px; z-index:2; display:flex; align-items:center; gap:8px;
@@ -59,12 +57,11 @@
   .tagA{background:#3A2A22; color:#FF8A5C;}
   .tagB{background:#15303F; color:#5CC8FF;}
   .stateChip{
-    position:absolute; top:10px; right:10px; z-index:2;
+    position:absolute; top:10px; right:10px; z-index:2; max-width:54%;
     background:rgba(8,14,26,.85); border:1px solid var(--panel-edge); border-radius:99px;
-    padding:6px 13px; font-size:12px; font-weight:800; backdrop-filter:blur(2px);
+    padding:6px 13px; font-size:12px; font-weight:800; backdrop-filter:blur(2px); text-align:right;
   }
   canvas{display:block; width:100%; height:auto; border-radius:10px; border:1px solid var(--panel-edge); background:var(--panel);}
-
   .scoreboard{
     width:100%; max-width:1140px; display:grid; grid-template-columns:180px 1fr 1fr; gap:1px;
     background:var(--panel-edge); border:1px solid var(--panel-edge); border-radius:10px; overflow:hidden;
@@ -87,13 +84,13 @@
 
 <header>
   <a href="index.html" style="display:inline-block;color:#6FB3FF;text-decoration:none;font-size:12.5px;font-weight:700;margin-bottom:10px;border:1px solid #1C2A40;border-radius:999px;padding:5px 14px;background:#0E1626">← 回展示首頁</a>
-  <div class="eyebrow">GLOBAL MOT × AMR NAVIGATION — DEMO 02</div>
-  <h1>從遮蔽凹室回到走廊:誰認得出「原本那個人」?</h1>
+  <div class="eyebrow">GLOBAL MOT × AMR NAVIGATION — DEMO 06</div>
+  <h1>排隊識別:LiDAR 看到的是「有縫可以過」,我們看到的是「一條隊」</h1>
   <div class="sub">
-    兩台機器人跟隨同一位<b>指定目標(金色圓環)</b>。途中機器人<b>轉入牆邊的遮蔽凹室執行側任務</b>(取貨/掃描)——
-    凹室由兩道短牆圍成,<b>進去之後看不到走廊上任何人</b>,跟隨完全暫停。
-    就在這幾秒內,真正的目標走到柱體另一側<b>轉向下行</b>,而一位<b>外觀完全相同的干擾者</b>沿著目標原本的方向繼續前進。
-    任務結束、機器人退出凹室的那一刻:它眼前只有一個「長得一樣、位置也剛好對得上」的人,而真正的目標藏在柱體後面。
+    櫃台前排著一條人龍,前後間距一公尺多 —— 對車載 LiDAR 而言,這只是<b>幾個稀疏的靜止障礙物,中間全是可通行的縫</b>,
+    於是最短路徑大剌剌地從隊伍中間穿過去;
+    本技術由全域 MOT 的連續軌跡看出<b>語意</b>:這群人長時間靜止、排成一線、朝向櫃台、整體緩慢前移 —— <b>這是一條隊伍</b>,
+    是一個不可穿越的社會結構,於是繞到<b>隊尾後方</b>通過。任務為往返一趟取件,A 會穿越隊伍兩次。
   </div>
 </header>
 
@@ -107,133 +104,225 @@
   </div>
   <div class="spacer"></div>
   <div class="legend">
-    <span><span class="dot" style="background:var(--target)"></span>目標與干擾者(外觀相同)</span>
-    <span><span class="dot" style="background:var(--gold)"></span>金環=真實目標(機器人看不見)</span>
-    <span><span class="dot" style="background:#8FA0B8"></span>人群</span>
+    <span><span class="dot" style="background:var(--q)"></span>排隊者(隊伍緩慢前移)</span>
+    <span><span class="dot" style="background:#8FA0B8"></span>路過行人</span>
     <span><span class="dot" style="background:#fff"></span>AMR</span>
   </div>
 </div>
 
-<div class="narration" id="narration"><span class="step">STEP 0</span><span id="narText">按「播放」開始 —— 兩台機器人將跟隨金色圓環標記的指定目標。</span></div>
+<div class="narration" id="narration"><span class="step">STEP 0</span><span id="narText">按「播放」開始 —— 兩台機器人須往返對面取件,一條排隊人龍橫在中間。</span></div>
 
 <div class="panelWrap">
-  <div class="panelLabel"><span class="tag tagA">A</span> 傳統:純車載視覺跟隨(外觀比對 + 運動預測重擷取)</div>
+  <div class="panelLabel"><span class="tag tagA">A</span> 傳統:純車載 LiDAR — 有縫就走最短路</div>
   <div class="stateChip" id="chipA">待機</div>
   <canvas id="cvA" width="1140" height="310"></canvas>
 </div>
 
 <div class="panelWrap">
-  <div class="panelLabel"><span class="tag tagB">B</span> 本技術:全域 MOT 接力跟隨(Global ID 特徵錨定驗證)</div>
+  <div class="panelLabel"><span class="tag tagB">B</span> 本技術:全域 MOT 隊伍識別 — 由隊尾後方繞行</div>
   <div class="stateChip" id="chipB">待機</div>
   <canvas id="cvB" width="1140" height="310"></canvas>
 </div>
 
 <div class="scoreboard">
   <div class="head">即時記分板</div>
-  <div class="head" style="color:#FF8A5C">A|純車載視覺</div>
-  <div class="head" style="color:#5CC8FF">B|全域 MOT 接力</div>
-  <div class="rowh">跟錯人次數</div>
-  <div class="val num" id="wrongA">0</div>
-  <div class="val num" id="wrongB">0</div>
-  <div class="rowh">恢復跟隨後正確率</div>
-  <div class="val num" id="rateA">—</div>
-  <div class="val num" id="rateB">—</div>
-  <div class="rowh">與真實目標距離</div>
-  <div class="val num" id="distA">—</div>
-  <div class="val num" id="distB">—</div>
-  <div class="rowh">重擷取依據</div>
-  <div class="val" id="basisA" style="font-size:13px">—</div>
-  <div class="val" id="basisB" style="font-size:13px">—</div>
+  <div class="head" style="color:#FF8A5C">A|最短路</div>
+  <div class="head" style="color:#5CC8FF">B|隊伍識別</div>
+  <div class="rowh">穿越隊伍次數</div>
+  <div class="val num" id="cutA">0</div>
+  <div class="val num" id="cutB">0</div>
+  <div class="rowh">干擾排隊者次數</div>
+  <div class="val num" id="itfA">0</div>
+  <div class="val num" id="itfB">0</div>
+  <div class="rowh">總耗時(往返)</div>
+  <div class="val num" id="timeA">0.0 s</div>
+  <div class="val num" id="timeB">0.0 s</div>
+  <div class="rowh">行走距離</div>
+  <div class="val num" id="odoA">0 m</div>
+  <div class="val num" id="odoB">0 m</div>
 </div>
 
 <div class="banner" id="banner"></div>
 
 <div class="foot">
-  說明:目標與干擾者外觀完全相同,僅金色虛線圓環(給觀眾的 ground truth 標記)可區分 —— 機器人看不見金環。
-  凹室由兩道短牆圍成,機器人進入後對走廊完全失去視線(目標與干擾者皆不可見),側任務期間兩台機器人皆完全暫停跟隨,條件對等,此段時間不計入正確率。
-  A 退出凹室後採「外觀類別相符 + 最接近運動預測位置」重新擷取 —— 這是純車載跟隨在中斷後的標準做法,也正是跟錯人的根源:
-  它的外插預測說目標應該還在上方走廊繼續前行,而那裡剛好站著一個長得一樣的人;真正的目標則被柱體擋住,它根本看不到。
-  B 於側任務期間仍由環境攝影機維持該目標之 Global ID 與世界座標(跨鏡頭接力),退出凹室時直接得知目標已下行至柱體另側,
-  並於車載重新偵測時將候選外觀特徵與該 Global ID 之特徵註冊表比對(畫面顯示相似度),超過門檻方允許接續 ——
-  對應揭露書 F1+G2「以全域一致身分為錨驗證,防跟錯人」。
+  說明:兩面板隊伍與行人以相同亂數種子生成,條件完全對等。隊伍會動:櫃台每隔數秒服務完一位、全隊前移一格,途中並有新顧客走來加入隊尾 ——
+  隊伍的長度與隊尾位置持續變化。
+  B 的隊伍識別是<b>真實計算</b>而非標記:對全域軌跡中「持續低速(&lt;0.25 m/s)」之人員做鄰近鏈結聚類,
+  四人以上排成一線即判定為隊伍,並將隊伍帶狀範圍寫入路徑代價地圖為不可穿越;
+  剛走來還在移動的加入者不會被誤判,待其於隊尾停下、軌跡轉為靜止,隊伍範圍才向後延伸 —— B 的繞行點會跟著隊尾即時調整。
+  A 的 LiDAR 只見幾何:間距一公尺多的靜止人形之間就是可通行空間,最短路徑自然從中穿越;
+  穿越時近身 2 公尺內即計一次「干擾排隊者」(紅圈閃爍,同一人 4 秒內不重複計)。
+  本 demo 展示的是感知的<b>語意層</b>:LiDAR 給的是幾何,全域 MOT 的連續軌跡給的是行為 —— 而「這是一條隊伍」是行為,不是幾何。
 </div>
 
 <script>
 (()=>{
 /* ================= 世界 ================= */
 const S=10, W=114, H=31;
-const KIOSK ={x:44,y:10,w:26,h:11};                       // 中央柱體
-const STUB_L={x:55.4,y:1.2,w:1.2,h:4.6};                  // 凹室左短牆
-const STUB_R={x:63.4,y:1.2,w:1.2,h:4.6};                  // 凹室右短牆
-const OCCL=[KIOSK,STUB_L,STUB_R];                         // 會遮蔽視線者
-const WALLS=[...OCCL,{x:0,y:0,w:W,h:1.2},{x:0,y:H-1.2,w:W,h:1.2}];
-const TASK_PT={x:60,y:3.4};                               // 凹室內之側任務點
-const TASK_DUR=11.0;
-const DIVERT_X=60;
-const EXIT_X=106;
-const SIGHT=24;
+const COUNTER={x:52,y:2,w:10,h:3.4};            // 櫃台
+const WALLS=[COUNTER,{x:0,y:0,w:W,h:2},{x:0,y:29,w:W,h:2}];
+const QX=57;                                      // 隊伍所在直線 x
+const QHEAD_Y=7.0, QSPACE=2.3;                    // 隊首位置與間距
+const A_START={x:6,y:15.5}, A_GOAL={x:108,y:15.5};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function inWall(x,y,m=0){for(const w of WALLS){if(x>w.x-m&&x<w.x+w.w+m&&y>w.y-m&&y<w.y+w.h+m)return true}return false}
-function segRect(x1,y1,x2,y2,r){
-  const inside=(px,py)=>px>r.x&&px<r.x+r.w&&py>r.y&&py<r.y+r.h;
-  if(inside(x1,y1)||inside(x2,y2))return true;
-  const E=[[r.x,r.y,r.x+r.w,r.y],[r.x+r.w,r.y,r.x+r.w,r.y+r.h],[r.x+r.w,r.y+r.h,r.x,r.y+r.h],[r.x,r.y+r.h,r.x,r.y]];
-  for(const[a,b,c,d]of E){
-    const d1=(c-a)*(y1-b)-(d-b)*(x1-a), d2=(c-a)*(y2-b)-(d-b)*(x2-a);
-    const d3=(x2-x1)*(b-y1)-(y2-y1)*(a-x1), d4=(x2-x1)*(d-y1)-(y2-y1)*(c-x1);
-    if(((d1>0)!==(d2>0))&&((d3>0)!==(d4>0)))return true;
-  }
-  return false;
-}
-function hasLOS(x1,y1,x2,y2){ for(const r of OCCL) if(segRect(x1,y1,x2,y2,r))return false; return true; }
 
-/* ================= 腳本化人物 ================= */
-class Walker{
-  constructor(wps,speed,kind){
-    this.wps=wps; this.speed=speed; this.kind=kind;
-    this.i=0; this.x=wps[0][0]; this.y=wps[0][1]; this.vx=0; this.vy=0;
-    this.active=(kind!=='distractor'); this.done=false; this.trail=[];
-  }
-  step(dt, others){
-    if(!this.active||this.done)return;
-    const wp=this.wps[Math.min(this.i+1,this.wps.length-1)];
-    let dx=wp[0]-this.x, dy=wp[1]-this.y, dd=Math.hypot(dx,dy);
-    if(dd<0.7){
-      if(this.i<this.wps.length-2)this.i++;
-      else if(this.kind==='crowd'){this.i=0; this.wps.reverse();}
-      else if(this.kind==='target'&&this.x>EXIT_X-3)this.done=true;
-    }
+/* ================= 人物 ================= */
+class Person{
+  constructor(x,y,kind){ this.x=x;this.y=y;this.kind=kind; this.vx=0;this.vy=0;
+    this.r=0.38; this.active=true; this.flash=0; this.speedHist=1; }
+  seek(tx,ty,spd,dt,others,robot){
+    let dx=tx-this.x, dy=ty-this.y, dd=Math.hypot(dx,dy);
+    if(dd<0.15){ this.vx=0;this.vy=0; return true; }
     dd=dd||1;
-    let fx=dx/dd*this.speed, fy=dy/dd*this.speed;
+    let vx=dx/dd*spd, vy=dy/dd*spd;
     for(const o of others){ if(o===this||!o.active)continue;
       const ox=this.x-o.x, oy=this.y-o.y, d2=ox*ox+oy*oy;
-      if(d2<1.3&&d2>1e-6){const d=Math.sqrt(d2); fx+=ox/d*0.7; fy+=oy/d*0.7;}
+      if(d2<1.1&&d2>1e-6){const d=Math.sqrt(d2);vx+=ox/d*0.5;vy+=oy/d*0.5;}
     }
-    this.vx=fx; this.vy=fy; this.x+=fx*dt; this.y+=fy*dt;
-    this.trail.push([this.x,this.y]); if(this.trail.length>30)this.trail.shift();
+    if(robot){
+      const ox=this.x-robot.x, oy=this.y-robot.y, d2=ox*ox+oy*oy;
+      if(d2<3.6&&d2>1e-6){const d=Math.sqrt(d2);vx+=ox/d*0.55;vy+=oy/d*0.55;}
+    }
+    this.vx=vx; this.vy=vy;
+    this.x+=vx*dt; this.y+=vy*dt;
+    return false;
   }
+  updSpeed(dt){ // 低通速度大小,供隊伍識別
+    const s=Math.hypot(this.vx,this.vy);
+    this.speedHist=this.speedHist*0.92+s*0.08;
+    if(this.flash>0)this.flash-=dt;
+  }
+}
+
+/* ================= 隊伍管理 ================= */
+class Queue{
+  constructor(rng){
+    this.rng=rng;
+    this.members=[];                       // 依排隊順序
+    for(let i=0;i<8;i++){
+      const p=new Person(QX+(rng()*0.8-0.4), QHEAD_Y+i*QSPACE, 'queue');
+      this.members.push(p);
+    }
+    this.serveT=5+rng()*3;
+    this.leavers=[];
+    this.joiners=[];                       // {p, spawnT}
+    this.joinTimes=[9,24,38];
+    this.spawned=0;
+    this.t=0;
+  }
+  all(){ return [...this.members,...this.leavers,...this.joiners.map(j=>j.p)]; }
+  step(dt, others, robot){
+    this.t+=dt;
+    // 新顧客走來加入隊尾
+    if(this.spawned<this.joinTimes.length&&this.t>=this.joinTimes[this.spawned]){
+      const p=new Person(16+this.rng()*6, 27, 'joiner');
+      this.joiners.push({p});
+      this.spawned++;
+    }
+    // 隊員就位(緩慢前移)
+    this.members.forEach((p,i)=>{
+      p.seek(QX, QHEAD_Y+i*QSPACE, 0.55, dt, others, robot);
+      p.updSpeed(dt);
+    });
+    // 加入者走向隊尾;抵達即入列
+    for(let i=this.joiners.length-1;i>=0;i--){
+      const j=this.joiners[i], tailY=QHEAD_Y+this.members.length*QSPACE;
+      const arrived=j.p.seek(QX, tailY, 0.95, dt, others, robot);
+      j.p.updSpeed(dt);
+      if(arrived){ j.p.kind='queue'; this.members.push(j.p); this.joiners.splice(i,1); }
+    }
+    // 服務:隊首完成 → 離開,全隊前移
+    if(this.members.length>0){
+      const head=this.members[0];
+      if(Math.abs(head.y-QHEAD_Y)<0.4){
+        this.serveT-=dt;
+        if(this.serveT<=0){
+          this.serveT=6+this.rng()*3;
+          head.kind='leaver'; this.leavers.push(head); this.members.shift();
+        }
+      }
+    }
+    // 離開者走向右上出口
+    for(let i=this.leavers.length-1;i>=0;i--){
+      const p=this.leavers[i];
+      const tx=p.y>5.5?66:113, ty=p.y>5.5?4:3.4;
+      p.seek(tx,ty,1.2,dt,others,robot);
+      p.updSpeed(dt);
+      if(p.x>111){p.active=false; this.leavers.splice(i,1);}
+    }
+  }
+}
+
+/* ================= 路過行人 ================= */
+class Wanderer extends Person{
+  constructor(rng,region){ super(region.x0+rng()*(region.x1-region.x0), region.y0+rng()*(region.y1-region.y0),'walk');
+    this.rng=rng; this.rg=region; this.pick(); this.sp=0.5+rng()*0.4; }
+  pick(){ this.wx=this.rg.x0+this.rng()*(this.rg.x1-this.rg.x0);
+          this.wy=this.rg.y0+this.rng()*(this.rg.y1-this.rg.y0); }
+  step(dt,others,robot){
+    if(this.seek(this.wx,this.wy,this.sp,dt,others,robot))this.pick();
+    this.updSpeed(dt);
+  }
+}
+
+/* ================= 隊伍識別(B,真實聚類) ================= */
+function detectQueues(people){
+  const still=people.filter(p=>p.active&&p.speedHist<0.25);
+  const used=new Set(), clusters=[];
+  for(const p of still){
+    if(used.has(p))continue;
+    const cl=[p]; used.add(p);
+    let grew=true;
+    while(grew){ grew=false;
+      for(const q of still){ if(used.has(q))continue;
+        for(const m of cl){ if(Math.hypot(q.x-m.x,q.y-m.y)<3.2){cl.push(q);used.add(q);grew=true;break;} }
+      }
+    }
+    if(cl.length>=4)clusters.push(cl);
+  }
+  return clusters;
 }
 
 /* ================= A* ================= */
 const CELL=2, GX=W/CELL|0, GY=Math.ceil(H/CELL);
-const blocked=new Uint8Array(GX*GY);
+const blockedBase=new Uint8Array(GX*GY);
 for(let gy=0;gy<GY;gy++)for(let gx=0;gx<GX;gx++){
   const x=gx*CELL+1, y=gy*CELL+1;
-  if(inWall(x,y,0.85)||y<1.9||y>H-1.9)blocked[gy*GX+gx]=1;
+  if(inWall(x,y,0.8)||x<0.8||x>W-0.8)blockedBase[gy*GX+gx]=1;
 }
-function planTo(sx,sy,tx,ty){
+function plan(sx,sy,tx,ty,people,mode,lidarR,queues){
+  const cost=new Float32Array(GX*GY);
+  if(mode==='global'){
+    for(const cl of queues){
+      // 隊伍帶狀範圍 → 高成本(不可穿越)
+      let y0=1e9,y1=-1e9,xc=0;
+      for(const m of cl){y0=Math.min(y0,m.y);y1=Math.max(y1,m.y);xc+=m.x;}
+      xc/=cl.length;
+      for(let gy=0;gy<GY;gy++)for(let gx=0;gx<GX;gx++){
+        const x=gx*CELL+1, y=gy*CELL+1;
+        if(Math.abs(x-xc)<2.2&&y>y0-1.6&&y<y1+1.6)cost[gy*GX+gx]+=60;
+      }
+    }
+    for(const p of people){ if(!p.active)continue;
+      const gx=clamp(p.x/CELL|0,0,GX-1),gy=clamp(p.y/CELL|0,0,GY-1);
+      cost[gy*GX+gx]+=6;
+    }
+  }else{
+    for(const p of people){ if(!p.active)continue;
+      if(Math.hypot(p.x-sx,p.y-sy)>lidarR)continue;   // 視距外未知
+      for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){
+        const gx=clamp((p.x/CELL|0)+ox,0,GX-1),gy=clamp((p.y/CELL|0)+oy,0,GY-1);
+        const cx=gx*CELL+1,cy=gy*CELL+1;
+        if(Math.hypot(cx-p.x,cy-p.y)<1.0)cost[gy*GX+gx]+=9;  // 人身周圍高成本,縫仍便宜
+      }
+    }
+  }
   const s=[clamp(sx/CELL|0,0,GX-1),clamp(sy/CELL|0,0,GY-1)];
   const t=[clamp(tx/CELL|0,0,GX-1),clamp(ty/CELL|0,0,GY-1)];
   const N=GX*GY,g=new Float32Array(N).fill(1e9),came=new Int32Array(N).fill(-1);
-  const si=s[1]*GX+s[0]; let ti=t[1]*GX+t[0];
-  if(blocked[ti]){
-    let bd=1e9,bi=-1;
-    for(let i=0;i<N;i++) if(!blocked[i]){
-      const d=Math.hypot(i%GX-t[0],(i/GX|0)-t[1]); if(d<bd){bd=d;bi=i;}
-    }
-    if(bi>=0)ti=bi;
-  }
+  const si=s[1]*GX+s[0], ti=t[1]*GX+t[0];
   const open=[[0,si]]; g[si]=0;
   const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
   while(open.length){
@@ -244,10 +333,11 @@ function planTo(sx,sy,tx,ty){
     for(const[dx,dy]of dirs){
       const nx=cx+dx,ny=cy+dy;
       if(nx<0||ny<0||nx>=GX||ny>=GY)continue;
-      const ni=ny*GX+nx; if(blocked[ni])continue;
-      if(dx&&dy&&(blocked[cy*GX+nx]||blocked[ny*GX+cx]))continue;
-      const c=g[cur]+((dx&&dy)?1.414:1);
-      if(c<g[ni]){g[ni]=c;came[ni]=cur;open.push([c+Math.hypot(nx-ti%GX,ny-(ti/GX|0)),ni]);}
+      const ni=ny*GX+nx; if(blockedBase[ni])continue;
+      if(dx&&dy&&(blockedBase[cy*GX+nx]||blockedBase[ny*GX+cx]))continue;
+      const len=(dx&&dy)?1.414:1;
+      const c=g[cur]+len*(1+cost[ni]);
+      if(c<g[ni]){g[ni]=c;came[ni]=cur;open.push([c+Math.hypot(nx-t[0],ny-t[1]),ni]);}
     }
   }
   const path=[];let cur=ti;
@@ -258,274 +348,241 @@ function planTo(sx,sy,tx,ty){
 
 /* ================= 機器人 ================= */
 class Robot{
-  constructor(mode){ this.mode=mode; this.reset(); }
+  constructor(mode){ this.mode=mode; this.lidarR=7; this.reset(); }
   reset(){
-    this.x=8; this.y=25; this.hd=0; this.speed=0;
-    this.mission='follow'; this.taskT=0; this.taskDone=false;
-    this.locked=null; this.predict=null; this.lostT=0;
-    this.path=null; this.replanT=0;
-    this.wrongCount=0; this.wrongFlagged=false;
-    this.correctT=0; this.judgedT=0;
-    this.verify=null; this.basis='—'; this.state='待機'; this.trail=[];
+    this.x=A_START.x; this.y=A_START.y; this.hd=0; this.speed=0;
+    this.leg='go';                      // go | pick | back | done
+    this.pickT=0;
+    this.time=0; this.odo=0; this.cuts=0; this.itf=0;
+    this.inBand=false; this.dCd=new Map();
+    this.path=null; this.replanT=0; this.done=false;
+    this.state='出發前往取件點'; this.trail=[];
   }
-  see(p){ return p&&p.active&&Math.hypot(p.x-this.x,p.y-this.y)<SIGHT&&hasLOS(this.x,this.y,p.x,p.y); }
   step(dt, world){
-    const {target,distractor,people}=world;
-
-    /* ---- 側任務排程 ---- */
-    if(this.mission==='follow'&&!this.taskDone&&target.x>DIVERT_X&&target.y<10){
-      this.mission='divert'; world.event('divert');
+    if(this.leg==='done')return;
+    this.time+=dt;
+    const people=world.people, queues=world.queues;
+    // 目標
+    let tx,ty;
+    if(this.leg==='go'){tx=A_GOAL.x;ty=A_GOAL.y;}
+    else if(this.leg==='pick'){tx=A_GOAL.x;ty=A_GOAL.y;}
+    else{tx=A_START.x;ty=A_START.y;}
+    // 規劃
+    this.replanT-=dt;
+    if(!this.path||this.replanT<=0){
+      this.path=plan(this.x,this.y,tx,ty,people,this.mode,this.lidarR,queues);
+      this.replanT=this.mode==='global'?1.0:0.7;
     }
-    if(this.mission==='divert'&&Math.hypot(TASK_PT.x-this.x,TASK_PT.y-this.y)<1.5){
-      this.mission='task'; this.taskT=TASK_DUR; world.event('task-start');
-      if(this.locked)this.predict={x:this.locked.x,y:this.locked.y,vx:this.locked.vx,vy:this.locked.vy,t:0};
+    // 狀態文字
+    if(this.leg==='pick'){
+      this.pickT-=dt; this.state='取件中…';
+      if(this.pickT<=0){this.leg='back'; this.path=null;}
+    }else if(this.mode==='global'){
+      const q=queues[0];
+      if(q){ this.state=`偵測到隊伍(${q.length} 人)— 由隊尾後方繞行`; }
+      else this.state=this.leg==='go'?'前往取件點':'返回中';
+    }else{
+      this.state=this.inBand?'⚠ 正從隊伍中間穿越!':(this.leg==='go'?'前往取件點(最短路)':'返回中(最短路)');
     }
-    if(this.mission==='task'){
-      this.taskT-=dt;
-      if(this.predict)this.predict.t+=dt;
-      this.state=`凹室內執行側任務 · 跟隨暫停 ${Math.max(this.taskT,0).toFixed(1)}s`;
-      if(this.taskT<=0){ this.mission='reacq'; this.taskDone=true; this.lostT=99; world.event('task-end'); }
-    }
-
-    /* ---- 追蹤 ---- */
-    if(this.mission!=='task'){
-      if(this.mode==='onboard'){
-        if(this.locked&&this.see(this.locked)){
-          this.lostT=0;
-          this.predict={x:this.locked.x,y:this.locked.y,vx:this.locked.vx,vy:this.locked.vy,t:0};
-          if(this.mission==='reacq')this.mission='follow';
-          if(this.mission!=='divert')this.state='車載視覺追蹤中';
-        }else{
-          this.lostT+=dt; if(this.predict)this.predict.t+=dt;
-          if(this.mission!=='divert')this.state='目標不可見 — 運動預測外插中';
-          if(this.lostT>0.6){
-            const px=this.predict? this.predict.x+this.predict.vx*Math.min(this.predict.t,16) : this.x;
-            const py=this.predict? this.predict.y+this.predict.vy*Math.min(this.predict.t,16) : this.y;
-            let best=null,bd=1e9;
-            for(const p of [target,distractor]){
-              if(!this.see(p))continue;
-              const d=Math.hypot(p.x-px,p.y-py);
-              if(d<bd){bd=d;best=p;}
-            }
-            if(best&&bd<18){
-              const wrong=best!==target;
-              this.locked=best; this.lostT=0; this.mission='follow';
-              this.basis='外觀相符 + 運動預測(無身分驗證)';
-              if(wrong&&!this.wrongFlagged){
-                this.wrongCount++; this.wrongFlagged=true; world.event('A-wrong');
-                this.verify={text:'外觀類別相符 → 直接鎖定(無身分驗證)',ok:false,ttl:5.5};
-              }
-            }
-          }
-        }
-      }else{
-        this.locked=target;
-        const seen=this.see(target);
-        if(this.mission==='reacq'){
-          this.state='恢復跟隨 — 由全域身分取得目標位置';
-          if(seen){
-            this.mission='follow';
-            this.basis='Global ID 錨定 + Re-ID 特徵驗證';
-            this.verify={text:'Re-ID 錨定:候選① 0.41 ✗ 拒絕 ｜ 候選② 0.94 ✓ 重鎖',ok:true,ttl:5.5};
-            world.event('B-verify');
-          }
-        }else if(this.mission==='follow'){
-          const d=Math.hypot(target.x-this.x,target.y-this.y);
-          this.state = seen&&d<8? '車載主導(近距末端)' : seen? '環境攝影機主導(遠距)' : '遮蔽 — 全域身分維持中';
-        }
+    // 移動
+    if(this.leg!=='pick'){
+      let li=0,best=1e9;
+      for(let i=0;i<this.path.length;i++){
+        const d=Math.hypot(this.path[i][0]-this.x,this.path[i][1]-this.y);
+        if(d<best){best=d;li=i;}
+      }
+      const look=this.path[Math.min(li+2,this.path.length-1)];
+      const dx=look[0]-this.x,dy=look[1]-this.y,dd=Math.hypot(dx,dy)||1;
+      const hx=dx/dd,hy=dy/dd; this.hd=Math.atan2(hy,hx);
+      let cap=1.7;
+      for(const p of people){ if(!p.active)continue;
+        const px=p.x-this.x,py=p.y-this.y,d=Math.hypot(px,py);
+        if(d<1.3&&(px*hx+py*hy)/d>0.35){cap=0;break;}
+        if(d<2.2)cap=Math.min(cap,0.7);
+      }
+      this.speed+=(cap-this.speed)*Math.min(dt*6,1);
+      this.x+=hx*this.speed*dt; this.y+=hy*this.speed*dt;
+      this.odo+=this.speed*dt;
+      // 抵達判定
+      if(this.leg==='go'&&Math.hypot(A_GOAL.x-this.x,A_GOAL.y-this.y)<1.4){this.leg='pick';this.pickT=1.5;}
+      if(this.leg==='back'&&Math.hypot(A_START.x-this.x,A_START.y-this.y)<1.4){
+        this.leg='done'; this.done=true; this.state='✅ 往返完成';
       }
     }
-
-    /* ---- 指標(側任務與轉入期間不計) ---- */
-    if(this.taskDone&&this.mission!=='task'&&this.mission!=='divert'){
-      this.judgedT+=dt;
-      if(this.locked===target)this.correctT+=dt;
+    // 穿越隊伍判定(帶狀範圍)
+    const q=world.queues[0];
+    if(q&&q.length>=4){
+      let y0=1e9,y1=-1e9,xc=0;
+      for(const m of q){y0=Math.min(y0,m.y);y1=Math.max(y1,m.y);xc+=m.x;}
+      xc/=q.length;
+      const inside=Math.abs(this.x-xc)<1.6&&this.y>y0-0.8&&this.y<y1+0.8;
+      if(inside&&!this.inBand){this.cuts++; world.event(this.mode==='global'?'B-cut':'A-cut');}
+      this.inBand=inside;
+    }else this.inBand=false;
+    // 干擾排隊者(近身 2m,冷卻 4s)
+    for(const p of people){
+      if(!p.active||p.kind!=='queue')continue;
+      if(Math.hypot(p.x-this.x,p.y-this.y)<2.0){
+        const last=this.dCd.get(p)??-9;
+        if(this.time-last>4){this.itf++;this.dCd.set(p,this.time);p.flash=1.2;}
+      }
     }
-
-    /* ---- 移動 ---- */
-    let gx,gy;
-    if(this.mission==='divert'||this.mission==='task'){ gx=TASK_PT.x; gy=TASK_PT.y; }
-    else if(this.mode==='global'){ gx=target.x; gy=target.y; }
-    else if(this.locked&&this.see(this.locked)){ gx=this.locked.x; gy=this.locked.y; }
-    else if(this.predict){ gx=this.predict.x+this.predict.vx*Math.min(this.predict.t,16); gy=this.predict.y+this.predict.vy*Math.min(this.predict.t,16); }
-    else { gx=this.x; gy=this.y; }
-    gx=clamp(gx,2.5,W-2.5); gy=clamp(gy,2.5,H-2.5);
-
-    this.replanT-=dt;
-    if(!this.path||this.replanT<=0){ this.path=planTo(this.x,this.y,gx,gy); this.replanT=0.45; }
-    let li=0,best=1e9;
-    for(let i=0;i<this.path.length;i++){const d=Math.hypot(this.path[i][0]-this.x,this.path[i][1]-this.y);if(d<best){best=d;li=i;}}
-    const look=this.path[Math.min(li+2,this.path.length-1)];
-    const dx=look[0]-this.x,dy=look[1]-this.y,dd=Math.hypot(dx,dy)||1;
-    const hx=dx/dd,hy=dy/dd; this.hd=Math.atan2(hy,hx);
-
-    const dGoal=Math.hypot(gx-this.x,gy-this.y);
-    const stopR=(this.mission==='divert'||this.mission==='task')?0.6:2.7;
-    let sp=this.mission==='task'?0:(dGoal>stopR+0.8?2.3:dGoal>stopR?0.9:0);
-    for(const p of people){ if(!p.active)continue;
-      const px=p.x-this.x,py=p.y-this.y,d=Math.hypot(px,py);
-      if(d<1.5&&(px*hx+py*hy)/d>0.4){sp=0;break;}
-    }
-    this.speed+=(sp-this.speed)*Math.min(dt*6,1);
-    this.x+=hx*this.speed*dt; this.y+=hy*this.speed*dt;
-    this.trail.push([this.x,this.y]); if(this.trail.length>140)this.trail.shift();
-    if(this.verify){this.verify.ttl-=dt; if(this.verify.ttl<=0)this.verify=null;}
+    this.trail.push([this.x,this.y]); if(this.trail.length>300)this.trail.shift();
   }
 }
 
-/* ================= 世界 ================= */
-const targetWps=()=>[[12,25],[38,25],[41,7.5],[74,7.5],[74.8,25.5],[EXIT_X+4,25.5]];
-const distrWps =()=>[[70,7.2],[92,6.9],[106,6.6],[113,6.4]];
+/* ================= 面板 ================= */
 class World{
   constructor(cv,mode,seed){ this.cv=cv; this.ctx=cv.getContext('2d'); this.mode=mode; this.seed=seed; this.reset(); }
   reset(){
     const rng=mulberry32(this.seed);
-    this.target=new Walker(targetWps(),1.6,'target');
-    this.distractor=new Walker(distrWps(),0.9,'distractor');
-    this.crowd=[];
-    for(let i=0;i<20;i++){
-      let a,b,n=0;
-      do{a=[6+rng()*100,3+rng()*25];}while(inWall(a[0],a[1],1.6)&&n++<40);
-      do{b=[6+rng()*100,3+rng()*25];}while(inWall(b[0],b[1],1.6)&&n++<80);
-      this.crowd.push(new Walker([a,b],0.5+rng()*0.5,'crowd'));
-    }
-    this.people=[this.target,this.distractor,...this.crowd];
+    this.queue=new Queue(rng);
+    this.walkers=[
+      new Wanderer(rng,{x0:10,x1:40,y0:22,y1:28}),
+      new Wanderer(rng,{x0:75,x1:105,y0:20,y1:28}),
+      new Wanderer(rng,{x0:70,x1:100,y0:8,y1:13}),
+    ];
     this.robot=new Robot(this.mode);
-    this.robot.locked=this.target;
-    this.robot.predict={x:this.target.x,y:this.target.y,vx:0,vy:0,t:0};
-    this.eventCb=null;
+    this.queues=[]; this.eventCb=null;
   }
-  event(n){ if(this.eventCb)this.eventCb(n); if(n==='task-start')this.distractor.active=true; }
-  step(dt){ for(const p of this.people)p.step(dt,this.people); this.robot.step(dt,this); }
+  get people(){ return [...this.queue.all(),...this.walkers]; }
+  step(dt){
+    this.queue.step(dt,this.people,this.robot);
+    for(const w of this.walkers)w.step(dt,this.people,this.robot);
+    this.queues=detectQueues(this.people);
+    this.robot.step(dt,this);
+  }
+  event(n){ if(this.eventCb)this.eventCb(n); }
   draw(){
     const c=this.ctx,r=this.robot;
     c.clearRect(0,0,this.cv.width,this.cv.height);
     if(this.mode==='global'){
-      for(const[cx,cy]of [[20,1.6],[50,1.6],[96,1.6]]){
-        c.fillStyle='rgba(111,179,255,.05)';
-        c.beginPath(); c.moveTo(cx*S,cy*S); c.arc(cx*S,cy*S,28*S,Math.PI*0.14,Math.PI*0.86); c.closePath(); c.fill();
-        c.fillStyle='#6FB3FF'; c.fillRect(cx*S-5,cy*S-4,10,8);
+      for(const[cx,cy]of [[20,1.4],[80,1.4]]){
+        c.fillStyle='rgba(111,179,255,.045)';
+        c.beginPath(); c.moveTo(cx*S,cy*S); c.arc(cx*S,cy*S,27*S,Math.PI*0.12,Math.PI*0.88); c.closePath(); c.fill();
+        c.fillStyle='#6FB3FF'; c.fillRect(cx*S-5,cy*S-3,10,8);
       }
       c.fillStyle='rgba(111,179,255,.55)'; c.font='700 11px "Noto Sans TC",sans-serif';
-      c.fillText('環境固定攝影機 × 3(跨鏡頭全域 MOT)',12,28);
+      c.fillText('環境固定攝影機(全域 MOT · 連續軌跡與速度)',12,26);
     }
-    // 凹室底色與標籤
-    c.fillStyle=r.taskDone?'rgba(143,160,184,.05)':'rgba(255,209,102,.09)';
-    c.fillRect(STUB_L.x*S+STUB_L.w*S,1.2*S,(STUB_R.x-STUB_L.x-STUB_L.w)*S,4.6*S);
-    c.fillStyle=r.taskDone?'rgba(143,160,184,.5)':'rgba(255,209,102,.9)';
-    c.font='700 11px "Noto Sans TC",sans-serif'; c.textAlign='center';
-    c.fillText('遮蔽凹室 · 側任務點',TASK_PT.x*S,(TASK_PT.y+2.6)*S);
-    c.textAlign='left';
-    // 牆
-    c.fillStyle='#22334D'; for(const w of WALLS)c.fillRect(w.x*S,w.y*S,w.w*S,w.h*S);
-    c.strokeStyle='#2E4463'; c.lineWidth=1; for(const w of WALLS)c.strokeRect(w.x*S,w.y*S,w.w*S,w.h*S);
-    c.fillStyle='rgba(143,160,184,.6)'; c.font='700 12px "Noto Sans TC",sans-serif';
-    c.fillText('柱體(視線遮蔽)',(KIOSK.x+3)*S,(KIOSK.y+KIOSK.h/2+0.4)*S);
-    // 人群
-    for(const p of this.crowd){ c.fillStyle='rgba(143,160,184,.8)'; c.beginPath(); c.arc(p.x*S,p.y*S,3.4,0,7); c.fill(); }
-    // 目標與干擾者
-    for(const p of [this.target,this.distractor]){
-      if(!p.active)continue;
-      if(p.trail.length>2){
-        c.strokeStyle='rgba(232,107,208,.28)'; c.lineWidth=2; c.beginPath();
-        c.moveTo(p.trail[0][0]*S,p.trail[0][1]*S);
-        for(const[tx,ty]of p.trail)c.lineTo(tx*S,ty*S); c.stroke();
+    // 櫃台與牆
+    c.fillStyle='#1B2A3C'; c.fillRect(0,0,W*S,2*S); c.fillRect(0,29*S,W*S,2*S);
+    c.fillStyle='#22334D'; c.fillRect(COUNTER.x*S,COUNTER.y*S,COUNTER.w*S,COUNTER.h*S);
+    c.strokeStyle='#2E4463'; c.strokeRect(COUNTER.x*S,COUNTER.y*S,COUNTER.w*S,COUNTER.h*S);
+    c.fillStyle='rgba(143,160,184,.75)'; c.font='700 11px "Noto Sans TC",sans-serif'; c.textAlign='center';
+    c.fillText('櫃 台',(COUNTER.x+COUNTER.w/2)*S,(COUNTER.y+2.1)*S); c.textAlign='left';
+    // 取件點/起點
+    c.fillStyle='#7ADFA0'; c.beginPath(); c.arc(A_GOAL.x*S,A_GOAL.y*S,7,0,7); c.fill();
+    c.fillStyle='rgba(122,223,160,.9)'; c.font='700 10px "Noto Sans TC",sans-serif';
+    c.fillText('取件點',A_GOAL.x*S-16,A_GOAL.y*S-11);
+    c.strokeStyle='rgba(255,209,102,.55)'; c.setLineDash([4,4]);
+    c.strokeRect((A_START.x-1.6)*S,(A_START.y-1.6)*S,3.2*S,3.2*S); c.setLineDash([]);
+    c.fillStyle='rgba(255,209,102,.8)'; c.fillText('起點',A_START.x*S-10,A_START.y*S-19);
+    // 隊伍識別視覺(B)
+    if(this.mode==='global'&&this.queues[0]){
+      const cl=this.queues[0];
+      let y0=1e9,y1=-1e9,xc=0;
+      for(const m of cl){y0=Math.min(y0,m.y);y1=Math.max(y1,m.y);xc+=m.x;}
+      xc/=cl.length;
+      c.strokeStyle='rgba(92,200,255,.65)'; c.lineWidth=2; c.setLineDash([6,5]);
+      c.strokeRect((xc-2.0)*S,(y0-1.4)*S,4.0*S,(y1-y0+2.8)*S); c.setLineDash([]);
+      c.fillStyle='#5CC8FF'; c.font='800 11.5px "Noto Sans TC",sans-serif';
+      c.fillText(`偵測為隊伍(${cl.length} 人,朝櫃台)`,(xc+2.6)*S,(y0+1)*S);
+      c.fillStyle='rgba(92,200,255,.85)';
+      c.fillText('隊尾 ↓ 由此後方通過',(xc+2.6)*S,(y1+1.6)*S);
+      // 鏈結線
+      const sorted=[...cl].sort((a,b)=>a.y-b.y);
+      c.strokeStyle='rgba(92,200,255,.35)'; c.lineWidth=1.5; c.beginPath();
+      for(let i=1;i<sorted.length;i++){
+        c.moveTo(sorted[i-1].x*S,sorted[i-1].y*S); c.lineTo(sorted[i].x*S,sorted[i].y*S);
       }
-      c.fillStyle='#E86BD0'; c.beginPath(); c.arc(p.x*S,p.y*S,4.4,0,7); c.fill();
+      c.stroke();
     }
-    c.strokeStyle='#FFD166'; c.lineWidth=2.5; c.setLineDash([4,3]);
-    c.beginPath(); c.arc(this.target.x*S,this.target.y*S,9,0,7); c.stroke(); c.setLineDash([]);
-    c.fillStyle='rgba(255,209,102,.92)'; c.font='700 10px "Noto Sans TC",sans-serif';
-    c.fillText('指定目標',this.target.x*S-21,this.target.y*S-13);
-    if(this.distractor.active){
-      c.fillStyle='rgba(143,160,184,.85)';
-      c.fillText('外觀相似干擾者',this.distractor.x*S-32,this.distractor.y*S-10);
+    // 人
+    for(const p of this.people){
+      if(!p.active)continue;
+      const seen=this.mode==='global'||(Math.hypot(p.x-r.x,p.y-r.y)<15);
+      if(p.flash>0){
+        c.strokeStyle=`rgba(255,107,107,${Math.min(p.flash,0.9)})`; c.lineWidth=2.5;
+        c.beginPath(); c.arc(p.x*S,p.y*S,9,0,7); c.stroke();
+      }
+      const col=p.kind==='queue'?'255,138,92':(p.kind==='walk'?'143,160,184':'255,170,120');
+      c.fillStyle=`rgba(${col},${seen?0.95:0.3})`;
+      c.beginPath(); c.arc(p.x*S,p.y*S,p.r*S,0,7); c.fill();
     }
-    // 追蹤連線
-    if(r.locked&&r.locked.active&&r.mission!=='task'&&r.mission!=='divert'){
-      const wrong=r.locked!==this.target;
-      c.strokeStyle=wrong?'rgba(255,107,107,.9)':'rgba(122,223,160,.85)';
-      c.lineWidth=2; c.setLineDash([6,4]); c.beginPath();
-      c.moveTo(r.x*S,r.y*S); c.lineTo(r.locked.x*S,r.locked.y*S); c.stroke(); c.setLineDash([]);
-      if(wrong){ c.fillStyle='#FF6B6B'; c.font='900 15px "Noto Sans TC",sans-serif';
-        c.fillText('✗ 跟錯人!',(r.locked.x+1.1)*S,(r.locked.y-1.3)*S); }
-    }
-    // 車載視距(A)
-    if(this.mode==='onboard'){
+    // 機器人視距(A)
+    if(this.mode!=='global'){
       c.strokeStyle='rgba(255,209,102,.28)'; c.setLineDash([5,6]); c.lineWidth=1.4;
-      c.beginPath(); c.arc(r.x*S,r.y*S,SIGHT*S,0,7); c.stroke(); c.setLineDash([]);
+      c.beginPath(); c.arc(r.x*S,r.y*S,r.lidarR*S,0,7); c.stroke(); c.setLineDash([]);
     }
-    // 機器人
+    // 路徑與機器人
+    if(r.path&&r.leg!=='done'&&r.leg!=='pick'){
+      c.strokeStyle=this.mode==='global'?'rgba(92,200,255,.5)':'rgba(255,209,102,.5)';
+      c.setLineDash([5,5]); c.lineWidth=2; c.beginPath();
+      c.moveTo(r.x*S,r.y*S);
+      for(const[px,py]of r.path)c.lineTo(px*S,py*S);
+      c.stroke(); c.setLineDash([]);
+    }
     if(r.trail.length>2){
       c.strokeStyle='rgba(232,238,247,.5)'; c.lineWidth=2.5; c.beginPath();
       c.moveTo(r.trail[0][0]*S,r.trail[0][1]*S);
       for(const[tx,ty]of r.trail)c.lineTo(tx*S,ty*S); c.stroke();
     }
-    if(r.mission==='task'){
-      const frac=1-Math.max(r.taskT,0)/TASK_DUR;
-      c.strokeStyle='rgba(255,209,102,.25)'; c.lineWidth=4;
-      c.beginPath(); c.arc(r.x*S,r.y*S,15,0,7); c.stroke();
-      c.strokeStyle='#FFD166'; c.beginPath();
-      c.arc(r.x*S,r.y*S,15,-Math.PI/2,-Math.PI/2+frac*Math.PI*2); c.stroke();
+    if(r.inBand){
+      c.fillStyle='#FF6B6B'; c.font='900 14px "Noto Sans TC",sans-serif';
+      c.fillText('✗ 插隊穿越!',r.x*S+14,r.y*S-10);
     }
-    c.fillStyle='#FFFFFF'; c.beginPath(); c.arc(r.x*S,r.y*S,8,0,7); c.fill();
+    c.fillStyle=r.done?'#7ADFA0':'#FFFFFF';
+    c.beginPath(); c.arc(r.x*S,r.y*S,8,0,7); c.fill();
     c.strokeStyle='#0B1220'; c.lineWidth=2.5; c.beginPath();
     c.moveTo(r.x*S,r.y*S); c.lineTo(r.x*S+Math.cos(r.hd)*8,r.y*S+Math.sin(r.hd)*8); c.stroke();
-    // 驗證浮窗
-    if(r.verify){
-      c.font='800 12px "Noto Sans TC",sans-serif';
-      const tw=c.measureText(r.verify.text).width+18;
-      const bx=clamp(r.x*S-tw/2,6,this.cv.width-tw-6), by=Math.max(r.y*S-44,4);
-      c.fillStyle=r.verify.ok?'rgba(10,34,22,.94)':'rgba(40,12,14,.94)';
-      c.strokeStyle=r.verify.ok?'#1E4A35':'#5A2430'; c.lineWidth=1.5;
-      if(c.roundRect){c.beginPath();c.roundRect(bx,by,tw,25,6);c.fill();c.stroke();}
-      else{c.fillRect(bx,by,tw,25);c.strokeRect(bx,by,tw,25);}
-      c.fillStyle=r.verify.ok?'#7ADFA0':'#FF6B6B';
-      c.fillText(r.verify.text,bx+9,by+17);
-    }
   }
 }
 
 /* ================= 主控 ================= */
-const wA=new World(document.getElementById('cvA'),'onboard',777);
-const wB=new World(document.getElementById('cvB'),'global',777);
+const wA=new World(document.getElementById('cvA'),'lidar',20260603);
+const wB=new World(document.getElementById('cvB'),'global',20260603);
 let playing=false,speedMult=2,last=null,stepNo=0;
 const $=id=>document.getElementById(id), banner=$('banner');
 function narrate(n,txt){ if(n<=stepNo)return; stepNo=n;
   $('narration').querySelector('.step').textContent='STEP '+n;
   $('narText').textContent=txt;
 }
+let aCut=0;
 const onEvent=n=>{
-  if(n==='divert')    narrate(1,'機器人暫離跟隨,轉入牆邊的遮蔽凹室執行側任務 —— 實務中常見的多工中斷。');
-  if(n==='task-start')narrate(2,'進入凹室,對走廊完全失去視線、跟隨暫停。就在此時:真正的目標繞過柱體轉向下行,外觀相同的干擾者則沿原方向繼續前進。');
-  if(n==='task-end')  narrate(3,'任務完成,兩台機器人同時退出凹室恢復跟隨 —— 關鍵時刻:眼前只有一個看得到的人,它是原本那一位嗎?');
-  if(n==='A-wrong')   narrate(4,'A 的外插預測指向上方走廊,而那裡剛好站著一個長得一樣的人 → 鎖上干擾者 ✗ 跟錯人,且毫無自覺;真正的目標正被柱體擋著。');
-  if(n==='B-verify')  narrate(5,'B 於凹室期間仍由環境攝影機維持目標 Global ID,退出時直接得知目標已下行至柱體另側;車載重新偵測時以特徵向量錨定驗證 —— 干擾者 0.41 拒絕、正確目標 0.94 重鎖 ✓');
+  if(n==='A-cut'){ aCut++;
+    if(aCut===1)narrate(2,'✗ A 從隊伍中間穿了過去 —— 對 LiDAR 而言那只是兩個靜止障礙物之間的縫;被打擾的排隊者紅圈閃爍。');
+    if(aCut===2)narrate(4,'✗ 返程,A 又從隊伍中間穿了一次 —— 它永遠不會知道自己做錯了什麼。');
+  }
 };
 wA.eventCb=onEvent; wB.eventCb=onEvent;
 
+let n1=false,n3=false;
 function updateHUD(){
-  $('wrongA').textContent=wA.robot.wrongCount; $('wrongB').textContent=wB.robot.wrongCount;
-  $('wrongA').className='val num'+(wA.robot.wrongCount>0?' lose':'');
-  $('wrongB').className='val num'+(wB.robot.taskDone&&wB.robot.wrongCount===0?' win':'');
-  const rA=wA.robot.judgedT>0.5?wA.robot.correctT/wA.robot.judgedT*100:null;
-  const rB=wB.robot.judgedT>0.5?wB.robot.correctT/wB.robot.judgedT*100:null;
-  $('rateA').textContent=rA===null?'—':rA.toFixed(0)+'%';
-  $('rateB').textContent=rB===null?'—':rB.toFixed(0)+'%';
-  $('rateA').className='val num'+(rA!==null&&rA<60?' lose':'');
-  $('rateB').className='val num'+(rB!==null&&rB>90?' win':'');
-  $('distA').textContent=Math.hypot(wA.target.x-wA.robot.x,wA.target.y-wA.robot.y).toFixed(1)+' m';
-  $('distB').textContent=Math.hypot(wB.target.x-wB.robot.x,wB.target.y-wB.robot.y).toFixed(1)+' m';
-  $('basisA').textContent=wA.robot.basis; $('basisB').textContent=wB.robot.basis;
+  if(!n1&&wB.queues.length>0&&playing){n1=true;
+    narrate(1,'B 由全域軌跡完成聚類:一群人持續靜止、排成一線、朝向櫃台 → 判定為隊伍(藍框),整條帶狀範圍寫入代價地圖為不可穿越。');}
+  if(!n3&&wB.robot.leg==='back'){n3=true;
+    narrate(3,'B 繞到隊尾後方通過 —— 注意隊伍是活的:櫃台持續服務、有人離開、有新顧客入列,B 的繞行點跟著隊尾即時調整。');}
+  $('cutA').textContent=wA.robot.cuts; $('cutB').textContent=wB.robot.cuts;
+  $('itfA').textContent=wA.robot.itf; $('itfB').textContent=wB.robot.itf;
+  $('timeA').textContent=wA.robot.time.toFixed(1)+' s';
+  $('timeB').textContent=wB.robot.time.toFixed(1)+' s';
+  $('odoA').textContent=wA.robot.odo.toFixed(0)+' m';
+  $('odoB').textContent=wB.robot.odo.toFixed(0)+' m';
   $('chipA').textContent=wA.robot.state; $('chipB').textContent=wB.robot.state;
-  $('chipA').style.color=(wA.robot.locked&&wA.robot.locked!==wA.target)?'var(--bad)':'var(--ink)';
-  $('chipB').style.color='var(--good)';
-  if((wA.target.done||wB.target.done)&&banner.style.display!=='block'){
+  $('cutA').className='val num'+(wA.robot.cuts>0?' lose':'');
+  $('cutB').className='val num'+(wB.robot.done&&wB.robot.cuts===0?' win':'');
+  $('itfA').className='val num'+(wA.robot.itf>0?' lose':'');
+  $('itfB').className='val num'+(wB.robot.done&&wB.robot.itf===0?' win':'');
+  if(wA.robot.done&&wB.robot.done&&banner.style.display!=='block'){
     banner.style.display='block';
-    banner.innerHTML=`✅ 目標已抵達出口 —— <b>B(全域 MOT 接力)</b>:跟錯 <span class="num">${wB.robot.wrongCount}</span> 次、恢復後正確率 <span class="num">${rB?rB.toFixed(0):100}%</span>,全程錨定同一 Global ID;
-      <b>A(純車載視覺)</b>:跟錯 <span class="num">${wA.robot.wrongCount}</span> 次、恢復後正確率 <span class="num">${rA?rA.toFixed(0):0}%</span>,且<b>對跟錯毫無自覺</b>。
-      中斷後的重擷取,靠的不是看得更清楚,而是有沒有「跨鏡頭全域一致身分」這個錨。`;
-    narrate(6,'對比完成 —— 任務中斷是實務常態,而中斷後能否認回同一個人,決定了這台機器人能不能真的被託付任務。');
+    banner.innerHTML=`✅ 往返完成 —— <b>B(隊伍識別)</b>:穿越隊伍 <span class="num">${wB.robot.cuts}</span> 次、干擾排隊者 <span class="num">${wB.robot.itf}</span> 次、
+      行走 <span class="num">${wB.robot.odo.toFixed(0)}m</span>、用時 <span class="num">${wB.robot.time.toFixed(1)}s</span>;
+      <b>A(最短路)</b>:穿越隊伍 <span class="num">${wA.robot.cuts}</span> 次、干擾排隊者 <span class="num">${wA.robot.itf}</span> 次、
+      行走 <span class="num">${wA.robot.odo.toFixed(0)}m</span>、用時 <span class="num">${wA.robot.time.toFixed(1)}s</span>。
+      A 快了幾秒,但每一次穿越都是一場公開的失禮 ——
+      <b>LiDAR 給的是幾何,連續軌跡給的是行為;而「這是一條隊伍」是行為,不是幾何。</b>`;
+    narrate(5,'對比完成 —— 機器人要在人的世界工作,就得看懂人的規矩;看懂規矩的前提,是看得見每個人的連續行為。');
     playing=false; $('btnPlay').textContent='▶ 播放';
   }
 }
@@ -539,9 +596,9 @@ function frame(t){
 $('btnPlay').onclick=()=>{playing=!playing;$('btnPlay').textContent=playing?'⏸ 暫停':'▶ 播放';};
 $('btnReset').onclick=()=>{
   wA.reset(); wB.reset(); wA.eventCb=onEvent; wB.eventCb=onEvent;
-  playing=false; banner.style.display='none'; stepNo=0;
+  playing=false; banner.style.display='none'; stepNo=0; aCut=0; n1=false; n3=false;
   $('narration').querySelector('.step').textContent='STEP 0';
-  $('narText').textContent='按「播放」開始 —— 兩台機器人將跟隨金色圓環標記的指定目標。';
+  $('narText').textContent='按「播放」開始 —— 兩台機器人須往返對面取件,一條排隊人龍橫在中間。';
   $('btnPlay').textContent='▶ 播放';
 };
 document.querySelectorAll('#speedSeg button').forEach(b=>{
@@ -550,6 +607,13 @@ document.querySelectorAll('#speedSeg button').forEach(b=>{
 });
 requestAnimationFrame(frame);
 })();
+</script>
+<script>
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT')return;
+  if(e.code==='Space'){e.preventDefault();document.getElementById('btnPlay').click();}
+  else if(e.key==='r'||e.key==='R'){document.getElementById('btnReset').click();}
+});
 </script>
 </body>
 </html>

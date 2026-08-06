@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>環境攝影機全域 MOT × AMR 人流導航 — 技術展示</title>
+<style>
+  :root{
+    --bg:#0A1018; --ink:#E8EEF7; --dim:#7F91AB;
+    --edge:#17222F; --card:#0E1620; --accent:#6FB3FF; --good:#7ADFA0;
+    --warn:#FFB86B; --bad:#FF6B6B; --mag:#E86BD0;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.7;}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+
+  /* 座標尺規:以世界座標系為結構語彙 */
+  .ruler{position:fixed;top:0;bottom:0;width:34px;z-index:5;pointer-events:none;
+    background:linear-gradient(var(--bg),var(--bg));border-right:1px solid #142030;}
+  .ruler.r{right:0;left:auto;border-right:none;border-left:1px solid #142030;}
+  .ruler.l{left:0;}
+  .ruler span{position:absolute;left:0;width:100%;text-align:center;
+    font-family:var(--mono);font-size:9px;color:#2C3D52;letter-spacing:.05em;}
+  .ruler span::before{content:"";position:absolute;top:50%;left:0;width:7px;height:1px;background:#1E2C3D;}
+  .ruler.r span::before{left:auto;right:0;}
+  @media(max-width:900px){.ruler{display:none;}}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 44px;}
+  section{padding:64px 0;border-bottom:1px solid #131E2A;}
+  section:last-of-type{border-bottom:none;}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.26em;color:var(--accent);
+    text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,#1E3049,transparent);}
+
+  h1{font-size:clamp(28px,4.6vw,50px);font-weight:800;letter-spacing:-.01em;line-height:1.24;}
+  h1 em{font-style:normal;color:var(--accent);}
+  h2{font-size:clamp(21px,2.6vw,29px);font-weight:800;letter-spacing:-.005em;margin-bottom:10px;}
+  h3{font-size:16px;font-weight:800;margin-bottom:6px;}
+  .lede{color:var(--dim);font-size:15.5px;max-width:74ch;margin-top:16px;}
+  .lede b{color:var(--ink);font-weight:700;}
+
+  /* Hero 互動 */
+  .hero{padding-top:72px;}
+  .stage{margin-top:34px;border:1px solid var(--edge);border-radius:12px;background:var(--card);overflow:hidden;}
+  .stagebar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:11px 16px;border-bottom:1px solid var(--edge);background:#0C131C;}
+  .stagebar .t{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.14em;}
+  .toggle{display:flex;border:1px solid #24384F;border-radius:999px;overflow:hidden;}
+  .toggle button{border:none;background:#0F1A26;color:var(--dim);font-family:var(--sans);
+    font-size:12.5px;font-weight:700;padding:7px 15px;cursor:pointer;}
+  .toggle button.on{background:var(--accent);color:#061019;}
+  .toggle button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
+  .readout{margin-left:auto;display:flex;gap:20px;font-family:var(--mono);font-size:12px;}
+  .readout div span{color:var(--dim);}
+  .readout div b{font-size:15px;}
+  canvas{display:block;width:100%;height:auto;}
+  .caption{padding:12px 16px;border-top:1px solid var(--edge);color:var(--dim);font-size:13px;background:#0C131C;}
+  .caption b{color:var(--ink);}
+
+  /* 痛點 */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;}
+  @media(max-width:860px){.grid3{grid-template-columns:1fr;}}
+  .pain{border:1px solid var(--edge);border-radius:11px;padding:20px;background:var(--card);
+    border-top:2px solid var(--bad);}
+  .pain .k{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--bad);}
+  .pain p{color:var(--dim);font-size:13.5px;margin-top:6px;}
+
+  /* Demo 卡 */
+  .demos{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:28px;}
+  a.demo{display:block;text-decoration:none;color:inherit;background:var(--card);
+    border:1px solid var(--edge);border-radius:12px;overflow:hidden;transition:border-color .18s,transform .18s;}
+  a.demo:hover,a.demo:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none;}
+  .demo .thumb{height:104px;position:relative;background:#0B121A;border-bottom:1px solid var(--edge);}
+  .demo .body{padding:16px 18px 18px;}
+  .demo .no{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.2em;}
+  .demo p{color:var(--dim);font-size:13.5px;margin-top:7px;}
+  .demo .go{margin-top:12px;font-size:12.5px;font-weight:800;color:var(--accent);}
+  .chipRow{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px;}
+  .chip{font-family:var(--mono);font-size:10.5px;padding:2px 8px;border-radius:999px;
+    background:#132030;color:var(--dim);border:1px solid #1D2E42;}
+
+  /* 基礎說明 */
+  .f1{display:grid;grid-template-columns:1.15fr 1fr;gap:34px;align-items:start;margin-top:26px;}
+  @media(max-width:900px){.f1{grid-template-columns:1fr;}}
+  .steps{border-left:1px solid #1D2E42;padding-left:20px;}
+  .steps li{list-style:none;margin-bottom:16px;position:relative;}
+  .steps li::before{content:attr(data-n);position:absolute;left:-30px;top:2px;
+    font-family:var(--mono);font-size:10px;color:var(--accent);
+    background:var(--bg);border:1px solid #1D2E42;border-radius:999px;width:20px;height:20px;
+    display:flex;align-items:center;justify-content:center;}
+  .steps p{color:var(--dim);font-size:13.5px;}
+
+  footer{padding:34px 0 60px;color:#4A5D75;font-size:12px;}
+</style>
+</head>
+<body>
+<div class="ruler l" id="rulerL"></div>
+<div class="ruler r" id="rulerR"></div>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="eyebrow">環境固定攝影機 × 全域多目標追蹤 × 自主移動機器人</div>
+    <h1>機器人不缺感測器,<br>缺的是<em>看見它視線之外的人</em>。</h1>
+    <p class="lede">
+      車載光達與相機只看得見眼前幾公尺,而且不知道每個人是誰、往哪走、走多快。
+      我們以環境中既有的固定攝影機,為場域內<b>每一個人維持跨鏡頭一致的身分與連續軌跡</b>,
+      即時提供給 AMR —— 讓機器人得以順流而行、認得回原本那個人、並在人潮中找到那道會動的門。
+    </p>
+
+    <div class="stage">
+      <div class="stagebar">
+        <span class="t">核心基礎 F1 · 跨鏡頭全域一致身分</span>
+        <div class="toggle" id="tg">
+          <button data-m="off">無全域身分</button>
+          <button data-m="on" class="on">有全域身分</button>
+        </div>
+        <div class="readout">
+          <div><span>軌跡數 </span><b class="num" id="roTraj">0</b></div>
+          <div><span>身分跳動 </span><b class="num" id="roSwap">0</b></div>
+        </div>
+      </div>
+      <canvas id="heroCv" width="1092" height="240"></canvas>
+      <div class="caption" id="cap">
+        <b>有全域身分:</b>同一人穿越三支鏡頭與其間的盲區,顏色與編號始終不變,產出一條完整連續的軌跡 —— 這是下游所有應用的前提。
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">問題</div>
+    <h2>人潮中的 AMR,三種典型失效</h2>
+    <p class="lede">這三件事都不是「感測器不夠好」造成的,而是<b>資訊維度不足</b>:機器人不知道視線外有誰、不知道剛才那個人是誰、不知道每個人走多快。</p>
+    <div class="grid3">
+      <div class="pain">
+        <div class="k">凍結</div>
+        <h3>機器人凍結症候群</h3>
+        <p>只看得見瞬時障礙,在密集且具方向性的人潮中反覆停讓、走走停停,到達時間與能耗雙輸。</p>
+      </div>
+      <div class="pain">
+        <div class="k">跟錯</div>
+        <h3>中斷後跟錯人</h3>
+        <p>遮蔽或暫離任務後重新擷取目標,只能靠外觀與運動預測 —— 遇到穿著相似者就鎖錯,而且毫無自覺。</p>
+      </div>
+      <div class="pain">
+        <div class="k">空等</div>
+        <h3>永遠等不到淨空</h3>
+        <p>面對持續橫向人流,保守策略要求完全淨空才通行;對真實場域的人流,這個窗口可遇不可求。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">共用基礎</div>
+    <h2>一套資料,三種能力</h2>
+    <div class="f1">
+      <div>
+        <p class="lede" style="margin-top:0">
+          三個應用分支共用同一套基礎設施與同一份資料:場域內每個人的<b>全域一致身分(Global ID)</b>與<b>連續世界座標軌跡</b>。
+          正因為身分連續,速度才算得準;正因為速度算得準,流向場、間隙預測、身分驗證才成立。
+          這種相互依存,使它不是三個功能的堆疊,而是一個基礎衍生出的三種能力。
+        </p>
+        <div class="chipRow" style="margin-top:18px">
+          <span class="chip">單鏡頭 MOT</span>
+          <span class="chip">重疊區幾何接力</span>
+          <span class="chip">盲區時空拓撲 + Re-ID</span>
+          <span class="chip">世界座標投影</span>
+          <span class="chip">線上標定校正</span>
+        </div>
+      </div>
+      <ul class="steps">
+        <li data-n="1"><h3>逐鏡頭偵測與追蹤</h3><p>各攝影機獨立執行多目標追蹤,取得短期軌跡片段。</p></li>
+        <li data-n="2"><h3>重疊區幾何接力</h3><p>投影至共用世界座標,以位置連續性判定為同一人。</p></li>
+        <li data-n="3"><h3>盲區身分接續</h3><p>以可行走拓撲與合理移動時間縮小候選,再以外觀特徵比對完成指派。</p></li>
+        <li data-n="4"><h3>連續全域軌跡</h3><p>輸出跨越盲區的長時連續軌跡與逐人速度,即時下發給機器人。</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">互動展示</div>
+    <h2>四個 A/B 對比,每個都只講一件事</h2>
+    <p class="lede">每個展示都在<b>完全相同的人流條件</b>下,並排比較傳統做法與本技術。上為傳統、下為本技術,記分板即時顯示差距。</p>
+    <div class="demos">
+      <a class="demo" href="amr_flowfield_demo.html">
+        <div class="thumb"><canvas id="th1" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 01</div>
+          <h3>人流流向場路徑規劃</h3>
+          <p>同一條走廊、全場密度一致,唯一的差別是方向。純車載 LiDAR 只看得見七公尺,一頭撞進逆流;本技術貼著看不見的順流帶滑過去。</p>
+          <div class="chipRow"><span class="chip">應用分支 A</span><span class="chip">凍結時間佔比</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+      <a class="demo" href="amr_relay_follow_demo.html">
+        <div class="thumb"><canvas id="th2" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 02</div>
+          <h3>接力跟隨與防跟錯人</h3>
+          <p>機器人暫離跟隨、躲進看不見走廊的凹室執行側任務。回來時眼前只有一個長得一樣的人 —— 誰認得出原本那位?</p>
+          <div class="chipRow"><span class="chip">應用分支 B</span><span class="chip">Re-ID 特徵錨定</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+      <a class="demo" href="amr_gap_threading_demo.html">
+        <div class="thumb"><canvas id="th3" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 03</div>
+          <h3>人際間隙穿越與預測</h3>
+          <p>每個人步速不同,所以間隙會張開也會收合。算出「輪到我時會有多寬」,並保留車載即時層的最終否決權。</p>
+          <div class="chipRow"><span class="chip">應用分支 C</span><span class="chip">三層權限</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+      <a class="demo" href="amr_grid_routing_demo.html">
+        <div class="thumb"><canvas id="th4" width="360" height="104"></canvas></div>
+        <div class="body">
+          <div class="no">DEMO 04</div>
+          <h3>棋盤路網人流繞路</h3>
+          <p>最短的那條路擠滿了人。多走兩成距離的後巷,反而更快抵達 —— 在人流場域,最短與最快是兩條不同的路。</p>
+          <div class="chipRow"><span class="chip">應用分支 A · 密度成本</span><span class="chip">最短≠最快</span></div>
+          <div class="go">開啟展示 →</div>
+        </div>
+      </a>
+    </div>
+    <p class="lede" style="font-size:13px;margin-top:18px">
+      四個展示為獨立 HTML 檔,置於同一資料夾即可由本頁直接開啟,亦可各自離線播放,無須安裝任何環境。
+      Demo 01 與 04 分別展示同一條代價函數中的<b>流向衝突成本(方向)</b>與<b>密度成本(擁擠)</b> —— 實際部署時二者同時作用。
+    </p>
+  </section>
+
+  <footer>
+    技術展示原型 · 內部與投資簡報用途。模擬參數與對照組設定於各展示頁頁尾完整揭露。
+  </footer>
+</div>
+
+<script>
+(()=>{
+/* ---------- 邊緣座標尺規 ---------- */
+function buildRuler(el,side){
+  const h=document.documentElement.scrollHeight;
+  let s='';
+  for(let y=120;y<window.innerHeight;y+=90){
+    s+=`<span style="top:${y}px">${String(Math.round(y/10)).padStart(3,'0')}</span>`;
+  }
+  el.innerHTML=s;
+}
+buildRuler(document.getElementById('rulerL'));
+buildRuler(document.getElementById('rulerR'));
+addEventListener('resize',()=>{
+  buildRuler(document.getElementById('rulerL'));
+  buildRuler(document.getElementById('rulerR'));
+});
+
+/* ---------- Hero:全域身分開關 ---------- */
+const cv=document.getElementById('heroCv'), c=cv.getContext('2d');
+const Wc=cv.width, Hc=cv.height;
+const CAMS=[[40,330],[382,700],[752,1052]];        // 三支鏡頭視野(像素)
+const PAL=['#6FB3FF','#7ADFA0','#E86BD0','#FFB86B','#FF6B6B','#9C8CFF','#5CC8FF','#FFD166'];
+let mode='on';
+function rnd(a,b){return a+Math.random()*(b-a);}
+class P{
+  constructor(x){ this.reset(x); }
+  reset(x){
+    this.x=x!==undefined?x:-rnd(10,260);
+    this.y=rnd(46,Hc-40); this.v=rnd(38,64);
+    this.tid=Math.floor(rnd(0,PAL.length));
+    this.seg=-2; this.localId=Math.floor(rnd(10,99));
+    this.trail=[]; this.swaps=0;
+  }
+  camIndex(){ for(let i=0;i<CAMS.length;i++) if(this.x>=CAMS[i][0]&&this.x<=CAMS[i][1])return i; return -1; }
+  step(dt){
+    this.x+=this.v*dt;
+    const ci=this.camIndex();
+    if(ci>=0&&ci!==this.seg){
+      if(this.seg>=0){ this.localId=Math.floor(rnd(10,99)); this.swaps++; }
+      this.seg=ci;
+    }
+    if(ci<0&&this.seg>=0&&this.x>CAMS[this.seg][1]) this.seg=-1;
+    this.trail.push({x:this.x,y:this.y,ci});
+    if(this.trail.length>240)this.trail.shift();
+    if(this.x>Wc+40)this.reset();
+  }
+  color(){ return mode==='on'? PAL[this.tid] : PAL[(this.tid+this.seg*3+7)%PAL.length]; }
+  label(){ return mode==='on'? 'G'+String(this.tid*7+13).padStart(2,'0') : '#'+this.localId; }
+}
+const peds=[]; for(let i=0;i<11;i++)peds.push(new P(rnd(-240,Wc)));
+
+function draw(){
+  c.clearRect(0,0,Wc,Hc);
+  // 盲區
+  c.fillStyle='rgba(255,107,107,.045)';
+  for(let i=0;i<CAMS.length-1;i++) c.fillRect(CAMS[i][1],26,CAMS[i+1][0]-CAMS[i][1],Hc-26);
+  c.fillStyle='rgba(255,107,107,.5)'; c.font='600 10px ui-monospace,monospace'; c.textAlign='center';
+  for(let i=0;i<CAMS.length-1;i++) c.fillText('盲區',(CAMS[i][1]+CAMS[i+1][0])/2,Hc-10);
+  // 鏡頭視野
+  CAMS.forEach((s,i)=>{
+    c.fillStyle='rgba(111,179,255,.05)'; c.fillRect(s[0],26,s[1]-s[0],Hc-26);
+    c.strokeStyle='rgba(111,179,255,.2)'; c.lineWidth=1; c.setLineDash([4,4]);
+    c.beginPath(); c.moveTo(s[0],26); c.lineTo(s[0],Hc-24);
+    c.moveTo(s[1],26); c.lineTo(s[1],Hc-24); c.stroke(); c.setLineDash([]);
+    const cx=(s[0]+s[1])/2;
+    c.fillStyle='#6FB3FF'; c.fillRect(cx-6,12,12,9);
+    c.fillStyle='rgba(111,179,255,.6)'; c.font='600 10px ui-monospace,monospace';
+    c.fillText('CAM '+(i+1),cx,34);
+  });
+  c.textAlign='left';
+  // 軌跡與人
+  let swaps=0;
+  for(const p of peds){
+    swaps+=p.swaps;
+    for(let i=1;i<p.trail.length;i++){
+      const a=p.trail[i-1], b=p.trail[i];
+      const blind=(a.ci<0||b.ci<0);
+      if(blind&&mode==='off')continue;                 // 無全域身分:盲區軌跡直接斷裂
+      c.strokeStyle=mode==='on'?PAL[p.tid]:PAL[(p.tid+Math.max(b.ci,0)*3+7)%PAL.length];
+      c.globalAlpha=blind?0.28:0.6; c.lineWidth=blind?1.4:2;
+      if(blind){c.setLineDash([3,4]);}
+      c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.stroke(); c.setLineDash([]);
+    }
+    c.globalAlpha=1;
+    const vis=p.camIndex()>=0;
+    c.fillStyle=p.color(); c.globalAlpha=vis?1:.35;
+    c.beginPath(); c.arc(p.x,p.y,5,0,7); c.fill();
+    if(vis){
+      c.fillStyle=p.color(); c.font='700 9.5px ui-monospace,monospace'; c.textAlign='center';
+      c.fillText(p.label(),p.x,p.y-10); c.textAlign='left';
+    }
+    c.globalAlpha=1;
+  }
+  document.getElementById('roTraj').textContent = mode==='on'? peds.length : peds.length*3;
+  document.getElementById('roSwap').textContent = mode==='on'? 0 : swaps;
+}
+let last=null;
+function loop(t){
+  requestAnimationFrame(loop);
+  if(last===null)last=t;
+  const dt=Math.min((t-last)/1000,.05); last=t;
+  for(const p of peds)p.step(dt);
+  draw();
+}
+requestAnimationFrame(loop);
+
+const CAPS={
+  on:'<b>有全域身分:</b>同一人穿越三支鏡頭與其間的盲區,顏色與編號始終不變,產出一條完整連續的軌跡 —— 這是下游所有應用的前提。',
+  off:'<b>無全域身分:</b>每支鏡頭各自為政,同一人每過一次交界就換一個編號與顏色,盲區內軌跡直接斷裂。速度算不準、流向失真、身分無從驗證。'
+};
+document.querySelectorAll('#tg button').forEach(b=>{
+  b.onclick=()=>{
+    mode=b.dataset.m;
+    document.querySelectorAll('#tg button').forEach(x=>x.classList.toggle('on',x===b));
+    document.getElementById('cap').innerHTML=CAPS[mode];
+  };
+});
+
+/* ---------- Demo 卡片縮圖 ---------- */
+function thumb(id,kind){
+  const cv=document.getElementById(id); if(!cv)return;
+  const g=cv.getContext('2d'), Wt=cv.width, Ht=cv.height;
+  let t=0;
+  (function tick(){
+    requestAnimationFrame(tick); t+=0.012;
+    g.clearRect(0,0,Wt,Ht);
+    if(kind===1){
+      for(let i=0;i<44;i++){
+        const x=(i*31+t*40)%Wt, y=14+((i*37)%52);
+        g.fillStyle='rgba(255,138,92,.55)'; g.beginPath(); g.arc(x,y,2.2,0,7); g.fill();
+      }
+      for(let i=0;i<14;i++){
+        const x=(Wt-((i*47+t*70)%Wt)), y=78+((i*23)%18);
+        g.fillStyle='rgba(92,200,255,.6)'; g.beginPath(); g.arc(x,y,2.2,0,7); g.fill();
+      }
+      g.strokeStyle='rgba(232,238,247,.75)'; g.lineWidth=2; g.beginPath();
+      g.moveTo(10,52); g.bezierCurveTo(120,52,180,86,350,86); g.stroke();
+    }
+    if(kind===2){
+      g.fillStyle='#1B2A3C'; g.fillRect(140,30,80,44);
+      const ph=(t*46)%420;
+      g.strokeStyle='rgba(232,107,208,.55)'; g.lineWidth=2;
+      g.beginPath(); g.moveTo(20,24); g.lineTo(150,24); g.stroke();
+      g.beginPath(); g.moveTo(228,24); g.lineTo(340,24); g.stroke();
+      g.beginPath(); g.moveTo(228,24); g.lineTo(236,86); g.lineTo(340,86); g.stroke();
+      g.fillStyle='#E86BD0';
+      g.beginPath(); g.arc(236+Math.min(ph,100),86,3.4,0,7); g.fill();
+      g.beginPath(); g.arc(236+Math.min(ph*1.2,104),24,3.4,0,7); g.fill();
+      g.strokeStyle='#FFD166'; g.lineWidth=1.6; g.setLineDash([2,2]);
+      g.beginPath(); g.arc(236+Math.min(ph,100),86,7.5,0,7); g.stroke(); g.setLineDash([]);
+    }
+    if(kind===3){
+      g.fillStyle='rgba(255,138,92,.07)'; g.fillRect(0,30,Wt,40);
+      for(let i=0;i<26;i++){
+        const gapAt=(i%13===6);
+        const x=((i*30+t*44)%(Wt+60))-30, y=38+((i*29)%24);
+        if(gapAt)continue;
+        g.fillStyle='rgba(255,150,100,.6)'; g.beginPath(); g.arc(x,y,2.4,0,7); g.fill();
+      }
+      g.strokeStyle='rgba(92,200,255,.75)'; g.lineWidth=1.6; g.setLineDash([3,3]);
+      g.beginPath(); g.moveTo(178,12); g.lineTo(178,92); g.stroke(); g.setLineDash([]);
+      g.fillStyle='#fff'; g.beginPath(); g.arc(178,80-Math.abs(Math.sin(t*1.6))*44,4,0,7); g.fill();
+    }
+    if(kind===4){
+      // 街區
+      g.fillStyle='#1B2A3C';
+      for(const[bx,by]of [[40,26],[150,26],[260,26],[40,62],[150,62],[260,62]])
+        g.fillRect(bx,by,86,16);
+      // 商店街人潮(中列)
+      for(let i=0;i<30;i++){
+        const x=44+((i*37+Math.sin(t*2+i)*6)%(Wt-80));
+        const y=48+((i*13)%10);
+        g.fillStyle='rgba(255,138,92,.6)'; g.beginPath(); g.arc(x,y,2.2,0,7); g.fill();
+      }
+      // 繞路路線(下巷)
+      g.strokeStyle='rgba(92,200,255,.7)'; g.lineWidth=2; g.setLineDash([4,4]);
+      g.beginPath(); g.moveTo(14,52); g.lineTo(14,88); g.lineTo(346,88); g.lineTo(346,52); g.stroke();
+      g.setLineDash([]);
+      // 機器人沿繞路移動
+      const per=(t*0.35)%1, L1=36,L2=332,L3=36, TL=L1+L2+L3;
+      let d=per*TL, rx,ry;
+      if(d<L1){rx=14;ry=52+d;}
+      else if(d<L1+L2){rx=14+(d-L1);ry=88;}
+      else{rx=346;ry=88-(d-L1-L2);}
+      g.fillStyle='#fff'; g.beginPath(); g.arc(rx,ry,4,0,7); g.fill();
+    }
+  })();
+}
+thumb('th1',1); thumb('th2',2); thumb('th3',3); thumb('th4',4);
+})();
+</script>
+</body>
+</html>

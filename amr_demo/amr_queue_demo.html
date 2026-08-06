@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230E1626'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23ffffff'/%3E%3Ccircle cx='16' cy='16' r='11' stroke='%236FB3FF' stroke-width='2.4' fill='none' stroke-dasharray='4 3'/%3E%3C/svg%3E">
+<title>Demo 07 · 群體識別:哪些縫不該鑽</title>
+<style>
+  :root{
+    --bg:#0B1220; --panel:#0E1626; --panel-edge:#1C2A40;
+    --ink:#E8EEF7; --ink-dim:#8FA0B8; --accent:#6FB3FF;
+    --duo:#E86BD0; --str:#8FA0B8; --good:#7ADFA0; --bad:#FF6B6B; --gold:#FFD166; --gap:#5CC8FF;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+    padding:20px 16px 40px; display:flex; flex-direction:column; align-items:center;
+  }
+  .num{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-variant-numeric:tabular-nums;}
+  header{width:100%; max-width:1140px; margin-bottom:14px;}
+  .eyebrow{color:var(--accent); font-size:12px; letter-spacing:.22em; font-weight:700; margin-bottom:6px;}
+  h1{font-size:22px; font-weight:800; letter-spacing:.02em;}
+  .sub{color:var(--ink-dim); font-size:13px; margin-top:4px; line-height:1.6;}
+  .sub b{color:var(--ink); font-weight:700;}
+  .controls{
+    width:100%; max-width:1140px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px;
+    padding:10px 12px; margin-bottom:10px;
+  }
+  button{
+    background:#16233A; color:var(--ink); border:1px solid #2A3E5E; border-radius:8px;
+    padding:8px 16px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  button:hover{background:#1D2E4B;}
+  button.primary{background:var(--accent); color:#06101F; border-color:var(--accent);}
+  button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .seg{display:flex; border:1px solid #2A3E5E; border-radius:8px; overflow:hidden;}
+  .seg button{border:none; border-radius:0; padding:8px 12px; background:#101B2E; font-weight:600;}
+  .seg button.on{background:var(--accent); color:#06101F; font-weight:800;}
+  .spacer{flex:1;}
+  .legend{display:flex; gap:14px; font-size:12px; color:var(--ink-dim); align-items:center; flex-wrap:wrap;}
+  .dot{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:-1px;}
+  .narration{
+    width:100%; max-width:1140px; min-height:44px; margin-bottom:10px; border-radius:10px;
+    background:#101B2E; border:1px solid var(--panel-edge); padding:10px 14px;
+    font-size:14px; font-weight:700; display:flex; align-items:center; gap:12px; line-height:1.5;
+  }
+  .narration .step{font-size:11px; color:var(--accent); letter-spacing:.15em; flex-shrink:0; font-family:ui-monospace,monospace;}
+  .panelWrap{width:100%; max-width:1140px; margin-bottom:10px; position:relative;}
+  .panelLabel{
+    position:absolute; top:10px; left:10px; z-index:2; display:flex; align-items:center; gap:8px;
+    background:rgba(8,14,26,.82); border:1px solid var(--panel-edge); border-radius:8px; padding:6px 10px;
+    font-size:13px; font-weight:700; backdrop-filter:blur(2px);
+  }
+  .tag{font-size:11px; font-weight:800; padding:2px 8px; border-radius:99px; letter-spacing:.06em;}
+  .tagA{background:#3A2A22; color:#FF8A5C;}
+  .tagB{background:#15303F; color:#5CC8FF;}
+  .stateChip{
+    position:absolute; top:10px; right:10px; z-index:2; max-width:54%;
+    background:rgba(8,14,26,.85); border:1px solid var(--panel-edge); border-radius:99px;
+    padding:6px 13px; font-size:12px; font-weight:800; backdrop-filter:blur(2px); text-align:right;
+  }
+  canvas{display:block; width:100%; height:auto; border-radius:10px; border:1px solid var(--panel-edge); background:var(--panel);}
+  .scoreboard{
+    width:100%; max-width:1140px; display:grid; grid-template-columns:200px 1fr 1fr; gap:1px;
+    background:var(--panel-edge); border:1px solid var(--panel-edge); border-radius:10px; overflow:hidden;
+    font-size:14px; margin-top:4px;
+  }
+  .scoreboard>div{background:var(--panel); padding:10px 14px;}
+  .scoreboard .head{font-size:12px; color:var(--ink-dim); font-weight:700; letter-spacing:.05em;}
+  .scoreboard .rowh{color:var(--ink-dim); font-size:13px; display:flex; align-items:center;}
+  .scoreboard .val{font-size:18px; font-weight:800;}
+  .win{color:var(--good);} .lose{color:var(--bad);}
+  .banner{
+    width:100%; max-width:1140px; margin-top:12px; border-radius:10px; padding:14px 18px;
+    background:linear-gradient(90deg,#0F2A1E,#0E1626); border:1px solid #1E4A35;
+    font-size:15px; font-weight:700; color:var(--good); display:none; line-height:1.7;
+  }
+  .foot{width:100%; max-width:1140px; color:var(--ink-dim); font-size:12px; margin-top:14px; line-height:1.7;}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" style="display:inline-block;color:#6FB3FF;text-decoration:none;font-size:12.5px;font-weight:700;margin-bottom:10px;border:1px solid #1C2A40;border-radius:999px;padding:5px 14px;background:#0E1626">← 回展示首頁</a>
+  <div class="eyebrow">GLOBAL MOT × AMR NAVIGATION — DEMO 07</div>
+  <h1>群體識別:會鑽縫是技術,知道哪些縫不該鑽是智慧</h1>
+  <div class="sub">
+    機器人前方會先後遇到兩組「中間有縫」的行人:一對<b>並肩同行的同伴</b>(間距穩定、同速同向),
+    和兩位<b>恰好走在一起的陌生人</b>(速度不同、間距漸變)。幾何上兩道縫一模一樣 ——
+    LiDAR 的答案也一樣:都能過,於是 A 兩道都鑽,把同行的兩人硬生生隔開;
+    本技術由全域 MOT 的連續軌跡計算<b>兩兩關聯度</b>(同速、同向、間距穩定的持續時間):
+    同伴判定為<b>不可分割的群體</b>而繞行,陌生人則照樣安全穿越 —— <b>是分辨,不是保守</b>。
+  </div>
+</header>
+
+<div class="controls">
+  <button id="btnPlay" class="primary">▶ 播放</button>
+  <button id="btnReset">↺ 重置</button>
+  <div class="seg" id="speedSeg">
+    <button data-s="1">1×</button>
+    <button data-s="2" class="on">2×</button>
+    <button data-s="3">3×</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--duo)"></span>同行同伴(群體)</span>
+    <span><span class="dot" style="background:var(--str)"></span>陌生人(無關聯)</span>
+    <span><span class="dot" style="background:#fff"></span>AMR</span>
+  </div>
+</div>
+
+<div class="narration" id="narration"><span class="step">STEP 0</span><span id="narText">按「播放」開始 —— 前方先後有兩道幾何上完全相同的「人與人之間的縫」。</span></div>
+
+<div class="panelWrap">
+  <div class="panelLabel"><span class="tag tagA">A</span> 傳統:純車載 LiDAR — 有縫就鑽,分不出誰跟誰一起</div>
+  <div class="stateChip" id="chipA">待機</div>
+  <canvas id="cvA" width="1140" height="310"></canvas>
+</div>
+
+<div class="panelWrap">
+  <div class="panelLabel"><span class="tag tagB">B</span> 本技術:全域 MOT 關聯度 — 群體繞行,陌生人間隙照穿</div>
+  <div class="stateChip" id="chipB">待機</div>
+  <canvas id="cvB" width="1140" height="310"></canvas>
+</div>
+
+<div class="scoreboard">
+  <div class="head">即時記分板</div>
+  <div class="head" style="color:#FF8A5C">A|純幾何</div>
+  <div class="head" style="color:#5CC8FF">B|關聯度判別</div>
+  <div class="rowh">拆散群體次數</div>
+  <div class="val num" id="splitA">0</div>
+  <div class="val num" id="splitB">0</div>
+  <div class="rowh">陌生人間隙穿越</div>
+  <div class="val num" id="thrA">0</div>
+  <div class="val num" id="thrB">0</div>
+  <div class="rowh">總耗時</div>
+  <div class="val num" id="timeA">0.0 s</div>
+  <div class="val num" id="timeB">0.0 s</div>
+  <div class="rowh">行走距離</div>
+  <div class="val num" id="odoA">0 m</div>
+  <div class="val num" id="odoB">0 m</div>
+</div>
+
+<div class="banner" id="banner"></div>
+
+<div class="foot">
+  說明:兩面板行人以相同腳本行進,條件完全對等。兩道縫的寬度刻意設計為相同(約 2.6m),幾何上無從區分。
+  B 的關聯度是<b>真實計算</b>:對每一對行人持續累計「距離介於 0.5–2.5m、速度差 &lt; 0.3 m/s、方向差 &lt; 20°」的成立時間,
+  持續逾 3 秒即判定為群體(畫面顯示關聯度百分比與連結線),群體之連線帶寫入代價地圖為不可穿越;
+  陌生人組因速度不同、間距漸變,關聯度始終偏低,其間隙照常視為可通行 —— 若 B 只是「看到兩個人就繞」,那是保守;
+  <b>對群體繞行、對陌生人穿越,才是判別</b>。A 拆散群體時,兩位同伴會被迫分開、待機器人通過後重新靠攏(紅圈閃爍);
+  「拆散群體」在導覽、親子、長照場域即是客訴,在機場則可能是把旅客與同行者隔開的安全事件。
+</div>
+
+<script>
+(()=>{
+/* ================= 世界 ================= */
+const S=10, W=114, H=31;
+const WALLS=[{x:0,y:0,w:W,h:2},{x:0,y:29,w:W,h:2}];
+const START={x:6,y:15.5}, GOAL={x:108,y:15.5};
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+
+/* ================= 行人(腳本化) ================= */
+class Ped{
+  constructor(x,y,vx,kind,mate){
+    this.x=x;this.y=y;this.baseY=y;this.vx=vx;this.vy=0;
+    this.kind=kind; this.mate=mate||null;      // 'duo' | 'str'
+    this.r=0.4; this.active=true; this.flash=0;
+  }
+  step(dt,robot){
+    if(!this.active)return;
+    if(this.flash>0)this.flash-=dt;
+    // 機器人逼近 → 側身避開(群體被拆散的具體樣貌)
+    let ry=0;
+    if(robot){
+      const dx=this.x-robot.x, dy=this.y-robot.y, d2=dx*dx+dy*dy;
+      if(d2<5.3&&d2>1e-6){ const d=Math.sqrt(d2); ry=dy/d*1.4; }
+    }
+    // 回歸自己的行進線(通過後重新靠攏)
+    const targetY=this.baseY+ry;
+    this.vy=(targetY-this.y)*2.2;
+    this.x+=this.vx*dt; this.y+=this.vy*dt;
+    if(this.x<-4)this.active=false;
+  }
+  get v(){ return Math.hypot(this.vx,this.vy); }
+}
+
+/* ================= 關聯度(真實計算) ================= */
+class Affinity{
+  constructor(){ this.score=new Map(); }
+  key(a,b){ return a.id<b.id? a.id+'-'+b.id : b.id+'-'+a.id; }
+  update(peds,dt){
+    for(let i=0;i<peds.length;i++)for(let j=i+1;j<peds.length;j++){
+      const a=peds[i], b=peds[j];
+      if(!a.active||!b.active)continue;
+      const k=this.key(a,b);
+      const d=Math.hypot(a.x-b.x,a.y-b.y);
+      const dv=Math.hypot(a.vx-b.vx,a.vy-b.vy);
+      const ha=Math.atan2(a.vy,a.vx), hb=Math.atan2(b.vy,b.vx);
+      let dh=Math.abs(ha-hb); if(dh>Math.PI)dh=2*Math.PI-dh;
+      const together = d>0.5&&d<2.9&&dv<0.35&&dh<0.35&&a.v>0.2&&b.v>0.2;
+      let s=this.score.get(k)||0;
+      s = together? Math.min(s+dt,8) : Math.max(s-dt*1.5,0);
+      this.score.set(k,s);
+    }
+  }
+  pct(a,b){ const s=this.score.get(this.key(a,b))||0; return Math.min(s/8*100,99); }
+  isGroup(a,b){ return (this.score.get(this.key(a,b))||0)>3; }
+}
+
+/* ================= A* ================= */
+const CELL=2, GX=W/CELL|0, GY=Math.ceil(H/CELL);
+const blockedBase=new Uint8Array(GX*GY);
+for(let gy=0;gy<GY;gy++)for(let gx=0;gx<GX;gx++){
+  const y=gy*CELL+1, x=gx*CELL+1;
+  if(y<2.6||y>H-2.6||x<0.8||x>W-0.8)blockedBase[gy*GX+gx]=1;
+}
+function plan(sx,sy,tx,ty,peds,mode,aff,lidarR){
+  const cost=new Float32Array(GX*GY);
+  const act=peds.filter(p=>p.active);
+  if(mode==='global'){
+    // 群體連線帶 → 不可穿越
+    for(let i=0;i<act.length;i++)for(let j=i+1;j<act.length;j++){
+      const a=act[i],b=act[j];
+      if(!aff.isGroup(a,b))continue;
+      for(let gy=0;gy<GY;gy++)for(let gx=0;gx<GX;gx++){
+        const x=gx*CELL+1, y=gy*CELL+1;
+        // 點到線段距離
+        const dx=b.x-a.x, dy=b.y-a.y, L2=dx*dx+dy*dy||1;
+        let t=((x-a.x)*dx+(y-a.y)*dy)/L2; t=clamp(t,0,1);
+        const px=a.x+dx*t, py=a.y+dy*t;
+        if(Math.hypot(x-px,y-py)<2.0)cost[gy*GX+gx]+=60;
+      }
+    }
+    for(const p of act){
+      const gx=clamp(p.x/CELL|0,0,GX-1),gy=clamp(p.y/CELL|0,0,GY-1);
+      cost[gy*GX+gx]+=7;
+    }
+  }else{
+    for(const p of act){
+      if(Math.hypot(p.x-sx,p.y-sy)>lidarR)continue;
+      for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){
+        const gx=clamp((p.x/CELL|0)+ox,0,GX-1),gy=clamp((p.y/CELL|0)+oy,0,GY-1);
+        const cx=gx*CELL+1,cy=gy*CELL+1;
+        if(Math.hypot(cx-p.x,cy-p.y)<1.0)cost[gy*GX+gx]+=9;
+      }
+    }
+  }
+  const s=[clamp(sx/CELL|0,0,GX-1),clamp(sy/CELL|0,0,GY-1)];
+  const t=[clamp(tx/CELL|0,0,GX-1),clamp(ty/CELL|0,0,GY-1)];
+  const N=GX*GY,g=new Float32Array(N).fill(1e9),came=new Int32Array(N).fill(-1);
+  const si=s[1]*GX+s[0], ti=t[1]*GX+t[0];
+  const open=[[0,si]]; g[si]=0;
+  const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+  while(open.length){
+    let bi=0;for(let i=1;i<open.length;i++)if(open[i][0]<open[bi][0])bi=i;
+    const[,cur]=open.splice(bi,1)[0];
+    if(cur===ti)break;
+    const cx=cur%GX, cy=cur/GX|0;
+    for(const[dx,dy]of dirs){
+      const nx=cx+dx,ny=cy+dy;
+      if(nx<0||ny<0||nx>=GX||ny>=GY)continue;
+      const ni=ny*GX+nx; if(blockedBase[ni])continue;
+      if(dx&&dy&&(blockedBase[cy*GX+nx]||blockedBase[ny*GX+cx]))continue;
+      const len=(dx&&dy)?1.414:1;
+      const c=g[cur]+len*(1+cost[ni]);
+      if(c<g[ni]){g[ni]=c;came[ni]=cur;open.push([c+Math.hypot(nx-t[0],ny-t[1]),ni]);}
+    }
+  }
+  const path=[];let cur=ti;
+  if(came[ti]<0&&ti!==si)return[[tx,ty]];
+  while(cur>=0){path.push([(cur%GX)*CELL+1,(cur/GX|0)*CELL+1]);cur=came[cur];}
+  path.reverse(); path.push([tx,ty]); return path;
+}
+
+/* ================= 機器人 ================= */
+class Robot{
+  constructor(mode){ this.mode=mode; this.lidarR=7; this.reset(); }
+  reset(){
+    this.x=START.x; this.y=START.y; this.hd=0; this.speed=0;
+    this.time=0; this.odo=0; this.splits=0; this.threads=0;
+    this.inDuo=false; this.inStr=false;
+    this.path=null; this.replanT=0; this.done=false;
+    this.state='出發'; this.trail=[];
+  }
+  between(a,b){
+    if(!a.active||!b.active)return false;
+    const dx=b.x-a.x, dy=b.y-a.y, L2=dx*dx+dy*dy||1;
+    let t=((this.x-a.x)*dx+(this.y-a.y)*dy)/L2;
+    if(t<0.12||t>0.88)return false;
+    const px=a.x+dx*t, py=a.y+dy*t;
+    return Math.hypot(this.x-px,this.y-py)<1.0;
+  }
+  step(dt, world){
+    if(this.done)return;
+    this.time+=dt;
+    const peds=world.peds, aff=world.aff;
+    this.replanT-=dt;
+    if(!this.path||this.replanT<=0){
+      this.path=plan(this.x,this.y,GOAL.x,GOAL.y,peds,this.mode,aff,this.lidarR);
+      this.replanT=this.mode==='global'?0.9:0.6;
+    }
+    let li=0,best=1e9;
+    for(let i=0;i<this.path.length;i++){
+      const d=Math.hypot(this.path[i][0]-this.x,this.path[i][1]-this.y);
+      if(d<best){best=d;li=i;}
+    }
+    const look=this.path[Math.min(li+2,this.path.length-1)];
+    const dx=look[0]-this.x,dy=look[1]-this.y,dd=Math.hypot(dx,dy)||1;
+    const hx=dx/dd,hy=dy/dd; this.hd=Math.atan2(hy,hx);
+    let cap=1.8;
+    for(const p of peds){ if(!p.active)continue;
+      const px=p.x-this.x,py=p.y-this.y,d=Math.hypot(px,py);
+      if(d<1.2&&(px*hx+py*hy)/d>0.4){cap=0;break;}
+      if(d<2.2)cap=Math.min(cap,0.8);
+    }
+    this.speed+=(cap-this.speed)*Math.min(dt*6,1);
+    this.x+=hx*this.speed*dt; this.y+=hy*this.speed*dt;
+    this.odo+=this.speed*dt;
+    // 事件判定
+    const [d1,d2]=world.duo, [s1,s2]=world.strangers;
+    const inD=this.between(d1,d2);
+    if(inD&&!this.inDuo){this.splits++; d1.flash=1.4; d2.flash=1.4;
+      world.event(this.mode==='global'?'B-split':'A-split');}
+    this.inDuo=inD;
+    const inS=this.between(s1,s2);
+    if(inS&&!this.inStr){this.threads++;
+      world.event(this.mode==='global'?'B-thread':'A-thread');}
+    this.inStr=inS;
+    // 狀態
+    if(this.mode==='global'){
+      if(aff.isGroup(d1,d2)&&d1.active&&Math.abs(d1.x-this.x)<26&&d1.x>this.x-4)
+        this.state=`偵測到群體(關聯度 ${aff.pct(d1,d2).toFixed(0)}%)— 繞行不穿越`;
+      else if(s1.active&&Math.abs(s1.x-this.x)<22&&s1.x>this.x-4)
+        this.state=`兩位行人關聯度 ${aff.pct(s1,s2).toFixed(0)}% — 非群體,間隙可穿越`;
+      else this.state='前往目的地';
+    }else{
+      this.state=inD||inS?'穿越人與人之間的縫':'前往目的地(最短路)';
+    }
+    if(Math.hypot(GOAL.x-this.x,GOAL.y-this.y)<1.4){this.done=true;this.state='✅ 已抵達';}
+    this.trail.push([this.x,this.y]); if(this.trail.length>300)this.trail.shift();
+  }
+}
+
+/* ================= 面板 ================= */
+let PID=0;
+function mk(x,y,vx,kind){ const p=new Ped(x,y,vx,kind); p.id=++PID; return p; }
+class World{
+  constructor(cv,mode){ this.cv=cv; this.ctx=cv.getContext('2d'); this.mode=mode; this.reset(); }
+  reset(){
+    PID=0;
+    // 同行同伴:同速同向、間距 2.6m 穩定
+    this.duo=[ mk(52,14.2,-1.0,'duo'), mk(52,16.8,-1.0,'duo') ];
+    // 陌生人:速度不同、上下錯位,縫寬同為 ~2.6m
+    this.strangers=[ mk(100,14.2,-1.18,'str'), mk(98,16.8,-0.78,'str') ];
+    this.peds=[...this.duo,...this.strangers];
+    this.aff=new Affinity();
+    this.robot=new Robot(this.mode);
+    this.eventCb=null;
+  }
+  step(dt){
+    for(const p of this.peds)p.step(dt,this.robot);
+    this.aff.update(this.peds,dt);
+    this.robot.step(dt,this);
+  }
+  event(n){ if(this.eventCb)this.eventCb(n); }
+  draw(){
+    const c=this.ctx,r=this.robot;
+    c.clearRect(0,0,this.cv.width,this.cv.height);
+    if(this.mode==='global'){
+      for(const[cx,cy]of [[24,1.4],[84,1.4]]){
+        c.fillStyle='rgba(111,179,255,.045)';
+        c.beginPath(); c.moveTo(cx*S,cy*S); c.arc(cx*S,cy*S,27*S,Math.PI*0.12,Math.PI*0.88); c.closePath(); c.fill();
+        c.fillStyle='#6FB3FF'; c.fillRect(cx*S-5,cy*S-3,10,8);
+      }
+      c.fillStyle='rgba(111,179,255,.55)'; c.font='700 11px "Noto Sans TC",sans-serif';
+      c.fillText('環境固定攝影機(全域 MOT · 兩兩關聯度即時計算)',12,26);
+    }
+    c.fillStyle='#1B2A3C'; c.fillRect(0,0,W*S,2*S); c.fillRect(0,29*S,W*S,2*S);
+    // 目的地
+    c.fillStyle='#7ADFA0'; c.beginPath(); c.arc(GOAL.x*S,GOAL.y*S,7,0,7); c.fill();
+    c.fillStyle='rgba(122,223,160,.9)'; c.font='700 10px "Noto Sans TC",sans-serif';
+    c.fillText('目的地',GOAL.x*S-16,GOAL.y*S-11);
+    // 關聯度視覺(B)
+    if(this.mode==='global'){
+      const pairs=[[this.duo[0],this.duo[1]],[this.strangers[0],this.strangers[1]]];
+      for(const[a,b]of pairs){
+        if(!a.active||!b.active)continue;
+        const grp=this.aff.isGroup(a,b), pct=this.aff.pct(a,b);
+        c.strokeStyle=grp?'rgba(232,107,208,.8)':'rgba(143,160,184,.35)';
+        c.lineWidth=grp?2.5:1.4; if(!grp)c.setLineDash([3,4]);
+        c.beginPath(); c.moveTo(a.x*S,a.y*S); c.lineTo(b.x*S,b.y*S); c.stroke(); c.setLineDash([]);
+        const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+        c.fillStyle=grp?'#E86BD0':'#8FA0B8'; c.font='800 11px "Noto Sans TC",sans-serif'; c.textAlign='center';
+        c.fillText(grp?`群體 · 關聯度 ${pct.toFixed(0)}%`:`關聯度 ${pct.toFixed(0)}% · 非群體`, mx*S, my*S-14);
+        c.textAlign='left';
+        if(grp){
+          // 群體外框
+          const x0=Math.min(a.x,b.x)-1.4, x1=Math.max(a.x,b.x)+1.4;
+          const y0=Math.min(a.y,b.y)-1.4, y1=Math.max(a.y,b.y)+1.4;
+          c.strokeStyle='rgba(232,107,208,.45)'; c.setLineDash([6,5]); c.lineWidth=1.8;
+          c.strokeRect(x0*S,y0*S,(x1-x0)*S,(y1-y0)*S); c.setLineDash([]);
+        }
+      }
+    }
+    // 行人
+    for(const p of this.peds){
+      if(!p.active)continue;
+      const seen=this.mode==='global'||Math.hypot(p.x-r.x,p.y-r.y)<15;
+      if(p.flash>0){
+        c.strokeStyle=`rgba(255,107,107,${Math.min(p.flash,0.9)})`; c.lineWidth=2.5;
+        c.beginPath(); c.arc(p.x*S,p.y*S,9,0,7); c.stroke();
+      }
+      const col=p.kind==='duo'?'232,107,208':'143,160,184';
+      c.fillStyle=`rgba(${col},${seen?0.95:0.3})`;
+      c.beginPath(); c.arc(p.x*S,p.y*S,p.r*S,0,7); c.fill();
+    }
+    // 視距(A)
+    if(this.mode!=='global'){
+      c.strokeStyle='rgba(255,209,102,.28)'; c.setLineDash([5,6]); c.lineWidth=1.4;
+      c.beginPath(); c.arc(r.x*S,r.y*S,r.lidarR*S,0,7); c.stroke(); c.setLineDash([]);
+    }
+    // 路徑與機器人
+    if(r.path&&!r.done){
+      c.strokeStyle=this.mode==='global'?'rgba(92,200,255,.5)':'rgba(255,209,102,.5)';
+      c.setLineDash([5,5]); c.lineWidth=2; c.beginPath();
+      c.moveTo(r.x*S,r.y*S);
+      for(const[px,py]of r.path)c.lineTo(px*S,py*S);
+      c.stroke(); c.setLineDash([]);
+    }
+    if(r.trail.length>2){
+      c.strokeStyle='rgba(232,238,247,.5)'; c.lineWidth=2.5; c.beginPath();
+      c.moveTo(r.trail[0][0]*S,r.trail[0][1]*S);
+      for(const[tx,ty]of r.trail)c.lineTo(tx*S,ty*S); c.stroke();
+    }
+    if(r.inDuo){
+      c.fillStyle='#FF6B6B'; c.font='900 14px "Noto Sans TC",sans-serif';
+      c.fillText('✗ 拆散同行者!',r.x*S+14,r.y*S-10);
+    }
+    c.fillStyle=r.done?'#7ADFA0':'#FFFFFF';
+    c.beginPath(); c.arc(r.x*S,r.y*S,8,0,7); c.fill();
+    c.strokeStyle='#0B1220'; c.lineWidth=2.5; c.beginPath();
+    c.moveTo(r.x*S,r.y*S); c.lineTo(r.x*S+Math.cos(r.hd)*8,r.y*S+Math.sin(r.hd)*8); c.stroke();
+  }
+}
+
+/* ================= 主控 ================= */
+const wA=new World(document.getElementById('cvA'),'lidar');
+const wB=new World(document.getElementById('cvB'),'global');
+let playing=false,speedMult=2,last=null,stepNo=0;
+const $=id=>document.getElementById(id), banner=$('banner');
+function narrate(n,txt){ if(n<=stepNo)return; stepNo=n;
+  $('narration').querySelector('.step').textContent='STEP '+n;
+  $('narText').textContent=txt;
+}
+const onEvent=n=>{
+  if(n==='A-split') narrate(2,'✗ A 從兩位同伴中間鑽了過去,把他們硬生生隔開(紅圈)—— 對 LiDAR 而言那只是一道 2.6 公尺的縫;兩人待機器人通過後才重新靠攏。');
+  if(n==='B-thread')narrate(4,'B 穿越了陌生人之間的縫 —— 幾何上與剛才那道一模一樣,差別只在關聯度。這證明 B 是「分辨」,不是「保守」。');
+  if(n==='A-thread'&&stepNo<4)narrate(4,'兩台都穿越了陌生人之間的縫 —— 這道縫幾何上與剛才一模一樣;差別只在:B 知道剛才那道不能鑽、這道可以。');
+};
+wA.eventCb=onEvent; wB.eventCb=onEvent;
+
+let n1=false,n3=false;
+function updateHUD(){
+  if(!n1&&playing&&wB.aff.isGroup(wB.duo[0],wB.duo[1])){n1=true;
+    narrate(1,'B 由連續軌跡累計兩兩關聯度:前方兩人同速同向、間距穩定逾 3 秒 → 判定為群體(粉框),其連線帶寫入代價地圖為不可穿越。');}
+  if(!n3&&wB.robot.x>58&&wB.robot.splits===0){n3=true;
+    narrate(3,'B 從群體外側繞行 —— 多走了一小段,但兩位同伴的同行狀態未被打斷。');}
+  $('splitA').textContent=wA.robot.splits; $('splitB').textContent=wB.robot.splits;
+  $('thrA').textContent=wA.robot.threads; $('thrB').textContent=wB.robot.threads;
+  $('timeA').textContent=wA.robot.time.toFixed(1)+' s';
+  $('timeB').textContent=wB.robot.time.toFixed(1)+' s';
+  $('odoA').textContent=wA.robot.odo.toFixed(0)+' m';
+  $('odoB').textContent=wB.robot.odo.toFixed(0)+' m';
+  $('chipA').textContent=wA.robot.state; $('chipB').textContent=wB.robot.state;
+  $('splitA').className='val num'+(wA.robot.splits>0?' lose':'');
+  $('splitB').className='val num'+(wB.robot.done&&wB.robot.splits===0?' win':'');
+  $('thrB').className='val num'+(wB.robot.threads>0?' win':'');
+  if(wA.robot.done&&wB.robot.done&&banner.style.display!=='block'){
+    banner.style.display='block';
+    banner.innerHTML=`✅ 對比完成 —— <b>B(關聯度判別)</b>:拆散群體 <span class="num">${wB.robot.splits}</span> 次、
+      陌生人間隙穿越 <span class="num">${wB.robot.threads}</span> 次、用時 <span class="num">${wB.robot.time.toFixed(1)}s</span>;
+      <b>A(純幾何)</b>:拆散群體 <span class="num">${wA.robot.splits}</span> 次、穿越 <span class="num">${wA.robot.threads}</span> 次、
+      用時 <span class="num">${wA.robot.time.toFixed(1)}s</span>。
+      兩道縫幾何上完全相同,答案卻不同 ——
+      <b>會鑽縫是技術(Demo 03),知道哪些縫不該鑽是智慧;而分辨的依據,是每個人的連續軌跡。</b>`;
+    narrate(5,'對比完成 —— 同一道縫,對幾何是空間,對人是關係;看得見關係,機器人才真正融入人的場域。');
+    playing=false; $('btnPlay').textContent='▶ 播放';
+  }
+}
+function frame(t){
+  requestAnimationFrame(frame);
+  if(last===null)last=t;
+  const dt=Math.min((t-last)/1000,0.05); last=t;
+  if(playing)for(let k=0;k<speedMult;k++){wA.step(dt);wB.step(dt);}
+  wA.draw(); wB.draw(); updateHUD();
+}
+$('btnPlay').onclick=()=>{playing=!playing;$('btnPlay').textContent=playing?'⏸ 暫停':'▶ 播放';};
+$('btnReset').onclick=()=>{
+  wA.reset(); wB.reset(); wA.eventCb=onEvent; wB.eventCb=onEvent;
+  playing=false; banner.style.display='none'; stepNo=0; n1=false; n3=false;
+  $('narration').querySelector('.step').textContent='STEP 0';
+  $('narText').textContent='按「播放」開始 —— 前方先後有兩道幾何上完全相同的「人與人之間的縫」。';
+  $('btnPlay').textContent='▶ 播放';
+};
+document.querySelectorAll('#speedSeg button').forEach(b=>{
+  b.onclick=()=>{speedMult=+b.dataset.s;
+    document.querySelectorAll('#speedSeg button').forEach(x=>x.classList.toggle('on',x===b));};
+});
+requestAnimationFrame(frame);
+})();
+</script>
+<script>
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT')return;
+  if(e.code==='Space'){e.preventDefault();document.getElementById('btnPlay').click();}
+  else if(e.key==='r'||e.key==='R'){document.getElementById('btnReset').click();}
+});
+</script>
+</body>
+</html>
