@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>8 個 AMR 人流 Demo — full vs baseline 影片對照</title>
+<style>
+:root{--bg:#0A1018;--card:#0E1620;--edge:#17222F;
+--ink:#E8EEF7;--dim:#7F91AB;--accent:#6FB3FF;
+--good:#7ADFA0;--warn:#FFB86B;--bad:#FF6B6B;--mag:#E86BD0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.6 -apple-system,"Noto Sans TC","PingFang TC",system-ui,sans-serif}
+.wrap{max-width:1500px;margin:0 auto;padding:28px 20px 80px}
+h1{font-size:26px;margin:0 0 6px}
+.sub{color:var(--dim);margin:0 0 18px}
+.banner{background:var(--card);border:1px solid var(--edge);border-radius:10px;
+padding:14px 16px;margin:0 0 26px}
+.banner b{color:var(--accent)}
+.banner ul{margin:8px 0 0;padding-left:20px;color:var(--dim)}
+.banner li{margin:3px 0}
+.group{font-size:15px;color:var(--accent);letter-spacing:.08em;
+margin:34px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--edge)}
+.card{background:var(--card);border:1px solid var(--edge);border-radius:12px;
+padding:18px;margin:0 0 22px}
+.card header{margin-bottom:14px}
+.no{color:var(--dim);font-size:12px;letter-spacing:.14em}
+.card h3{margin:2px 0 6px;font-size:19px}
+.desc{margin:0 0 8px;color:var(--dim)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{font-size:12px;color:var(--accent);border:1px solid var(--edge);
+border-radius:99px;padding:2px 10px}
+.sync{background:transparent;border:1px solid var(--accent);color:var(--accent);
+border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer}
+.sync:hover{background:rgba(111,179,255,.12)}
+.panes{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:960px){.panes{grid-template-columns:1fr}}
+.pane{border:1px solid var(--edge);border-radius:10px;padding:10px;
+background:rgba(0,0,0,.18)}
+.pane.full{border-color:rgba(122,223,160,.35)}
+.pane.baseline{border-color:rgba(255,107,107,.30)}
+.phead{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;font-size:13px}
+.pane.full .phead b{color:var(--good)}
+.pane.baseline .phead b{color:var(--bad)}
+.dur{margin-left:auto;color:var(--dim);font-variant-numeric:tabular-nums}
+video{width:100%;display:block;border-radius:6px;background:#000}
+.checks{list-style:none;margin:10px 0 0;padding:0;font-size:12.5px}
+.checks li{display:grid;grid-template-columns:16px 1fr;gap:2px 8px;
+padding:4px 0;border-top:1px solid var(--edge)}
+.mark{grid-row:span 2}
+.checks li.ok .mark{color:var(--good)}
+.checks li.no .mark{color:var(--bad)}
+.cname{color:var(--ink)}
+.cdet{grid-column:2;color:var(--dim);font-family:ui-monospace,Menlo,monospace;
+font-size:11.5px;word-break:break-word}
+.dim{color:var(--dim)}
+.variants{margin-top:14px;border:1px solid var(--edge);border-radius:8px;
+padding:8px 12px;background:rgba(0,0,0,.14)}
+.variants summary{cursor:pointer;font-size:13.5px;color:var(--accent)}
+.variants summary .dim{font-size:12.5px}
+.notes{margin:10px 0 4px;padding-left:20px;color:var(--dim);font-size:12.5px}
+.notes li{margin:3px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:12px;margin:10px 0 4px}
+.grid figure{margin:0}
+.grid figcaption{font-size:12px;color:var(--dim);margin-top:4px}
+.nodes-panel h4{margin:14px 0 6px;font-size:13px;color:var(--ink)}
+table.nodes{width:100%;border-collapse:collapse;font-size:12px;
+margin:4px 0 8px;display:block;overflow-x:auto}
+table.nodes th{text-align:left;font-weight:600;color:var(--dim);
+border-bottom:1px solid var(--edge);padding:4px 8px 4px 0}
+table.nodes td{vertical-align:top;padding:5px 8px 5px 0;
+border-bottom:1px solid var(--edge)}
+table.nodes tr.lay td{color:var(--accent);font-size:12.5px;
+padding-top:12px;border-bottom:none}
+table.nodes code{color:var(--ink)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.92em}
+footer{margin-top:36px;color:var(--dim);font-size:12.5px;
+border-top:1px solid var(--edge);padding-top:14px}
+</style></head><body><div class="wrap">
+<h1>8 個 AMR 人流 Demo — full vs baseline 影片對照</h1>
+<p class="sub">ROS2 Humble + Nav2 + RViz2。每一組都是同一個場景跑兩次：
+<b style="color:#7ADFA0">full</b>（環境 CCTV 全域 MOT）與
+<b style="color:#FF6B6B">baseline</b>（純車載感測）。</p>
+
+<div class="banner">
+  <b>看影片前要知道的三件事</b>
+  <ul>
+    <li>畫面左上角是即時記分板，顏色即判讀：綠＝良好、橘＝警示、紅＝失敗。</li>
+    <li>下方每一條是 <code>verify_demo.py</code> 的實際判準與量到的數字，
+        取自 2026-08-29 10:10:04 那一輪的完整驗證（16/16 全過）。
+        <b>baseline 也有判準</b>——它必須以可重現的方式失敗，否則不算 demo。</li>
+    <li>速度：機器人巡航上限 <b>1.2 m/s</b>（行人 1.0–1.45 m/s）。碰撞（collision_proxy = 行人中心距 < 0.5 m，實體重疊）：跨 8 輪完整驗證，<b>full 模式 0 次</b>、baseline 5 次（d01/baseline 2 次、d04/baseline 2 次、d05/baseline 1 次）。baseline 沒有任何判準在檢查它——這是刻意的，它一輪出現一次左右，不符合「失敗要穩定重現才是 demo」。安全層在迎面 2 m/s 閉合下會被穿透：是流向場讓機器人與人同向、閉合速度相減，才讓那個餘裕夠用，<b>不是安全層本身</b>。對外只能說「full 模式零碰撞」。</li>
+  </ul>
+</div>
+<h2 class="group">任務效能 —— 把事做好</h2>
+  <section class="card" id="d01">
+    <header>
+      <div class="no">DEMO 01</div>
+      <h3>人流流向場路徑規劃</h3>
+      <p class="desc">密度相同、方向不同。LiDAR 撞進逆流；本技術貼著順流帶滑過去。</p>
+      <div class="chips"><span class="chip">解凍結</span></div>
+      <button class="sync" data-demo="d01">▶ 同步播放兩邊</button>
+    </header>
+    <div class="panes">
+      <div class="pane full">
+        <div class="phead"><b>full</b><span class="dim">環境 CCTV 全域 MOT</span>
+          <span class="dur">6:00</span></div>
+        <video preload="none" controls playsinline poster="posters/d01_full.jpg" data-demo="d01"
+               src="d01_full.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">legs &gt;= 2</span><span class="cdet">legs=6</span></li><li class="ok"><span class="mark">✓</span><span class="cname">freeze_pct &lt; 0.15</span><span class="cdet">freeze_pct=0.035</span></li><li class="ok"><span class="mark">✓</span><span class="cname">counterflow rate &lt; 0.5x baseline</span><span class="cdet">full=1.96/min baseline=10.74/min ratio=0.18</span></li><li class="ok"><span class="mark">✓</span><span class="cname">with-flow share while heading upstream (+x) &gt; 0.5</span><span class="cdet">east_share=0.79 (西行順流 1.00；方向感知合計 0.89)</span></li><li class="ok"><span class="mark">✓</span><span class="cname">collision_proxy == 0</span><span class="cdet">collision_proxy=0</span></li></ul>
+      </div>
+      <div class="pane baseline">
+        <div class="phead"><b>baseline</b><span class="dim">純車載感測</span>
+          <span class="dur">6:00</span></div>
+        <video preload="none" controls playsinline poster="posters/d01_baseline.jpg" data-demo="d01"
+               src="d01_baseline.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">freeze_pct &gt; 0.35 or counter rate &gt; 2x full</span><span class="cdet">freeze_pct=0.052, baseline=10.74/min full=1.96/min</span></li></ul>
+      </div></div>
+    <details class="variants"><summary>人流密度 2× / 3× / 4×<span class="dim"> —— 同一份劇本，可縮放的人流股數 ×N；編舞的手寫 agent 不隨密度變</span></summary><div class="grid"><figure><video preload='none' controls playsinline poster="posters/d01_full_d2.jpg" src='d01_full_d2.mp4'></video><figcaption>2× · full</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d01_baseline_d2.jpg" src='d01_baseline_d2.mp4'></video><figcaption>2× · baseline</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d01_full_d3.jpg" src='d01_full_d3.mp4'></video><figcaption>3× · full</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d01_baseline_d3.jpg" src='d01_baseline_d3.mp4'></video><figcaption>3× · baseline</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d01_full_d4.jpg" src='d01_full_d4.mp4'></video><figcaption>4× · full</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d01_baseline_d4.jpg" src='d01_baseline_d4.mp4'></video><figcaption>4× · baseline</figcaption></figure></div></details><details class="variants"><summary>CCTV 感測劣化演練<span class="dim"> —— 只有 full 模式；baseline 本來就沒有 CCTV 可劣化</span></summary><ul class="notes"><li><b>延遲 0.5 s</b> —— CCTV 影像晚 0.5 s 才到。header.stamp 停在觀測時刻，所以下游算得出資料多舊：戰略層把每個人依自己的速度前推那段時間，記分板會多一列 CCTV lag。實測 d03 的 commit 時刻——零延遲 28.18、有延遲未補償 28.63、有延遲已補償 28.04。</li><li><b>位置雜訊 σ=0.35 m</b> —— 小於人體半徑：位置在抖，但每個人的身分不亂——身分穩定是跨鏡頭追蹤的前提。</li><li><b>斷訊 30 s</b> —— /people 靜默而 /people_truth 照流：車載鏈與安全層不受影響，只有吃 CCTV 的那幾層降級。這一組會觸發 CCTV 失聯保護（限速降到 0.9 m/s）。</li></ul><div class="grid"><figure><video preload='none' controls playsinline poster="posters/d01_full_lat.jpg" src='d01_full_lat.mp4'></video><figcaption>延遲 0.5 s</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d01_full_noise.jpg" src='d01_full_noise.mp4'></video><figcaption>位置雜訊 σ=0.35 m</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d01_full_drop.jpg" src='d01_full_drop.mp4'></video><figcaption>斷訊 30 s</figcaption></figure></div></details>
+    
+      <details class="variants nodes-panel">
+        <summary>節點與資料來源 —— 這些數字從哪來、怎麼算的</summary>
+        <p class="dim">代價 = w_d·距離+w_ρ·密度+w_f·(1−cosθ)，θ 全區間單調</p>
+        <h4>1. 這個 demo 吃哪些人流來源</h4>
+        <table class="nodes"><tbody><tr><td><code>/people_scan（車載 7 m，無身分）</code></td><td class="dim">即時層／反應層</td></tr></tbody></table>
+        <h4>2. 運算在哪（純函數模組，零 ROS，可 pytest）</h4>
+        <table class="nodes"><tbody><tr><td><code>logic/legs.py</code></td><td class="dim">Patrol-leg state machine -- pure functions, zero ROS (pytest-testable).</td></tr></tbody></table>
+        <h4>3. 這個 demo 的 launch 特例</h4>
+        <ul class="notes"><li><b>密度鈕</b>：可用（劇本有可縮放人流）</li></ul>
+        <details class="variants">
+          <summary>4. 共用堆疊：全部節點的訂閱／發布</summary>
+          <p class="dim">兩條人流來源是分開的，這是 A/B 公平與劣化實驗的基礎：
+          <code>/people</code> 是 <b>CCTV</b>（可被延遲／雜訊／斷訊劣化），
+          <code>/people_truth</code> 是 <b>真值</b>，只給感測模擬、安全層與量測。
+          模式門控只有兩處：<code>people_scan</code> 決定 local costmap 看不看得見人、
+          <code>PredictCritic</code> 在 baseline 自我停用。</p>
+          <table class="nodes"><thead><tr><th>節點</th><th>訂閱</th><th>發布</th></tr></thead><tbody><tr class="lay"><td colspan="3">模擬層 —— 產生世界</td></tr><tr><td><code>crowd_publisher</code><br><span class="dim">劇本 + SFM 行人；密度 1–4×</span></td><td class="dim">/demo/leader、/demo/leader_alt、/map、/demo/play、/demo/scenario_event</td><td class="dim">/people、/people_truth、/people_markers、/demo/scenario_t</td></tr><tr><td><code>robot_sim</code><br><span class="dim">50 Hz 積分、完美定位（map→odom 恆等，無 AMCL）、安全層</span></td><td class="dim">/cmd_vel</td><td class="dim">/odom、/scan、/ultrasound、/demo/safety_stop</td></tr><tr class="lay"><td colspan="3">環境 CCTV 層 —— 只吃 /people（可被劣化）</td></tr><tr><td><code>flow_buffer</code><br><span class="dim">2 m 網格滑窗 → 流向場</span></td><td class="dim">/people</td><td class="dim">/flow_markers、/flow_field</td></tr><tr><td><code>flow_cost</code><br><span class="dim">方向成本 + 人場斥力 → 全域/局部成本地圖</span></td><td class="dim">/map、/people、/plan、/goal_pose、/demo/flow_cost、/demo/person_field、/demo/mode、/demo/keepouts</td><td class="dim">/flow_cost_mask、/flow_map、/demo/cctv_ok、/proxemic_map</td></tr><tr><td><code>density_governor</code><br><span class="dim">密度分級 → /speed_limit；新鮮度取收訊與觀測兩種年齡的較嚴格者</span></td><td class="dim">/people、/demo/mode</td><td class="dim">/speed_limit、/demo/density_debug</td></tr><tr class="lay"><td colspan="3">車載感測層 —— 只吃 /people_truth（不受 CCTV 劣化影響）</td></tr><tr><td><code>people_scan</code><br><span class="dim">7 m 人形回波；**模式門控在這裡**</span></td><td class="dim">/demo/mode、/demo/cctv_ok</td><td class="dim">/people_scan、/people_scan_costmap</td></tr><tr><td><code>rgbd_sim</code><br><span class="dim">5 m / 87° / 含遮擋；匿名 track + 外觀標籤</span></td><td class="dim">/demo/scenario_t</td><td class="dim">/rgbd/detections、/rgbd/markers</td></tr><tr class="lay"><td colspan="3">編導與量測</td></tr><tr><td><code>director</code><br><span class="dim">demo 插件、發 goal、記分板；戰略層做時戳延遲補償</span></td><td class="dim">/people、/people_truth、/people_scan、/rgbd/detections、/demo/scenario_t、/demo/mode、/demo/metrics、/demo/play</td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/demo/leg_event、/demo/leader、/demo/scenario_event、/demo/mode、/demo/play、/speed_limit、/demo/flow_cost、/demo/person_field</td></tr><tr><td><code>metrics</code><br><span class="dim">CSV 常駐量測（量測的唯一正道，吃真值）</span></td><td class="dim">/cmd_vel、/demo/scenario_t、/demo/state、/demo/safety_stop、/plan</td><td class="dim">/demo/metrics</td></tr><tr class="lay"><td colspan="3">呈現層（rviz:=true 才啟動）</td></tr><tr><td><code>viz</code><br><span class="dim">記分板、keepout 帶、各 demo 疊圖 → /demo/markers</span></td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/odom</td><td class="dim">/demo/markers</td></tr><tr><td><code>robot_marker</code><br><span class="dim">高辨識度 AMR 疊圖</span></td><td class="dim">—</td><td class="dim">/robot_marker</td></tr><tr class="lay"><td colspan="3">Nav2（7 個標準節點）</td></tr><tr><td colspan="3" class="dim">map_server、planner_server(NavFn)、controller_server(MPPI)、behavior_server、bt_navigator、velocity_smoother、lifecycle_manager_navigation<br>global costmap：<code>/scan</code>（牆）+ <code>/flow_map</code>；local costmap：<code>/scan</code> + <code>/people_scan_costmap</code>（<b>門控過的那份</b>）+ <code>/proxemic_map</code></td></tr><tr class="lay"><td colspan="3">不會出現在 ros2 node list 的三個</td></tr><tr><td colspan="3" class="dim"><code>FlowCritic</code> / <code>PredictCritic</code> / <code>FlowDriftCritic</code> 是 controller_server 進程內的 C++ MPPI 外掛。PredictCritic 自己訂 <code>/people</code> 與 <code>/demo/mode</code>（baseline 自我停用），並用 <code>header.stamp</code> 做延遲補償；兩個 Flow critic 訂 <code>/flow_field</code>。載入失敗是靜默的——機器人不動先查 controller_server 的 log。</td></tr></tbody></table>
+        </details>
+      </details>
+  </section>
+  <section class="card" id="d02">
+    <header>
+      <div class="no">DEMO 02</div>
+      <h3>接力跟隨與防跟錯人</h3>
+      <p class="desc">暫離任務再回頭，眼前是個一模一樣的人 —— 誰認得出原本那位？</p>
+      <div class="chips"><span class="chip">解跟錯</span><span class="chip">Re-ID 特徵錨定</span></div>
+      <button class="sync" data-demo="d02">▶ 同步播放兩邊</button>
+    </header>
+    <div class="panes">
+      <div class="pane full">
+        <div class="phead"><b>full</b><span class="dim">環境 CCTV 全域 MOT</span>
+          <span class="dur">3:20</span></div>
+        <video preload="none" controls playsinline poster="posters/d02_full.jpg" data-demo="d02"
+               src="d02_full.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">wrong_lock == 0</span><span class="cdet">wrong_lock=0 lock_ratio=1.0</span></li><li class="ok"><span class="mark">✓</span><span class="cname">post-errand lock_ratio &gt;= 0.9</span><span class="cdet">lock_ratio=1.0 (follow_gap median=16.3 m over n=16, last=6.71 —— 顯示不 gate)</span></li><li class="ok"><span class="mark">✓</span><span class="cname">gallery_reject &gt;= 1</span><span class="cdet">gallery_reject=6 gallery_check=13</span></li><li class="ok"><span class="mark">✓</span><span class="cname">collision_proxy == 0</span><span class="cdet">collision_proxy=0</span></li></ul>
+      </div>
+      <div class="pane baseline">
+        <div class="phead"><b>baseline</b><span class="dim">純車載感測</span>
+          <span class="dur">3:20</span></div>
+        <video preload="none" controls playsinline poster="posters/d02_baseline.jpg" data-demo="d02"
+               src="d02_baseline.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">wrong_lock &gt;= 1</span><span class="cdet">wrong_lock=1 search_goal=15 unstick=0 lock_ratio=0.0</span></li><li class="ok"><span class="mark">✓</span><span class="cname">follow_gap exceeded 8 m</span><span class="cdet">max=24.05 m last=18.94</span></li></ul>
+      </div></div>
+    <details class="variants"><summary>CCTV 感測劣化演練<span class="dim"> —— 只有 full 模式；baseline 本來就沒有 CCTV 可劣化</span></summary><ul class="notes"><li><b>延遲 0.5 s</b> —— CCTV 影像晚 0.5 s 才到。header.stamp 停在觀測時刻，所以下游算得出資料多舊：戰略層把每個人依自己的速度前推那段時間，記分板會多一列 CCTV lag。實測 d03 的 commit 時刻——零延遲 28.18、有延遲未補償 28.63、有延遲已補償 28.04。</li><li><b>位置雜訊 σ=0.35 m</b> —— 小於人體半徑：位置在抖，但每個人的身分不亂——身分穩定是跨鏡頭追蹤的前提。</li><li><b>斷訊 30 s</b> —— /people 靜默而 /people_truth 照流：車載鏈與安全層不受影響，只有吃 CCTV 的那幾層降級。這一組會觸發 CCTV 失聯保護（限速降到 0.9 m/s）。</li></ul><div class="grid"><figure><video preload='none' controls playsinline poster="posters/d02_full_lat.jpg" src='d02_full_lat.mp4'></video><figcaption>延遲 0.5 s</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d02_full_noise.jpg" src='d02_full_noise.mp4'></video><figcaption>位置雜訊 σ=0.35 m</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d02_full_drop.jpg" src='d02_full_drop.mp4'></video><figcaption>斷訊 30 s</figcaption></figure></div></details>
+    
+      <details class="variants nodes-panel">
+        <summary>節點與資料來源 —— 這些數字從哪來、怎麼算的</summary>
+        <p class="dim">環境/車載兩狀態接力 + Feature Gallery 餘弦驗證</p>
+        <h4>1. 這個 demo 吃哪些人流來源</h4>
+        <table class="nodes"><tbody><tr><td><code>/people（CCTV 全域 MOT，**只有 full 模式**）</code></td><td class="dim">戰略層。已做時戳延遲補償：每人依自身速度前推資料年齡</td></tr><tr><td><code>/rgbd/detections（車載 5 m，匿名）</code></td><td class="dim">即時層。**兩模式走完全相同的程式碼路徑**</td></tr><tr><td><code>/people_scan（車載 7 m，無身分）</code></td><td class="dim">即時層／反應層</td></tr><tr><td><code>/people_truth（真值）</code></td><td class="dim">**只用於事件鑑識與記分，不參與任何決策**</td></tr></tbody></table>
+        <h4>2. 運算在哪（純函數模組，零 ROS，可 pytest）</h4>
+        <table class="nodes"><tbody><tr><td><code>logic/nav_recovery.py</code></td><td class="dim">Goal placement and stuck-recovery geometry. Pure functions, zero ROS.</td></tr><tr><td><code>logic/relay.py</code></td><td class="dim">Two-state relay following with identity verification.</td></tr></tbody></table>
+        <h4>3. 這個 demo 的 launch 特例</h4>
+        <ul class="notes"><li><b>HOLD</b>：劇本時鐘釘在 t=0 直到 director 發 <code>/demo/play</code>——Nav2 起身那十幾秒不算進劇本時間</li><li><b>專屬速度</b>：<code>&quot;vx_max&quot;: 1.2, &quot;vx_std&quot;: 0.3</code>（velocity_smoother 的 1.2 m/s 是全域硬頂，設更高無效）</li><li><b>密度鈕</b>：不可用（劇本是手寫編舞，縮放會破壞相遇時序）</li></ul>
+        <details class="variants">
+          <summary>4. 共用堆疊：全部節點的訂閱／發布</summary>
+          <p class="dim">兩條人流來源是分開的，這是 A/B 公平與劣化實驗的基礎：
+          <code>/people</code> 是 <b>CCTV</b>（可被延遲／雜訊／斷訊劣化），
+          <code>/people_truth</code> 是 <b>真值</b>，只給感測模擬、安全層與量測。
+          模式門控只有兩處：<code>people_scan</code> 決定 local costmap 看不看得見人、
+          <code>PredictCritic</code> 在 baseline 自我停用。</p>
+          <table class="nodes"><thead><tr><th>節點</th><th>訂閱</th><th>發布</th></tr></thead><tbody><tr class="lay"><td colspan="3">模擬層 —— 產生世界</td></tr><tr><td><code>crowd_publisher</code><br><span class="dim">劇本 + SFM 行人；密度 1–4×</span></td><td class="dim">/demo/leader、/demo/leader_alt、/map、/demo/play、/demo/scenario_event</td><td class="dim">/people、/people_truth、/people_markers、/demo/scenario_t</td></tr><tr><td><code>robot_sim</code><br><span class="dim">50 Hz 積分、完美定位（map→odom 恆等，無 AMCL）、安全層</span></td><td class="dim">/cmd_vel</td><td class="dim">/odom、/scan、/ultrasound、/demo/safety_stop</td></tr><tr class="lay"><td colspan="3">環境 CCTV 層 —— 只吃 /people（可被劣化）</td></tr><tr><td><code>flow_buffer</code><br><span class="dim">2 m 網格滑窗 → 流向場</span></td><td class="dim">/people</td><td class="dim">/flow_markers、/flow_field</td></tr><tr><td><code>flow_cost</code><br><span class="dim">方向成本 + 人場斥力 → 全域/局部成本地圖</span></td><td class="dim">/map、/people、/plan、/goal_pose、/demo/flow_cost、/demo/person_field、/demo/mode、/demo/keepouts</td><td class="dim">/flow_cost_mask、/flow_map、/demo/cctv_ok、/proxemic_map</td></tr><tr><td><code>density_governor</code><br><span class="dim">密度分級 → /speed_limit；新鮮度取收訊與觀測兩種年齡的較嚴格者</span></td><td class="dim">/people、/demo/mode</td><td class="dim">/speed_limit、/demo/density_debug</td></tr><tr class="lay"><td colspan="3">車載感測層 —— 只吃 /people_truth（不受 CCTV 劣化影響）</td></tr><tr><td><code>people_scan</code><br><span class="dim">7 m 人形回波；**模式門控在這裡**</span></td><td class="dim">/demo/mode、/demo/cctv_ok</td><td class="dim">/people_scan、/people_scan_costmap</td></tr><tr><td><code>rgbd_sim</code><br><span class="dim">5 m / 87° / 含遮擋；匿名 track + 外觀標籤</span></td><td class="dim">/demo/scenario_t</td><td class="dim">/rgbd/detections、/rgbd/markers</td></tr><tr class="lay"><td colspan="3">編導與量測</td></tr><tr><td><code>director</code><br><span class="dim">demo 插件、發 goal、記分板；戰略層做時戳延遲補償</span></td><td class="dim">/people、/people_truth、/people_scan、/rgbd/detections、/demo/scenario_t、/demo/mode、/demo/metrics、/demo/play</td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/demo/leg_event、/demo/leader、/demo/scenario_event、/demo/mode、/demo/play、/speed_limit、/demo/flow_cost、/demo/person_field</td></tr><tr><td><code>metrics</code><br><span class="dim">CSV 常駐量測（量測的唯一正道，吃真值）</span></td><td class="dim">/cmd_vel、/demo/scenario_t、/demo/state、/demo/safety_stop、/plan</td><td class="dim">/demo/metrics</td></tr><tr class="lay"><td colspan="3">呈現層（rviz:=true 才啟動）</td></tr><tr><td><code>viz</code><br><span class="dim">記分板、keepout 帶、各 demo 疊圖 → /demo/markers</span></td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/odom</td><td class="dim">/demo/markers</td></tr><tr><td><code>robot_marker</code><br><span class="dim">高辨識度 AMR 疊圖</span></td><td class="dim">—</td><td class="dim">/robot_marker</td></tr><tr class="lay"><td colspan="3">Nav2（7 個標準節點）</td></tr><tr><td colspan="3" class="dim">map_server、planner_server(NavFn)、controller_server(MPPI)、behavior_server、bt_navigator、velocity_smoother、lifecycle_manager_navigation<br>global costmap：<code>/scan</code>（牆）+ <code>/flow_map</code>；local costmap：<code>/scan</code> + <code>/people_scan_costmap</code>（<b>門控過的那份</b>）+ <code>/proxemic_map</code></td></tr><tr class="lay"><td colspan="3">不會出現在 ros2 node list 的三個</td></tr><tr><td colspan="3" class="dim"><code>FlowCritic</code> / <code>PredictCritic</code> / <code>FlowDriftCritic</code> 是 controller_server 進程內的 C++ MPPI 外掛。PredictCritic 自己訂 <code>/people</code> 與 <code>/demo/mode</code>（baseline 自我停用），並用 <code>header.stamp</code> 做延遲補償；兩個 Flow critic 訂 <code>/flow_field</code>。載入失敗是靜默的——機器人不動先查 controller_server 的 log。</td></tr></tbody></table>
+        </details>
+      </details>
+  </section>
+  <section class="card" id="d03">
+    <header>
+      <div class="no">DEMO 03</div>
+      <h3>人際間隙穿越與預測</h3>
+      <p class="desc">間隙會張也會收。算出「輪到我時有多寬」，車載即時層保留否決權。</p>
+      <div class="chips"><span class="chip">解空等</span><span class="chip">三層權限</span></div>
+      <button class="sync" data-demo="d03">▶ 同步播放兩邊</button>
+    </header>
+    <div class="panes">
+      <div class="pane full">
+        <div class="phead"><b>full</b><span class="dim">環境 CCTV 全域 MOT</span>
+          <span class="dur">2:30</span></div>
+        <video preload="none" controls playsinline poster="posters/d03_full.jpg" data-demo="d03"
+               src="d03_full.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">crossing completed</span><span class="cdet">crossing_done=1 go=2 abort=1</span></li><li class="ok"><span class="mark">✓</span><span class="cname">aborted commits &lt;= 1, attributable to the rusher</span><span class="cdet">aborted_commits=1 blamed=[&#x27;rusher&#x27;] banned=[&#x27;rusher&#x27;] ban_retired=1</span></li><li class="ok"><span class="mark">✓</span><span class="cname">predictive exclusion &gt;= 1</span><span class="cdet">predictive_exclusion=5 adopt=2</span></li><li class="ok"><span class="mark">✓</span><span class="cname">collision_proxy == 0</span><span class="cdet">collision_proxy=0</span></li><li class="ok"><span class="mark">✓</span><span class="cname">stage wait &lt;= baseline stage wait</span><span class="cdet">full=31.0s baseline=135.0s ratio=0.23 (顯示不 gate)</span></li></ul>
+      </div>
+      <div class="pane baseline">
+        <div class="phead"><b>baseline</b><span class="dim">純車載感測</span>
+          <span class="dur">2:30</span></div>
+        <video preload="none" controls playsinline poster="posters/d03_baseline.jpg" data-demo="d03"
+               src="d03_baseline.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">blind commits &gt;= 2</span><span class="cdet">aborted_commits=2 of go=3 blamed=[&#x27;b8&#x27;, &#x27;b9&#x27;]</span></li><li class="ok"><span class="mark">✓</span><span class="cname">reached STAGE (completed or timed out waiting)</span><span class="cdet">stage_wait=135.0s crossing_done=0 go=3</span></li></ul>
+      </div></div>
+    <details class="variants"><summary>人流密度 2× / 3× / 4×<span class="dim"> —— 同一份劇本，可縮放的人流股數 ×N；編舞的手寫 agent 不隨密度變</span></summary><div class="grid"><figure><video preload='none' controls playsinline poster="posters/d03_full_d2.jpg" src='d03_full_d2.mp4'></video><figcaption>2× · full</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d03_baseline_d2.jpg" src='d03_baseline_d2.mp4'></video><figcaption>2× · baseline</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d03_full_d3.jpg" src='d03_full_d3.mp4'></video><figcaption>3× · full</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d03_baseline_d3.jpg" src='d03_baseline_d3.mp4'></video><figcaption>3× · baseline</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d03_full_d4.jpg" src='d03_full_d4.mp4'></video><figcaption>4× · full</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d03_baseline_d4.jpg" src='d03_baseline_d4.mp4'></video><figcaption>4× · baseline</figcaption></figure></div></details><details class="variants"><summary>CCTV 感測劣化演練<span class="dim"> —— 只有 full 模式；baseline 本來就沒有 CCTV 可劣化</span></summary><ul class="notes"><li><b>延遲 0.5 s</b> —— CCTV 影像晚 0.5 s 才到。header.stamp 停在觀測時刻，所以下游算得出資料多舊：戰略層把每個人依自己的速度前推那段時間，記分板會多一列 CCTV lag。實測 d03 的 commit 時刻——零延遲 28.18、有延遲未補償 28.63、有延遲已補償 28.04。</li><li><b>位置雜訊 σ=0.35 m</b> —— 小於人體半徑：位置在抖，但每個人的身分不亂——身分穩定是跨鏡頭追蹤的前提。</li><li><b>斷訊 30 s</b> —— /people 靜默而 /people_truth 照流：車載鏈與安全層不受影響，只有吃 CCTV 的那幾層降級。這一組會觸發 CCTV 失聯保護（限速降到 0.9 m/s）。</li></ul><div class="grid"><figure><video preload='none' controls playsinline poster="posters/d03_full_lat.jpg" src='d03_full_lat.mp4'></video><figcaption>延遲 0.5 s</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d03_full_lat_nocomp.jpg" src='d03_full_lat_nocomp.mp4'></video><figcaption>延遲 0.5 s · 未補償（對照）</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d03_full_noise.jpg" src='d03_full_noise.mp4'></video><figcaption>位置雜訊 σ=0.35 m</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d03_full_drop.jpg" src='d03_full_drop.mp4'></video><figcaption>斷訊 30 s</figcaption></figure></div></details>
+    
+      <details class="variants nodes-panel">
+        <summary>節點與資料來源 —— 這些數字從哪來、怎麼算的</summary>
+        <p class="dim">戰略層算 W* vs W_req 挑間隙；RGBD 即時層有 abort 否決權</p>
+        <h4>1. 這個 demo 吃哪些人流來源</h4>
+        <table class="nodes"><tbody><tr><td><code>/people（CCTV 全域 MOT，**只有 full 模式**）</code></td><td class="dim">戰略層。已做時戳延遲補償：每人依自身速度前推資料年齡</td></tr><tr><td><code>/rgbd/detections（車載 5 m，匿名）</code></td><td class="dim">即時層。**兩模式走完全相同的程式碼路徑**</td></tr><tr><td><code>/people_scan（車載 7 m，無身分）</code></td><td class="dim">即時層／反應層</td></tr></tbody></table>
+        <h4>2. 運算在哪（純函數模組，零 ROS，可 pytest）</h4>
+        <table class="nodes"><tbody><tr><td><code>logic/gaps.py</code></td><td class="dim">gap threading -- predictive gap selection + real-time veto. Zero ROS.</td></tr></tbody></table>
+        <h4>3. 這個 demo 的 launch 特例</h4>
+        <ul class="notes"><li><b>HOLD</b>：劇本時鐘釘在 t=0 直到 director 發 <code>/demo/play</code>——Nav2 起身那十幾秒不算進劇本時間</li><li><b>/speed_limit 改由 director 擁有</b>：density_governor 的輸出被改接到 <code>/speed_limit_governor</code>（穿越中降速由 director 主導）</li><li><b>專屬速度</b>：<code>&quot;vx_max&quot;: 1.0, &quot;vx_std&quot;: 0.25</code>（velocity_smoother 的 1.2 m/s 是全域硬頂，設更高無效）</li><li><b>密度鈕</b>：可用（劇本有可縮放人流）</li></ul>
+        <details class="variants">
+          <summary>4. 共用堆疊：全部節點的訂閱／發布</summary>
+          <p class="dim">兩條人流來源是分開的，這是 A/B 公平與劣化實驗的基礎：
+          <code>/people</code> 是 <b>CCTV</b>（可被延遲／雜訊／斷訊劣化），
+          <code>/people_truth</code> 是 <b>真值</b>，只給感測模擬、安全層與量測。
+          模式門控只有兩處：<code>people_scan</code> 決定 local costmap 看不看得見人、
+          <code>PredictCritic</code> 在 baseline 自我停用。</p>
+          <table class="nodes"><thead><tr><th>節點</th><th>訂閱</th><th>發布</th></tr></thead><tbody><tr class="lay"><td colspan="3">模擬層 —— 產生世界</td></tr><tr><td><code>crowd_publisher</code><br><span class="dim">劇本 + SFM 行人；密度 1–4×</span></td><td class="dim">/demo/leader、/demo/leader_alt、/map、/demo/play、/demo/scenario_event</td><td class="dim">/people、/people_truth、/people_markers、/demo/scenario_t</td></tr><tr><td><code>robot_sim</code><br><span class="dim">50 Hz 積分、完美定位（map→odom 恆等，無 AMCL）、安全層</span></td><td class="dim">/cmd_vel</td><td class="dim">/odom、/scan、/ultrasound、/demo/safety_stop</td></tr><tr class="lay"><td colspan="3">環境 CCTV 層 —— 只吃 /people（可被劣化）</td></tr><tr><td><code>flow_buffer</code><br><span class="dim">2 m 網格滑窗 → 流向場</span></td><td class="dim">/people</td><td class="dim">/flow_markers、/flow_field</td></tr><tr><td><code>flow_cost</code><br><span class="dim">方向成本 + 人場斥力 → 全域/局部成本地圖</span></td><td class="dim">/map、/people、/plan、/goal_pose、/demo/flow_cost、/demo/person_field、/demo/mode、/demo/keepouts</td><td class="dim">/flow_cost_mask、/flow_map、/demo/cctv_ok、/proxemic_map</td></tr><tr><td><code>density_governor</code><br><span class="dim">密度分級 → /speed_limit；新鮮度取收訊與觀測兩種年齡的較嚴格者</span></td><td class="dim">/people、/demo/mode</td><td class="dim">/speed_limit、/demo/density_debug</td></tr><tr class="lay"><td colspan="3">車載感測層 —— 只吃 /people_truth（不受 CCTV 劣化影響）</td></tr><tr><td><code>people_scan</code><br><span class="dim">7 m 人形回波；**模式門控在這裡**</span></td><td class="dim">/demo/mode、/demo/cctv_ok</td><td class="dim">/people_scan、/people_scan_costmap</td></tr><tr><td><code>rgbd_sim</code><br><span class="dim">5 m / 87° / 含遮擋；匿名 track + 外觀標籤</span></td><td class="dim">/demo/scenario_t</td><td class="dim">/rgbd/detections、/rgbd/markers</td></tr><tr class="lay"><td colspan="3">編導與量測</td></tr><tr><td><code>director</code><br><span class="dim">demo 插件、發 goal、記分板；戰略層做時戳延遲補償</span></td><td class="dim">/people、/people_truth、/people_scan、/rgbd/detections、/demo/scenario_t、/demo/mode、/demo/metrics、/demo/play</td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/demo/leg_event、/demo/leader、/demo/scenario_event、/demo/mode、/demo/play、/speed_limit、/demo/flow_cost、/demo/person_field</td></tr><tr><td><code>metrics</code><br><span class="dim">CSV 常駐量測（量測的唯一正道，吃真值）</span></td><td class="dim">/cmd_vel、/demo/scenario_t、/demo/state、/demo/safety_stop、/plan</td><td class="dim">/demo/metrics</td></tr><tr class="lay"><td colspan="3">呈現層（rviz:=true 才啟動）</td></tr><tr><td><code>viz</code><br><span class="dim">記分板、keepout 帶、各 demo 疊圖 → /demo/markers</span></td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/odom</td><td class="dim">/demo/markers</td></tr><tr><td><code>robot_marker</code><br><span class="dim">高辨識度 AMR 疊圖</span></td><td class="dim">—</td><td class="dim">/robot_marker</td></tr><tr class="lay"><td colspan="3">Nav2（7 個標準節點）</td></tr><tr><td colspan="3" class="dim">map_server、planner_server(NavFn)、controller_server(MPPI)、behavior_server、bt_navigator、velocity_smoother、lifecycle_manager_navigation<br>global costmap：<code>/scan</code>（牆）+ <code>/flow_map</code>；local costmap：<code>/scan</code> + <code>/people_scan_costmap</code>（<b>門控過的那份</b>）+ <code>/proxemic_map</code></td></tr><tr class="lay"><td colspan="3">不會出現在 ros2 node list 的三個</td></tr><tr><td colspan="3" class="dim"><code>FlowCritic</code> / <code>PredictCritic</code> / <code>FlowDriftCritic</code> 是 controller_server 進程內的 C++ MPPI 外掛。PredictCritic 自己訂 <code>/people</code> 與 <code>/demo/mode</code>（baseline 自我停用），並用 <code>header.stamp</code> 做延遲補償；兩個 Flow critic 訂 <code>/flow_field</code>。載入失敗是靜默的——機器人不動先查 controller_server 的 log。</td></tr></tbody></table>
+        </details>
+      </details>
+  </section>
+  <section class="card" id="d04">
+    <header>
+      <div class="no">DEMO 04</div>
+      <h3>棋盤路網人流繞路</h3>
+      <p class="desc">最短的路擠滿人。多走兩成的後巷，反而先到。</p>
+      <div class="chips"><span class="chip">解凍結</span><span class="chip">最短≠最快</span></div>
+      <button class="sync" data-demo="d04">▶ 同步播放兩邊</button>
+    </header>
+    <div class="panes">
+      <div class="pane full">
+        <div class="phead"><b>full</b><span class="dim">環境 CCTV 全域 MOT</span>
+          <span class="dur">5:00</span></div>
+        <video preload="none" controls playsinline poster="posters/d04_full.jpg" data-demo="d04"
+               src="d04_full.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">arrival (legs &gt;= 1)</span><span class="cdet">legs=5 first_leg=56.7</span></li><li class="ok"><span class="mark">✓</span><span class="cname">back_alley share &gt; 0.5</span><span class="cdet">back_alley=0.99 (back_alley=0.99, shopping=0.01, 302 rows in a named street)</span></li><li class="ok"><span class="mark">✓</span><span class="cname">first-leg time &lt; baseline first-leg time</span><span class="cdet">full=56.7 s baseline=123.9 s; 距離 full=325 m baseline=177 m ratio=1.83（機制證據，不判）</span></li><li class="ok"><span class="mark">✓</span><span class="cname">collision_proxy == 0</span><span class="cdet">collision_proxy=0</span></li></ul>
+      </div>
+      <div class="pane baseline">
+        <div class="phead"><b>baseline</b><span class="dim">純車載感測</span>
+          <span class="dur">5:00</span></div>
+        <video preload="none" controls playsinline poster="posters/d04_baseline.jpg" data-demo="d04"
+               src="d04_baseline.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">shopping share &gt; 0.5</span><span class="cdet">shopping=1.00 (shopping=1.00)</span></li><li class="ok"><span class="mark">✓</span><span class="cname">freeze&gt;0.25 or v_eff&lt;0.40 or first_leg&gt;1.5x full</span><span class="cdet">freeze=0.176, v_eff=0.59, first_leg baseline=123.9s full=56.7s ratio=2.19</span></li></ul>
+      </div></div>
+    <details class="variants"><summary>人流密度 2× / 3× / 4×<span class="dim"> —— 同一份劇本，可縮放的人流股數 ×N；編舞的手寫 agent 不隨密度變</span></summary><div class="grid"><figure><video preload='none' controls playsinline poster="posters/d04_full_d2.jpg" src='d04_full_d2.mp4'></video><figcaption>2× · full</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d04_baseline_d2.jpg" src='d04_baseline_d2.mp4'></video><figcaption>2× · baseline</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d04_full_d3.jpg" src='d04_full_d3.mp4'></video><figcaption>3× · full</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d04_baseline_d3.jpg" src='d04_baseline_d3.mp4'></video><figcaption>3× · baseline</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d04_full_d4.jpg" src='d04_full_d4.mp4'></video><figcaption>4× · full</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d04_baseline_d4.jpg" src='d04_baseline_d4.mp4'></video><figcaption>4× · baseline</figcaption></figure></div></details><details class="variants"><summary>CCTV 感測劣化演練<span class="dim"> —— 只有 full 模式；baseline 本來就沒有 CCTV 可劣化</span></summary><ul class="notes"><li><b>延遲 0.5 s</b> —— CCTV 影像晚 0.5 s 才到。header.stamp 停在觀測時刻，所以下游算得出資料多舊：戰略層把每個人依自己的速度前推那段時間，記分板會多一列 CCTV lag。實測 d03 的 commit 時刻——零延遲 28.18、有延遲未補償 28.63、有延遲已補償 28.04。</li><li><b>位置雜訊 σ=0.35 m</b> —— 小於人體半徑：位置在抖，但每個人的身分不亂——身分穩定是跨鏡頭追蹤的前提。</li><li><b>斷訊 30 s</b> —— /people 靜默而 /people_truth 照流：車載鏈與安全層不受影響，只有吃 CCTV 的那幾層降級。這一組會觸發 CCTV 失聯保護（限速降到 0.9 m/s）。</li></ul><div class="grid"><figure><video preload='none' controls playsinline poster="posters/d04_full_lat.jpg" src='d04_full_lat.mp4'></video><figcaption>延遲 0.5 s</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d04_full_noise.jpg" src='d04_full_noise.mp4'></video><figcaption>位置雜訊 σ=0.35 m</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d04_full_drop.jpg" src='d04_full_drop.mp4'></video><figcaption>斷訊 30 s</figcaption></figure></div></details>
+    
+      <details class="variants nodes-panel">
+        <summary>節點與資料來源 —— 這些數字從哪來、怎麼算的</summary>
+        <p class="dim">全網密度場 → 最短≠最快，繞後巷</p>
+        <h4>1. 這個 demo 吃哪些人流來源</h4>
+        <table class="nodes"><tbody><tr><td><code>/people_scan（車載 7 m，無身分）</code></td><td class="dim">即時層／反應層</td></tr></tbody></table>
+        <h4>2. 運算在哪（純函數模組，零 ROS，可 pytest）</h4>
+        <table class="nodes"><tbody><tr><td><code>logic/legs.py</code></td><td class="dim">Patrol-leg state machine -- pure functions, zero ROS (pytest-testable).</td></tr></tbody></table>
+        <h4>3. 這個 demo 的 launch 特例</h4>
+        <ul class="notes"><li><b>密度鈕</b>：可用（劇本有可縮放人流）</li></ul>
+        <details class="variants">
+          <summary>4. 共用堆疊：全部節點的訂閱／發布</summary>
+          <p class="dim">兩條人流來源是分開的，這是 A/B 公平與劣化實驗的基礎：
+          <code>/people</code> 是 <b>CCTV</b>（可被延遲／雜訊／斷訊劣化），
+          <code>/people_truth</code> 是 <b>真值</b>，只給感測模擬、安全層與量測。
+          模式門控只有兩處：<code>people_scan</code> 決定 local costmap 看不看得見人、
+          <code>PredictCritic</code> 在 baseline 自我停用。</p>
+          <table class="nodes"><thead><tr><th>節點</th><th>訂閱</th><th>發布</th></tr></thead><tbody><tr class="lay"><td colspan="3">模擬層 —— 產生世界</td></tr><tr><td><code>crowd_publisher</code><br><span class="dim">劇本 + SFM 行人；密度 1–4×</span></td><td class="dim">/demo/leader、/demo/leader_alt、/map、/demo/play、/demo/scenario_event</td><td class="dim">/people、/people_truth、/people_markers、/demo/scenario_t</td></tr><tr><td><code>robot_sim</code><br><span class="dim">50 Hz 積分、完美定位（map→odom 恆等，無 AMCL）、安全層</span></td><td class="dim">/cmd_vel</td><td class="dim">/odom、/scan、/ultrasound、/demo/safety_stop</td></tr><tr class="lay"><td colspan="3">環境 CCTV 層 —— 只吃 /people（可被劣化）</td></tr><tr><td><code>flow_buffer</code><br><span class="dim">2 m 網格滑窗 → 流向場</span></td><td class="dim">/people</td><td class="dim">/flow_markers、/flow_field</td></tr><tr><td><code>flow_cost</code><br><span class="dim">方向成本 + 人場斥力 → 全域/局部成本地圖</span></td><td class="dim">/map、/people、/plan、/goal_pose、/demo/flow_cost、/demo/person_field、/demo/mode、/demo/keepouts</td><td class="dim">/flow_cost_mask、/flow_map、/demo/cctv_ok、/proxemic_map</td></tr><tr><td><code>density_governor</code><br><span class="dim">密度分級 → /speed_limit；新鮮度取收訊與觀測兩種年齡的較嚴格者</span></td><td class="dim">/people、/demo/mode</td><td class="dim">/speed_limit、/demo/density_debug</td></tr><tr class="lay"><td colspan="3">車載感測層 —— 只吃 /people_truth（不受 CCTV 劣化影響）</td></tr><tr><td><code>people_scan</code><br><span class="dim">7 m 人形回波；**模式門控在這裡**</span></td><td class="dim">/demo/mode、/demo/cctv_ok</td><td class="dim">/people_scan、/people_scan_costmap</td></tr><tr><td><code>rgbd_sim</code><br><span class="dim">5 m / 87° / 含遮擋；匿名 track + 外觀標籤</span></td><td class="dim">/demo/scenario_t</td><td class="dim">/rgbd/detections、/rgbd/markers</td></tr><tr class="lay"><td colspan="3">編導與量測</td></tr><tr><td><code>director</code><br><span class="dim">demo 插件、發 goal、記分板；戰略層做時戳延遲補償</span></td><td class="dim">/people、/people_truth、/people_scan、/rgbd/detections、/demo/scenario_t、/demo/mode、/demo/metrics、/demo/play</td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/demo/leg_event、/demo/leader、/demo/scenario_event、/demo/mode、/demo/play、/speed_limit、/demo/flow_cost、/demo/person_field</td></tr><tr><td><code>metrics</code><br><span class="dim">CSV 常駐量測（量測的唯一正道，吃真值）</span></td><td class="dim">/cmd_vel、/demo/scenario_t、/demo/state、/demo/safety_stop、/plan</td><td class="dim">/demo/metrics</td></tr><tr class="lay"><td colspan="3">呈現層（rviz:=true 才啟動）</td></tr><tr><td><code>viz</code><br><span class="dim">記分板、keepout 帶、各 demo 疊圖 → /demo/markers</span></td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/odom</td><td class="dim">/demo/markers</td></tr><tr><td><code>robot_marker</code><br><span class="dim">高辨識度 AMR 疊圖</span></td><td class="dim">—</td><td class="dim">/robot_marker</td></tr><tr class="lay"><td colspan="3">Nav2（7 個標準節點）</td></tr><tr><td colspan="3" class="dim">map_server、planner_server(NavFn)、controller_server(MPPI)、behavior_server、bt_navigator、velocity_smoother、lifecycle_manager_navigation<br>global costmap：<code>/scan</code>（牆）+ <code>/flow_map</code>；local costmap：<code>/scan</code> + <code>/people_scan_costmap</code>（<b>門控過的那份</b>）+ <code>/proxemic_map</code></td></tr><tr class="lay"><td colspan="3">不會出現在 ros2 node list 的三個</td></tr><tr><td colspan="3" class="dim"><code>FlowCritic</code> / <code>PredictCritic</code> / <code>FlowDriftCritic</code> 是 controller_server 進程內的 C++ MPPI 外掛。PredictCritic 自己訂 <code>/people</code> 與 <code>/demo/mode</code>（baseline 自我停用），並用 <code>header.stamp</code> 做延遲補償；兩個 Flow critic 訂 <code>/flow_field</code>。載入失敗是靜默的——機器人不動先查 controller_server 的 log。</td></tr></tbody></table>
+        </details>
+      </details>
+  </section>
+  <section class="card" id="d05">
+    <header>
+      <div class="no">DEMO 05</div>
+      <h3>人潮洩洪預測</h3>
+      <p class="desc">通道現在是空的，12 秒後是一條河。波前 ETA 決定 GO / NO-GO。</p>
+      <div class="chips"><span class="chip">解空等</span><span class="chip">車站場景</span></div>
+      <button class="sync" data-demo="d05">▶ 同步播放兩邊</button>
+    </header>
+    <div class="panes">
+      <div class="pane full">
+        <div class="phead"><b>full</b><span class="dim">環境 CCTV 全域 MOT</span>
+          <span class="dur">1:35</span></div>
+        <video preload="none" controls playsinline poster="posters/d05_full.jpg" data-demo="d05"
+               src="d05_full.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">surge exposure &lt; 2 s</span><span class="cdet">exposure=0.0s</span></li><li class="ok"><span class="mark">✓</span><span class="cname">commit after the wave tail</span><span class="cdet">commit_t=39.5s surge_tail_t=39.5s</span></li><li class="ok"><span class="mark">✓</span><span class="cname">no_go (platform_waiting / wave_passing) &gt;= 1</span><span class="cdet">no_go=2 reasons=[&#x27;platform_waiting&#x27;, &#x27;wave_passing&#x27;]</span></li><li class="ok"><span class="mark">✓</span><span class="cname">collision_proxy == 0</span><span class="cdet">collision_proxy=0</span></li></ul>
+      </div>
+      <div class="pane baseline">
+        <div class="phead"><b>baseline</b><span class="dim">純車載感測</span>
+          <span class="dur">1:51</span></div>
+        <video preload="none" controls playsinline poster="posters/d05_baseline.jpg" data-demo="d05"
+               src="d05_baseline.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">exposure &gt; 5 s or band freeze &gt; 10 s</span><span class="cdet">exposure=26.4s &gt; 5</span></li></ul>
+      </div></div>
+    <details class="variants"><summary>CCTV 感測劣化演練<span class="dim"> —— 只有 full 模式；baseline 本來就沒有 CCTV 可劣化</span></summary><ul class="notes"><li><b>延遲 0.5 s</b> —— CCTV 影像晚 0.5 s 才到。header.stamp 停在觀測時刻，所以下游算得出資料多舊：戰略層把每個人依自己的速度前推那段時間，記分板會多一列 CCTV lag。實測 d03 的 commit 時刻——零延遲 28.18、有延遲未補償 28.63、有延遲已補償 28.04。</li><li><b>位置雜訊 σ=0.35 m</b> —— 小於人體半徑：位置在抖，但每個人的身分不亂——身分穩定是跨鏡頭追蹤的前提。</li><li><b>斷訊 30 s</b> —— /people 靜默而 /people_truth 照流：車載鏈與安全層不受影響，只有吃 CCTV 的那幾層降級。這一組會觸發 CCTV 失聯保護（限速降到 0.9 m/s）。</li></ul><div class="grid"><figure><video preload='none' controls playsinline poster="posters/d05_full_lat.jpg" src='d05_full_lat.mp4'></video><figcaption>延遲 0.5 s</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d05_full_noise.jpg" src='d05_full_noise.mp4'></video><figcaption>位置雜訊 σ=0.35 m</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d05_full_drop.jpg" src='d05_full_drop.mp4'></video><figcaption>斷訊 30 s</figcaption></figure></div></details>
+    
+      <details class="variants nodes-panel">
+        <summary>節點與資料來源 —— 這些數字從哪來、怎麼算的</summary>
+        <p class="dim">波前 ETA → GO/NO-GO，抑制驅動訊號駐留待命</p>
+        <h4>1. 這個 demo 吃哪些人流來源</h4>
+        <table class="nodes"><tbody><tr><td><code>/people（CCTV 全域 MOT，**只有 full 模式**）</code></td><td class="dim">戰略層。已做時戳延遲補償：每人依自身速度前推資料年齡</td></tr><tr><td><code>/rgbd/detections（車載 5 m，匿名）</code></td><td class="dim">即時層。**兩模式走完全相同的程式碼路徑**</td></tr><tr><td><code>/people_scan（車載 7 m，無身分）</code></td><td class="dim">即時層／反應層</td></tr><tr><td><code>/people_truth（真值）</code></td><td class="dim">**只用於事件鑑識與記分，不參與任何決策**</td></tr></tbody></table>
+        <h4>2. 運算在哪（純函數模組，零 ROS，可 pytest）</h4>
+        <table class="nodes"><tbody><tr><td><code>logic/gaps.py</code></td><td class="dim">gap threading -- predictive gap selection + real-time veto. Zero ROS.</td></tr><tr><td><code>logic/wavefront.py</code></td><td class="dim">surge -- wavefront estimation and GO/NO-GO timing. Zero ROS.</td></tr></tbody></table>
+        <h4>3. 這個 demo 的 launch 特例</h4>
+        <ul class="notes"><li><b>HOLD</b>：劇本時鐘釘在 t=0 直到 director 發 <code>/demo/play</code>——Nav2 起身那十幾秒不算進劇本時間</li><li><b>密度鈕</b>：不可用（劇本是手寫編舞，縮放會破壞相遇時序）</li></ul>
+        <details class="variants">
+          <summary>4. 共用堆疊：全部節點的訂閱／發布</summary>
+          <p class="dim">兩條人流來源是分開的，這是 A/B 公平與劣化實驗的基礎：
+          <code>/people</code> 是 <b>CCTV</b>（可被延遲／雜訊／斷訊劣化），
+          <code>/people_truth</code> 是 <b>真值</b>，只給感測模擬、安全層與量測。
+          模式門控只有兩處：<code>people_scan</code> 決定 local costmap 看不看得見人、
+          <code>PredictCritic</code> 在 baseline 自我停用。</p>
+          <table class="nodes"><thead><tr><th>節點</th><th>訂閱</th><th>發布</th></tr></thead><tbody><tr class="lay"><td colspan="3">模擬層 —— 產生世界</td></tr><tr><td><code>crowd_publisher</code><br><span class="dim">劇本 + SFM 行人；密度 1–4×</span></td><td class="dim">/demo/leader、/demo/leader_alt、/map、/demo/play、/demo/scenario_event</td><td class="dim">/people、/people_truth、/people_markers、/demo/scenario_t</td></tr><tr><td><code>robot_sim</code><br><span class="dim">50 Hz 積分、完美定位（map→odom 恆等，無 AMCL）、安全層</span></td><td class="dim">/cmd_vel</td><td class="dim">/odom、/scan、/ultrasound、/demo/safety_stop</td></tr><tr class="lay"><td colspan="3">環境 CCTV 層 —— 只吃 /people（可被劣化）</td></tr><tr><td><code>flow_buffer</code><br><span class="dim">2 m 網格滑窗 → 流向場</span></td><td class="dim">/people</td><td class="dim">/flow_markers、/flow_field</td></tr><tr><td><code>flow_cost</code><br><span class="dim">方向成本 + 人場斥力 → 全域/局部成本地圖</span></td><td class="dim">/map、/people、/plan、/goal_pose、/demo/flow_cost、/demo/person_field、/demo/mode、/demo/keepouts</td><td class="dim">/flow_cost_mask、/flow_map、/demo/cctv_ok、/proxemic_map</td></tr><tr><td><code>density_governor</code><br><span class="dim">密度分級 → /speed_limit；新鮮度取收訊與觀測兩種年齡的較嚴格者</span></td><td class="dim">/people、/demo/mode</td><td class="dim">/speed_limit、/demo/density_debug</td></tr><tr class="lay"><td colspan="3">車載感測層 —— 只吃 /people_truth（不受 CCTV 劣化影響）</td></tr><tr><td><code>people_scan</code><br><span class="dim">7 m 人形回波；**模式門控在這裡**</span></td><td class="dim">/demo/mode、/demo/cctv_ok</td><td class="dim">/people_scan、/people_scan_costmap</td></tr><tr><td><code>rgbd_sim</code><br><span class="dim">5 m / 87° / 含遮擋；匿名 track + 外觀標籤</span></td><td class="dim">/demo/scenario_t</td><td class="dim">/rgbd/detections、/rgbd/markers</td></tr><tr class="lay"><td colspan="3">編導與量測</td></tr><tr><td><code>director</code><br><span class="dim">demo 插件、發 goal、記分板；戰略層做時戳延遲補償</span></td><td class="dim">/people、/people_truth、/people_scan、/rgbd/detections、/demo/scenario_t、/demo/mode、/demo/metrics、/demo/play</td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/demo/leg_event、/demo/leader、/demo/scenario_event、/demo/mode、/demo/play、/speed_limit、/demo/flow_cost、/demo/person_field</td></tr><tr><td><code>metrics</code><br><span class="dim">CSV 常駐量測（量測的唯一正道，吃真值）</span></td><td class="dim">/cmd_vel、/demo/scenario_t、/demo/state、/demo/safety_stop、/plan</td><td class="dim">/demo/metrics</td></tr><tr class="lay"><td colspan="3">呈現層（rviz:=true 才啟動）</td></tr><tr><td><code>viz</code><br><span class="dim">記分板、keepout 帶、各 demo 疊圖 → /demo/markers</span></td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/odom</td><td class="dim">/demo/markers</td></tr><tr><td><code>robot_marker</code><br><span class="dim">高辨識度 AMR 疊圖</span></td><td class="dim">—</td><td class="dim">/robot_marker</td></tr><tr class="lay"><td colspan="3">Nav2（7 個標準節點）</td></tr><tr><td colspan="3" class="dim">map_server、planner_server(NavFn)、controller_server(MPPI)、behavior_server、bt_navigator、velocity_smoother、lifecycle_manager_navigation<br>global costmap：<code>/scan</code>（牆）+ <code>/flow_map</code>；local costmap：<code>/scan</code> + <code>/people_scan_costmap</code>（<b>門控過的那份</b>）+ <code>/proxemic_map</code></td></tr><tr class="lay"><td colspan="3">不會出現在 ros2 node list 的三個</td></tr><tr><td colspan="3" class="dim"><code>FlowCritic</code> / <code>PredictCritic</code> / <code>FlowDriftCritic</code> 是 controller_server 進程內的 C++ MPPI 外掛。PredictCritic 自己訂 <code>/people</code> 與 <code>/demo/mode</code>（baseline 自我停用），並用 <code>header.stamp</code> 做延遲補償；兩個 Flow critic 訂 <code>/flow_field</code>。載入失敗是靜默的——機器人不動先查 controller_server 的 log。</td></tr></tbody></table>
+        </details>
+      </details>
+  </section><h2 class="group">社會語意 —— 把人當人</h2>
+  <section class="card" id="d06">
+    <header>
+      <div class="no">DEMO 06</div>
+      <h3>排隊識別：不插隊的機器人</h3>
+      <p class="desc">LiDAR 看見「有縫」，連續軌跡看見「這是一條隊」。</p>
+      <div class="chips"><span class="chip">解插隊</span><span class="chip">穿越隊伍 = 0</span></div>
+      <button class="sync" data-demo="d06">▶ 同步播放兩邊</button>
+    </header>
+    <div class="panes">
+      <div class="pane full">
+        <div class="phead"><b>full</b><span class="dim">環境 CCTV 全域 MOT</span>
+          <span class="dur">4:20</span></div>
+        <video preload="none" controls playsinline poster="posters/d06_full.jpg" data-demo="d06"
+               src="d06_full.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">queue crossings == 0</span><span class="cdet">queue_cross=0 (baseline 的失敗敘事就是這個數字)</span></li><li class="ok"><span class="mark">✓</span><span class="cname">disturbed queuers == 0</span><span class="cdet">disturb=0</span></li><li class="ok"><span class="mark">✓</span><span class="cname">round trip complete (legs &gt;= 2)</span><span class="cdet">legs=2 task_done=1 leg_durs=[49.6, 49.3]</span></li><li class="ok"><span class="mark">✓</span><span class="cname">queue_formed &gt;= 1 and tail_extend &gt;= 1</span><span class="cdet">queue_formed=6 tail_extend=16 tail_join=5 causal_confirm=14</span></li><li class="ok"><span class="mark">✓</span><span class="cname">every axis crossing on the tail side</span><span class="cdet">2 crossing(s): y=27.1 tail_y=18.9 side=tail; y=27.97 tail_y=16.53 side=tail</span></li><li class="ok"><span class="mark">✓</span><span class="cname">no passer-by absorbed into the queue</span><span class="cdet">18 distinct members seen; offenders=[]</span></li><li class="ok"><span class="mark">✓</span><span class="cname">collision_proxy == 0</span><span class="cdet">collision_proxy=0</span></li></ul>
+      </div>
+      <div class="pane baseline">
+        <div class="phead"><b>baseline</b><span class="dim">純車載感測</span>
+          <span class="dur">4:14</span></div>
+        <video preload="none" controls playsinline poster="posters/d06_baseline.jpg" data-demo="d06"
+               src="d06_baseline.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">queue crossings &gt;= 1</span><span class="cdet">queue_cross=2 disturb=10 legs=2</span></li></ul>
+      </div></div>
+    <details class="variants"><summary>CCTV 感測劣化演練<span class="dim"> —— 只有 full 模式；baseline 本來就沒有 CCTV 可劣化</span></summary><ul class="notes"><li><b>延遲 0.5 s</b> —— CCTV 影像晚 0.5 s 才到。header.stamp 停在觀測時刻，所以下游算得出資料多舊：戰略層把每個人依自己的速度前推那段時間，記分板會多一列 CCTV lag。實測 d03 的 commit 時刻——零延遲 28.18、有延遲未補償 28.63、有延遲已補償 28.04。</li><li><b>位置雜訊 σ=0.35 m</b> —— 小於人體半徑：位置在抖，但每個人的身分不亂——身分穩定是跨鏡頭追蹤的前提。</li><li><b>斷訊 30 s</b> —— /people 靜默而 /people_truth 照流：車載鏈與安全層不受影響，只有吃 CCTV 的那幾層降級。這一組會觸發 CCTV 失聯保護（限速降到 0.9 m/s）。</li></ul><div class="grid"><figure><video preload='none' controls playsinline poster="posters/d06_full_lat.jpg" src='d06_full_lat.mp4'></video><figcaption>延遲 0.5 s</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d06_full_noise.jpg" src='d06_full_noise.mp4'></video><figcaption>位置雜訊 σ=0.35 m</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d06_full_drop.jpg" src='d06_full_drop.mp4'></video><figcaption>斷訊 30 s</figcaption></figure></div></details>
+    
+      <details class="variants nodes-panel">
+        <summary>節點與資料來源 —— 這些數字從哪來、怎麼算的</summary>
+        <p class="dim">隊伍物件（骨架折線）→ 連續不可穿越帶 → 繞隊尾</p>
+        <h4>1. 這個 demo 吃哪些人流來源</h4>
+        <table class="nodes"><tbody><tr><td><code>/people（CCTV 全域 MOT，**只有 full 模式**）</code></td><td class="dim">戰略層。已做時戳延遲補償：每人依自身速度前推資料年齡</td></tr><tr><td><code>/people_truth（真值）</code></td><td class="dim">**只用於事件鑑識與記分，不參與任何決策**</td></tr></tbody></table>
+        <h4>2. 運算在哪（純函數模組，零 ROS，可 pytest）</h4>
+        <table class="nodes"><tbody><tr><td><code>logic/queue_detect.py</code></td><td class="dim">queue detection -- a line of waiting people as ONE topological object.</td></tr></tbody></table>
+        <h4>3. 這個 demo 的 launch 特例</h4>
+        <ul class="notes"><li><b>HOLD</b>：劇本時鐘釘在 t=0 直到 director 發 <code>/demo/play</code>——Nav2 起身那十幾秒不算進劇本時間</li><li><b>密度鈕</b>：不可用（劇本是手寫編舞，縮放會破壞相遇時序）</li></ul>
+        <details class="variants">
+          <summary>4. 共用堆疊：全部節點的訂閱／發布</summary>
+          <p class="dim">兩條人流來源是分開的，這是 A/B 公平與劣化實驗的基礎：
+          <code>/people</code> 是 <b>CCTV</b>（可被延遲／雜訊／斷訊劣化），
+          <code>/people_truth</code> 是 <b>真值</b>，只給感測模擬、安全層與量測。
+          模式門控只有兩處：<code>people_scan</code> 決定 local costmap 看不看得見人、
+          <code>PredictCritic</code> 在 baseline 自我停用。</p>
+          <table class="nodes"><thead><tr><th>節點</th><th>訂閱</th><th>發布</th></tr></thead><tbody><tr class="lay"><td colspan="3">模擬層 —— 產生世界</td></tr><tr><td><code>crowd_publisher</code><br><span class="dim">劇本 + SFM 行人；密度 1–4×</span></td><td class="dim">/demo/leader、/demo/leader_alt、/map、/demo/play、/demo/scenario_event</td><td class="dim">/people、/people_truth、/people_markers、/demo/scenario_t</td></tr><tr><td><code>robot_sim</code><br><span class="dim">50 Hz 積分、完美定位（map→odom 恆等，無 AMCL）、安全層</span></td><td class="dim">/cmd_vel</td><td class="dim">/odom、/scan、/ultrasound、/demo/safety_stop</td></tr><tr class="lay"><td colspan="3">環境 CCTV 層 —— 只吃 /people（可被劣化）</td></tr><tr><td><code>flow_buffer</code><br><span class="dim">2 m 網格滑窗 → 流向場</span></td><td class="dim">/people</td><td class="dim">/flow_markers、/flow_field</td></tr><tr><td><code>flow_cost</code><br><span class="dim">方向成本 + 人場斥力 → 全域/局部成本地圖</span></td><td class="dim">/map、/people、/plan、/goal_pose、/demo/flow_cost、/demo/person_field、/demo/mode、/demo/keepouts</td><td class="dim">/flow_cost_mask、/flow_map、/demo/cctv_ok、/proxemic_map</td></tr><tr><td><code>density_governor</code><br><span class="dim">密度分級 → /speed_limit；新鮮度取收訊與觀測兩種年齡的較嚴格者</span></td><td class="dim">/people、/demo/mode</td><td class="dim">/speed_limit、/demo/density_debug</td></tr><tr class="lay"><td colspan="3">車載感測層 —— 只吃 /people_truth（不受 CCTV 劣化影響）</td></tr><tr><td><code>people_scan</code><br><span class="dim">7 m 人形回波；**模式門控在這裡**</span></td><td class="dim">/demo/mode、/demo/cctv_ok</td><td class="dim">/people_scan、/people_scan_costmap</td></tr><tr><td><code>rgbd_sim</code><br><span class="dim">5 m / 87° / 含遮擋；匿名 track + 外觀標籤</span></td><td class="dim">/demo/scenario_t</td><td class="dim">/rgbd/detections、/rgbd/markers</td></tr><tr class="lay"><td colspan="3">編導與量測</td></tr><tr><td><code>director</code><br><span class="dim">demo 插件、發 goal、記分板；戰略層做時戳延遲補償</span></td><td class="dim">/people、/people_truth、/people_scan、/rgbd/detections、/demo/scenario_t、/demo/mode、/demo/metrics、/demo/play</td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/demo/leg_event、/demo/leader、/demo/scenario_event、/demo/mode、/demo/play、/speed_limit、/demo/flow_cost、/demo/person_field</td></tr><tr><td><code>metrics</code><br><span class="dim">CSV 常駐量測（量測的唯一正道，吃真值）</span></td><td class="dim">/cmd_vel、/demo/scenario_t、/demo/state、/demo/safety_stop、/plan</td><td class="dim">/demo/metrics</td></tr><tr class="lay"><td colspan="3">呈現層（rviz:=true 才啟動）</td></tr><tr><td><code>viz</code><br><span class="dim">記分板、keepout 帶、各 demo 疊圖 → /demo/markers</span></td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/odom</td><td class="dim">/demo/markers</td></tr><tr><td><code>robot_marker</code><br><span class="dim">高辨識度 AMR 疊圖</span></td><td class="dim">—</td><td class="dim">/robot_marker</td></tr><tr class="lay"><td colspan="3">Nav2（7 個標準節點）</td></tr><tr><td colspan="3" class="dim">map_server、planner_server(NavFn)、controller_server(MPPI)、behavior_server、bt_navigator、velocity_smoother、lifecycle_manager_navigation<br>global costmap：<code>/scan</code>（牆）+ <code>/flow_map</code>；local costmap：<code>/scan</code> + <code>/people_scan_costmap</code>（<b>門控過的那份</b>）+ <code>/proxemic_map</code></td></tr><tr class="lay"><td colspan="3">不會出現在 ros2 node list 的三個</td></tr><tr><td colspan="3" class="dim"><code>FlowCritic</code> / <code>PredictCritic</code> / <code>FlowDriftCritic</code> 是 controller_server 進程內的 C++ MPPI 外掛。PredictCritic 自己訂 <code>/people</code> 與 <code>/demo/mode</code>（baseline 自我停用），並用 <code>header.stamp</code> 做延遲補償；兩個 Flow critic 訂 <code>/flow_field</code>。載入失敗是靜默的——機器人不動先查 controller_server 的 log。</td></tr></tbody></table>
+        </details>
+      </details>
+  </section>
+  <section class="card" id="d07">
+    <header>
+      <div class="no">DEMO 07</div>
+      <h3>群體識別：哪些縫不該鑽</h3>
+      <p class="desc">同伴的縫繞行，陌生人的縫照穿 —— 是分辨，不是保守。</p>
+      <div class="chips"><span class="chip">解拆散</span><span class="chip">拆散群體 = 0</span></div>
+      <button class="sync" data-demo="d07">▶ 同步播放兩邊</button>
+    </header>
+    <div class="panes">
+      <div class="pane full">
+        <div class="phead"><b>full</b><span class="dim">環境 CCTV 全域 MOT</span>
+          <span class="dur">1:34</span></div>
+        <video preload="none" controls playsinline poster="posters/d07_full.jpg" data-demo="d07"
+               src="d07_full.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">split_group == 0</span><span class="cdet">split_group=0</span></li><li class="ok"><span class="mark">✓</span><span class="cname">stranger_gap_cross == 1</span><span class="cdet">stranger_gap_cross=1 (0 = 保守繞遠路; &gt;1 = 來回穿)</span></li><li class="ok"><span class="mark">✓</span><span class="cname">arrival (leg_done or task_done)</span><span class="cdet">legs=1 task_done=1</span></li><li class="ok"><span class="mark">✓</span><span class="cname">group_formed &gt;= 1 and strangers never grouped</span><span class="cdet">group_formed=1 stranger_bonded=0 pair_bonded=1</span></li><li class="ok"><span class="mark">✓</span><span class="cname">the two gaps differ by &lt; 0.3 m</span><span class="cdet">duo=2.77 m stranger=2.93 m diff=0.16 m</span></li><li class="ok"><span class="mark">✓</span><span class="cname">collision_proxy == 0</span><span class="cdet">collision_proxy=0</span></li></ul>
+      </div>
+      <div class="pane baseline">
+        <div class="phead"><b>baseline</b><span class="dim">純車載感測</span>
+          <span class="dur">1:34</span></div>
+        <video preload="none" controls playsinline poster="posters/d07_baseline.jpg" data-demo="d07"
+               src="d07_baseline.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">split_group &gt;= 1</span><span class="cdet">split_group=1 stranger_gap_cross=1</span></li></ul>
+      </div></div>
+    <details class="variants"><summary>CCTV 感測劣化演練<span class="dim"> —— 只有 full 模式；baseline 本來就沒有 CCTV 可劣化</span></summary><ul class="notes"><li><b>延遲 0.5 s</b> —— CCTV 影像晚 0.5 s 才到。header.stamp 停在觀測時刻，所以下游算得出資料多舊：戰略層把每個人依自己的速度前推那段時間，記分板會多一列 CCTV lag。實測 d03 的 commit 時刻——零延遲 28.18、有延遲未補償 28.63、有延遲已補償 28.04。</li><li><b>位置雜訊 σ=0.35 m</b> —— 小於人體半徑：位置在抖，但每個人的身分不亂——身分穩定是跨鏡頭追蹤的前提。</li><li><b>斷訊 30 s</b> —— /people 靜默而 /people_truth 照流：車載鏈與安全層不受影響，只有吃 CCTV 的那幾層降級。這一組會觸發 CCTV 失聯保護（限速降到 0.9 m/s）。</li></ul><div class="grid"><figure><video preload='none' controls playsinline poster="posters/d07_full_lat.jpg" src='d07_full_lat.mp4'></video><figcaption>延遲 0.5 s</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d07_full_noise.jpg" src='d07_full_noise.mp4'></video><figcaption>位置雜訊 σ=0.35 m</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d07_full_drop.jpg" src='d07_full_drop.mp4'></video><figcaption>斷訊 30 s</figcaption></figure></div></details>
+    
+      <details class="variants nodes-panel">
+        <summary>節點與資料來源 —— 這些數字從哪來、怎麼算的</summary>
+        <p class="dim">親和度加權融合+遲滯 → 同伴連線帶禁入；陌生縫照穿</p>
+        <h4>1. 這個 demo 吃哪些人流來源</h4>
+        <table class="nodes"><tbody><tr><td><code>/people（CCTV 全域 MOT，**只有 full 模式**）</code></td><td class="dim">戰略層。已做時戳延遲補償：每人依自身速度前推資料年齡</td></tr><tr><td><code>/people_truth（真值）</code></td><td class="dim">**只用於事件鑑識與記分，不參與任何決策**</td></tr></tbody></table>
+        <h4>2. 運算在哪（純函數模組，零 ROS，可 pytest）</h4>
+        <table class="nodes"><tbody><tr><td><code>logic/affinity.py</code></td><td class="dim">social affinity -- who is *with* whom. Zero ROS.</td></tr></tbody></table>
+        <h4>3. 這個 demo 的 launch 特例</h4>
+        <ul class="notes"><li><b>HOLD</b>：劇本時鐘釘在 t=0 直到 director 發 <code>/demo/play</code>——Nav2 起身那十幾秒不算進劇本時間</li><li><b>密度鈕</b>：不可用（劇本是手寫編舞，縮放會破壞相遇時序）</li></ul>
+        <details class="variants">
+          <summary>4. 共用堆疊：全部節點的訂閱／發布</summary>
+          <p class="dim">兩條人流來源是分開的，這是 A/B 公平與劣化實驗的基礎：
+          <code>/people</code> 是 <b>CCTV</b>（可被延遲／雜訊／斷訊劣化），
+          <code>/people_truth</code> 是 <b>真值</b>，只給感測模擬、安全層與量測。
+          模式門控只有兩處：<code>people_scan</code> 決定 local costmap 看不看得見人、
+          <code>PredictCritic</code> 在 baseline 自我停用。</p>
+          <table class="nodes"><thead><tr><th>節點</th><th>訂閱</th><th>發布</th></tr></thead><tbody><tr class="lay"><td colspan="3">模擬層 —— 產生世界</td></tr><tr><td><code>crowd_publisher</code><br><span class="dim">劇本 + SFM 行人；密度 1–4×</span></td><td class="dim">/demo/leader、/demo/leader_alt、/map、/demo/play、/demo/scenario_event</td><td class="dim">/people、/people_truth、/people_markers、/demo/scenario_t</td></tr><tr><td><code>robot_sim</code><br><span class="dim">50 Hz 積分、完美定位（map→odom 恆等，無 AMCL）、安全層</span></td><td class="dim">/cmd_vel</td><td class="dim">/odom、/scan、/ultrasound、/demo/safety_stop</td></tr><tr class="lay"><td colspan="3">環境 CCTV 層 —— 只吃 /people（可被劣化）</td></tr><tr><td><code>flow_buffer</code><br><span class="dim">2 m 網格滑窗 → 流向場</span></td><td class="dim">/people</td><td class="dim">/flow_markers、/flow_field</td></tr><tr><td><code>flow_cost</code><br><span class="dim">方向成本 + 人場斥力 → 全域/局部成本地圖</span></td><td class="dim">/map、/people、/plan、/goal_pose、/demo/flow_cost、/demo/person_field、/demo/mode、/demo/keepouts</td><td class="dim">/flow_cost_mask、/flow_map、/demo/cctv_ok、/proxemic_map</td></tr><tr><td><code>density_governor</code><br><span class="dim">密度分級 → /speed_limit；新鮮度取收訊與觀測兩種年齡的較嚴格者</span></td><td class="dim">/people、/demo/mode</td><td class="dim">/speed_limit、/demo/density_debug</td></tr><tr class="lay"><td colspan="3">車載感測層 —— 只吃 /people_truth（不受 CCTV 劣化影響）</td></tr><tr><td><code>people_scan</code><br><span class="dim">7 m 人形回波；**模式門控在這裡**</span></td><td class="dim">/demo/mode、/demo/cctv_ok</td><td class="dim">/people_scan、/people_scan_costmap</td></tr><tr><td><code>rgbd_sim</code><br><span class="dim">5 m / 87° / 含遮擋；匿名 track + 外觀標籤</span></td><td class="dim">/demo/scenario_t</td><td class="dim">/rgbd/detections、/rgbd/markers</td></tr><tr class="lay"><td colspan="3">編導與量測</td></tr><tr><td><code>director</code><br><span class="dim">demo 插件、發 goal、記分板；戰略層做時戳延遲補償</span></td><td class="dim">/people、/people_truth、/people_scan、/rgbd/detections、/demo/scenario_t、/demo/mode、/demo/metrics、/demo/play</td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/demo/leg_event、/demo/leader、/demo/scenario_event、/demo/mode、/demo/play、/speed_limit、/demo/flow_cost、/demo/person_field</td></tr><tr><td><code>metrics</code><br><span class="dim">CSV 常駐量測（量測的唯一正道，吃真值）</span></td><td class="dim">/cmd_vel、/demo/scenario_t、/demo/state、/demo/safety_stop、/plan</td><td class="dim">/demo/metrics</td></tr><tr class="lay"><td colspan="3">呈現層（rviz:=true 才啟動）</td></tr><tr><td><code>viz</code><br><span class="dim">記分板、keepout 帶、各 demo 疊圖 → /demo/markers</span></td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/odom</td><td class="dim">/demo/markers</td></tr><tr><td><code>robot_marker</code><br><span class="dim">高辨識度 AMR 疊圖</span></td><td class="dim">—</td><td class="dim">/robot_marker</td></tr><tr class="lay"><td colspan="3">Nav2（7 個標準節點）</td></tr><tr><td colspan="3" class="dim">map_server、planner_server(NavFn)、controller_server(MPPI)、behavior_server、bt_navigator、velocity_smoother、lifecycle_manager_navigation<br>global costmap：<code>/scan</code>（牆）+ <code>/flow_map</code>；local costmap：<code>/scan</code> + <code>/people_scan_costmap</code>（<b>門控過的那份</b>）+ <code>/proxemic_map</code></td></tr><tr class="lay"><td colspan="3">不會出現在 ros2 node list 的三個</td></tr><tr><td colspan="3" class="dim"><code>FlowCritic</code> / <code>PredictCritic</code> / <code>FlowDriftCritic</code> 是 controller_server 進程內的 C++ MPPI 外掛。PredictCritic 自己訂 <code>/people</code> 與 <code>/demo/mode</code>（baseline 自我停用），並用 <code>header.stamp</code> 做延遲補償；兩個 Flow critic 訂 <code>/flow_field</code>。載入失敗是靜默的——機器人不動先查 controller_server 的 log。</td></tr></tbody></table>
+        </details>
+      </details>
+  </section>
+  <section class="card" id="d08">
+    <header>
+      <div class="no">DEMO 08</div>
+      <h3>超商點貨錯峰作業</h3>
+      <p class="desc">待命等走道淨空才出動點貨 —— 顧客幾乎感覺不到它。</p>
+      <div class="chips"><span class="chip">解打擾</span><span class="chip">干擾顧客次數 ↓</span></div>
+      <button class="sync" data-demo="d08">▶ 同步播放兩邊</button>
+    </header>
+    <div class="panes">
+      <div class="pane full">
+        <div class="phead"><b>full</b><span class="dim">環境 CCTV 全域 MOT</span>
+          <span class="dur">4:30</span></div>
+        <video preload="none" controls playsinline poster="posters/d08_full.jpg" data-demo="d08"
+               src="d08_full.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">co_region_secs == 0</span><span class="cdet">co_region_secs=0.0s (director&#x27;s own count: 0.0)</span></li><li class="ok"><span class="mark">✓</span><span class="cname">close_encounters == 0</span><span class="cdet">close_encounters=0 min_dist=2.56</span></li><li class="ok"><span class="mark">✓</span><span class="cname">3 aisles scanned</span><span class="cdet">aisle_scanned=3 order=[&#x27;aisle1&#x27;, &#x27;aisle3&#x27;, &#x27;aisle2&#x27;] task_done=1</span></li><li class="ok"><span class="mark">✓</span><span class="cname">blind-spot guard (blocked &gt;=10 s -&gt; ledger_clear -&gt; enter)</span><span class="cdet">aisle2: blocked t=17.36 for 126.4s (visible=0, open=[&#x27;c001&#x27;, &#x27;c004&#x27;, &#x27;c005&#x27;, &#x27;c006&#x27;, &#x27;c007&#x27;, &#x27;c008&#x27;]), clear t=157.16, enter t=209.75; aisle3: blocked t=12.56 for 92.5s (visible=0, open=[&#x27;c005&#x27;, &#x27;c009&#x27;, &#x27;c010&#x27;, &#x27;c011&#x27;, &#x27;c012&#x27;]), clear t=176.35, enter t=178.36; aisle1: blocked t=18.06 for 45.4s (visible=0, open=[&#x27;c001&#x27;, &#x27;c002&#x27;, &#x27;c003&#x27;, &#x27;c004&#x27;]), clear t=80.96, enter t=82.96</span></li><li class="ok"><span class="mark">✓</span><span class="cname">l5_reorder &gt;= 1 or l6_retreat &gt;= 1</span><span class="cdet">l5_reorder=1 l6_retreat=1 order=[&#x27;aisle1&#x27;, &#x27;aisle3&#x27;, &#x27;aisle2&#x27;]</span></li><li class="ok"><span class="mark">✓</span><span class="cname">collision_proxy == 0</span><span class="cdet">collision_proxy=0</span></li></ul>
+      </div>
+      <div class="pane baseline">
+        <div class="phead"><b>baseline</b><span class="dim">純車載感測</span>
+          <span class="dur">3:07</span></div>
+        <video preload="none" controls playsinline poster="posters/d08_baseline.jpg" data-demo="d08"
+               src="d08_baseline.mp4"></video>
+        <ul class='checks'><li class="ok"><span class="mark">✓</span><span class="cname">co_region_secs &gt; 15</span><span class="cdet">co_region_secs=46.0s close_encounters=11 order=[&#x27;aisle1&#x27;, &#x27;aisle2&#x27;, &#x27;aisle3&#x27;]</span></li></ul>
+      </div></div>
+    <details class="variants"><summary>CCTV 感測劣化演練<span class="dim"> —— 只有 full 模式；baseline 本來就沒有 CCTV 可劣化</span></summary><ul class="notes"><li><b>延遲 0.5 s</b> —— CCTV 影像晚 0.5 s 才到。header.stamp 停在觀測時刻，所以下游算得出資料多舊：戰略層把每個人依自己的速度前推那段時間，記分板會多一列 CCTV lag。實測 d03 的 commit 時刻——零延遲 28.18、有延遲未補償 28.63、有延遲已補償 28.04。</li><li><b>位置雜訊 σ=0.35 m</b> —— 小於人體半徑：位置在抖，但每個人的身分不亂——身分穩定是跨鏡頭追蹤的前提。</li><li><b>斷訊 30 s</b> —— /people 靜默而 /people_truth 照流：車載鏈與安全層不受影響，只有吃 CCTV 的那幾層降級。這一組會觸發 CCTV 失聯保護（限速降到 0.9 m/s）。</li></ul><div class="grid"><figure><video preload='none' controls playsinline poster="posters/d08_full_lat.jpg" src='d08_full_lat.mp4'></video><figcaption>延遲 0.5 s</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d08_full_noise.jpg" src='d08_full_noise.mp4'></video><figcaption>位置雜訊 σ=0.35 m</figcaption></figure><figure><video preload='none' controls playsinline poster="posters/d08_full_drop.jpg" src='d08_full_drop.mp4'></video><figcaption>斷訊 30 s</figcaption></figure></div></details>
+    
+      <details class="variants nodes-panel">
+        <summary>節點與資料來源 —— 這些數字從哪來、怎麼算的</summary>
+        <p class="dim">淨空時窗+錯峰重排；出入口 全域身分 逐一沖銷驗證盲區淨空</p>
+        <h4>1. 這個 demo 吃哪些人流來源</h4>
+        <table class="nodes"><tbody><tr><td><code>/people（CCTV 全域 MOT，**只有 full 模式**）</code></td><td class="dim">戰略層。已做時戳延遲補償：每人依自身速度前推資料年齡</td></tr><tr><td><code>/rgbd/detections（車載 5 m，匿名）</code></td><td class="dim">即時層。**兩模式走完全相同的程式碼路徑**</td></tr><tr><td><code>/people_scan（車載 7 m，無身分）</code></td><td class="dim">即時層／反應層</td></tr><tr><td><code>/people_truth（真值）</code></td><td class="dim">**只用於事件鑑識與記分，不參與任何決策**</td></tr></tbody></table>
+        <h4>2. 運算在哪（純函數模組，零 ROS，可 pytest）</h4>
+        <table class="nodes"><tbody><tr><td><code>logic/ledger.py</code></td><td class="dim">aisle ledger -- &quot;is this blind aisle empty?&quot; answered by BOOKKEEPING.</td></tr><tr><td><code>logic/relay.py</code></td><td class="dim">Two-state relay following with identity verification.</td></tr></tbody></table>
+        <h4>3. 這個 demo 的 launch 特例</h4>
+        <ul class="notes"><li><b>HOLD</b>：劇本時鐘釘在 t=0 直到 director 發 <code>/demo/play</code>——Nav2 起身那十幾秒不算進劇本時間</li><li><b>co-region 計時</b>：metrics 額外統計「與顧客同走道的秒數」</li><li><b>密度鈕</b>：不可用（劇本是手寫編舞，縮放會破壞相遇時序）</li></ul>
+        <details class="variants">
+          <summary>4. 共用堆疊：全部節點的訂閱／發布</summary>
+          <p class="dim">兩條人流來源是分開的，這是 A/B 公平與劣化實驗的基礎：
+          <code>/people</code> 是 <b>CCTV</b>（可被延遲／雜訊／斷訊劣化），
+          <code>/people_truth</code> 是 <b>真值</b>，只給感測模擬、安全層與量測。
+          模式門控只有兩處：<code>people_scan</code> 決定 local costmap 看不看得見人、
+          <code>PredictCritic</code> 在 baseline 自我停用。</p>
+          <table class="nodes"><thead><tr><th>節點</th><th>訂閱</th><th>發布</th></tr></thead><tbody><tr class="lay"><td colspan="3">模擬層 —— 產生世界</td></tr><tr><td><code>crowd_publisher</code><br><span class="dim">劇本 + SFM 行人；密度 1–4×</span></td><td class="dim">/demo/leader、/demo/leader_alt、/map、/demo/play、/demo/scenario_event</td><td class="dim">/people、/people_truth、/people_markers、/demo/scenario_t</td></tr><tr><td><code>robot_sim</code><br><span class="dim">50 Hz 積分、完美定位（map→odom 恆等，無 AMCL）、安全層</span></td><td class="dim">/cmd_vel</td><td class="dim">/odom、/scan、/ultrasound、/demo/safety_stop</td></tr><tr class="lay"><td colspan="3">環境 CCTV 層 —— 只吃 /people（可被劣化）</td></tr><tr><td><code>flow_buffer</code><br><span class="dim">2 m 網格滑窗 → 流向場</span></td><td class="dim">/people</td><td class="dim">/flow_markers、/flow_field</td></tr><tr><td><code>flow_cost</code><br><span class="dim">方向成本 + 人場斥力 → 全域/局部成本地圖</span></td><td class="dim">/map、/people、/plan、/goal_pose、/demo/flow_cost、/demo/person_field、/demo/mode、/demo/keepouts</td><td class="dim">/flow_cost_mask、/flow_map、/demo/cctv_ok、/proxemic_map</td></tr><tr><td><code>density_governor</code><br><span class="dim">密度分級 → /speed_limit；新鮮度取收訊與觀測兩種年齡的較嚴格者</span></td><td class="dim">/people、/demo/mode</td><td class="dim">/speed_limit、/demo/density_debug</td></tr><tr class="lay"><td colspan="3">車載感測層 —— 只吃 /people_truth（不受 CCTV 劣化影響）</td></tr><tr><td><code>people_scan</code><br><span class="dim">7 m 人形回波；**模式門控在這裡**</span></td><td class="dim">/demo/mode、/demo/cctv_ok</td><td class="dim">/people_scan、/people_scan_costmap</td></tr><tr><td><code>rgbd_sim</code><br><span class="dim">5 m / 87° / 含遮擋；匿名 track + 外觀標籤</span></td><td class="dim">/demo/scenario_t</td><td class="dim">/rgbd/detections、/rgbd/markers</td></tr><tr class="lay"><td colspan="3">編導與量測</td></tr><tr><td><code>director</code><br><span class="dim">demo 插件、發 goal、記分板；戰略層做時戳延遲補償</span></td><td class="dim">/people、/people_truth、/people_scan、/rgbd/detections、/demo/scenario_t、/demo/mode、/demo/metrics、/demo/play</td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/demo/leg_event、/demo/leader、/demo/scenario_event、/demo/mode、/demo/play、/speed_limit、/demo/flow_cost、/demo/person_field</td></tr><tr><td><code>metrics</code><br><span class="dim">CSV 常駐量測（量測的唯一正道，吃真值）</span></td><td class="dim">/cmd_vel、/demo/scenario_t、/demo/state、/demo/safety_stop、/plan</td><td class="dim">/demo/metrics</td></tr><tr class="lay"><td colspan="3">呈現層（rviz:=true 才啟動）</td></tr><tr><td><code>viz</code><br><span class="dim">記分板、keepout 帶、各 demo 疊圖 → /demo/markers</span></td><td class="dim">/demo/state、/demo/scoreboard、/demo/keepouts、/odom</td><td class="dim">/demo/markers</td></tr><tr><td><code>robot_marker</code><br><span class="dim">高辨識度 AMR 疊圖</span></td><td class="dim">—</td><td class="dim">/robot_marker</td></tr><tr class="lay"><td colspan="3">Nav2（7 個標準節點）</td></tr><tr><td colspan="3" class="dim">map_server、planner_server(NavFn)、controller_server(MPPI)、behavior_server、bt_navigator、velocity_smoother、lifecycle_manager_navigation<br>global costmap：<code>/scan</code>（牆）+ <code>/flow_map</code>；local costmap：<code>/scan</code> + <code>/people_scan_costmap</code>（<b>門控過的那份</b>）+ <code>/proxemic_map</code></td></tr><tr class="lay"><td colspan="3">不會出現在 ros2 node list 的三個</td></tr><tr><td colspan="3" class="dim"><code>FlowCritic</code> / <code>PredictCritic</code> / <code>FlowDriftCritic</code> 是 controller_server 進程內的 C++ MPPI 外掛。PredictCritic 自己訂 <code>/people</code> 與 <code>/demo/mode</code>（baseline 自我停用），並用 <code>header.stamp</code> 做延遲補償；兩個 Flow critic 訂 <code>/flow_field</code>。載入失敗是靜默的——機器人不動先查 controller_server 的 log。</td></tr></tbody></table>
+        </details>
+      </details>
+  </section>
+<footer>
+影片由 <code>demo/record_all.py</code> 錄製（1x 母帶，15 fps，RViz 3D 視區），
+<code>demo/trim_tails.py</code> 剪去靜止尾段；本頁由
+<code>tools/make_video_page.py</code> 依 <code>verify_all_v10_16of16_run5_coherent.json</code> 生成。
+</footer>
+</div><script>
+document.querySelectorAll('.sync').forEach(function(b){
+  b.addEventListener('click', function(){
+    var vs = document.querySelectorAll('video[data-demo="' + b.dataset.demo + '"]');
+    var playing = Array.prototype.some.call(vs, function(v){ return !v.paused; });
+    vs.forEach(function(v){
+      if (playing) { v.pause(); }
+      else { v.currentTime = 0; v.play(); }
+    });
+    b.textContent = playing ? '\u25B6 同步播放兩邊' : '\u23F8 暫停';
+  });
+});
+</script></body></html>
