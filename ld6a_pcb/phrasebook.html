@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LD-PULSE-6A English Phrasebook</title>
+<style>
+  @page {
+    size: A4;
+    margin: 17mm 15mm 17mm 15mm;
+    @top-left { content: "LD-PULSE-6A · English for the LZH visit"; font: 8pt "Segoe UI", sans-serif; color: #8a8f98; }
+    @top-right { content: "技術英文口說練習"; font: 8pt "Microsoft JhengHei", sans-serif; color: #8a8f98; }
+    @bottom-center { content: counter(page) " / " counter(pages); font: 8.5pt "Segoe UI", sans-serif; color: #8a8f98; }
+  }
+  @page :first {
+    @top-left { content: none; } @top-right { content: none; } @bottom-center { content: none; }
+  }
+  :root {
+    --ink: #1d232b;
+    --muted: #5b6370;
+    --line: #d9dde3;
+    --soft: #f3f5f8;
+    --accent: #0b5cad;
+    --accent-soft: #e7f0fa;
+    --warn: #b3261e;
+    --warn-soft: #fbeceb;
+    --ok: #1e7a46;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0; background: #fff; color: var(--ink);
+    font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+    font-size: 9.6pt; line-height: 1.42;
+  }
+  .zh, .zh * { font-family: "Microsoft JhengHei", "Segoe UI", sans-serif; }
+  h1 {
+    break-before: page; margin: 0 0 4mm; padding: 0 0 2.2mm;
+    font-size: 17pt; font-weight: 700; color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+  }
+  h1 .num { display: inline-block; min-width: 9mm; }
+  h1 .zh { font-size: 13pt; color: var(--muted); font-weight: 600; margin-left: 2mm; }
+  h2 {
+    margin: 5.5mm 0 2mm; font-size: 12pt; font-weight: 700; color: var(--ink);
+    break-after: avoid;
+  }
+  h2 .zh { font-size: 10.5pt; color: var(--muted); font-weight: 600; margin-left: 1.5mm; }
+  h3 { margin: 4mm 0 1.5mm; font-size: 10.5pt; color: var(--accent); break-after: avoid; }
+  p { margin: 0 0 2mm; }
+  .lead { color: var(--muted); margin-bottom: 3mm; }
+
+  table { width: 100%; border-collapse: collapse; margin: 0 0 3mm; }
+  tr { break-inside: avoid; }
+  th, td { text-align: left; vertical-align: top; padding: 1.3mm 2mm; border-bottom: 1px solid var(--line); }
+  th { font-size: 8.4pt; font-weight: 600; color: var(--muted); background: var(--soft); border-bottom: 1px solid #c5cbd3; }
+  td.zh { color: var(--muted); font-size: 9pt; }
+  td.say { font-weight: 600; }
+  td.pr { color: var(--accent); font-size: 8.8pt; white-space: nowrap; }
+  td.code, code, .code { font-family: Consolas, monospace; font-size: 9pt; }
+  code { background: var(--soft); padding: 0 1mm; border-radius: 2px; }
+
+  /* phrase rows */
+  table.ph td { padding: 1.5mm 2mm; }
+  table.ph td.en { width: 60%; font-size: 10pt; }
+  table.ph td.zh { width: 40%; }
+  .star { color: #d08700; font-weight: 700; margin-right: 1mm; }
+  b, strong { font-weight: 650; }
+
+  /* vocab tables */
+  table.vocab td:first-child { font-weight: 600; width: 36%; }
+  table.vocab td.pr { width: 22%; }
+
+  /* dialogues */
+  .dlg { border: 1px solid var(--line); border-radius: 3px; padding: 2.5mm 3mm 1mm; margin: 0 0 3.5mm; background: #fcfcfd; }
+  .dlg p { margin: 0 0 1.8mm; padding-left: 13mm; text-indent: -13mm; break-inside: avoid; }
+  .who { display: inline-block; width: 11mm; margin-right: 2mm; text-indent: 0; font-size: 7.6pt; font-weight: 700; letter-spacing: .04em; text-align: center; border-radius: 2px; padding: .2mm 0; }
+  .you .who { background: var(--accent); color: #fff; }
+  .them .who { background: #6b7280; color: #fff; }
+  .dlg .zh { display: block; color: var(--muted); font-size: 8.8pt; text-indent: 0; }
+
+  /* boxes */
+  .box { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 2.5mm 3.5mm; margin: 0 0 3.5mm; break-inside: avoid; }
+  .box.warn { border-color: var(--warn); background: var(--warn-soft); }
+  .box.plain { border-color: #9aa3ad; background: var(--soft); }
+  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
+  .box .t { font-weight: 700; margin-bottom: 1mm; }
+  ul { margin: 0 0 2mm; padding-left: 5mm; }
+  li { margin-bottom: .8mm; }
+
+  .pitch { font-size: 11pt; line-height: 1.6; border: 1.5px solid var(--accent); border-radius: 4px; padding: 4mm 5mm; margin: 0 0 3mm; }
+  .pitch-zh { color: var(--muted); font-size: 9.2pt; margin-bottom: 4mm; }
+  .para { break-inside: avoid; margin-bottom: 3mm; }
+  .para .en { font-size: 10pt; }
+  .para .zh { color: var(--muted); font-size: 8.9pt; margin-top: .6mm; }
+  .para .k { display: inline-block; font-size: 7.8pt; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .4mm; }
+
+  /* Q&A */
+  .qa { break-inside: avoid; border-bottom: 1px solid var(--line); padding: 2mm 0; }
+  .qa .q { font-weight: 650; }
+  .qa .q::before { content: "Q  "; color: var(--accent); font-weight: 800; }
+  .qa .a { margin-top: .8mm; }
+  .qa .a::before { content: "A  "; color: var(--ok); font-weight: 800; }
+  .qa .zh { color: var(--muted); font-size: 8.8pt; margin-top: .6mm; }
+
+  /* cover */
+  .cover { height: 255mm; display: flex; flex-direction: column; }
+  .cover .kicker { font-size: 10pt; color: var(--accent); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-top: 18mm; }
+  .cover .title { font-size: 30pt; font-weight: 750; line-height: 1.12; margin: 3mm 0 2mm; }
+  .cover .title-zh { font-size: 17pt; font-weight: 600; color: var(--muted); margin-bottom: 8mm; }
+  .cover .meta { font-size: 9.5pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 3mm; margin-bottom: 8mm; }
+  .toc { columns: 2; column-gap: 8mm; margin: 0 0 6mm; }
+  .toc div { break-inside: avoid; padding: 1.2mm 0; border-bottom: 1px dotted var(--line); }
+  .toc .n { display: inline-block; width: 7mm; color: var(--accent); font-weight: 700; }
+  .toc .zh { color: var(--muted); font-size: 8.8pt; }
+
+  /* exercises */
+  ol.ex { padding-left: 7mm; }
+  ol.ex li { margin-bottom: 1.1mm; break-inside: avoid; }
+  ol.ex .blank { display: block; border-bottom: 1px solid #b9c0c9; height: 3.4mm; }
+  ol.ans li { margin-bottom: 1.4mm; break-inside: avoid; }
+
+  /* pocket card */
+  .card { border: 1.5px dashed #9aa3ad; border-radius: 4px; padding: 3.5mm 4.5mm; margin-bottom: 4mm; break-inside: avoid; }
+  .card h3 { margin-top: 0; }
+  .card ol { margin: 0; padding-left: 5mm; }
+  .card li { margin-bottom: 1mm; font-size: 9.6pt; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .nobreak { break-inside: avoid; }
+  .small { font-size: 8.6pt; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ============================== COVER ============================== -->
+<section class="cover">
+  <div class="kicker">LD-PULSE-6A rev B0 · LZH Hannover visit</div>
+  <div class="title">English Phrasebook<br>for the 6 A Pulse Driver</div>
+  <div class="title-zh">技術英文口說練習手冊：介紹、測試、除錯、交接</div>
+  <div class="meta zh">版本 2026-10-21 · 內容依據 <code>ld6a/MANUAL.md</code>、<code>LZH_TRIP.md</code>、<code>lzh/correspondence/2026-10-19</code> email 草稿 · 數字以 MANUAL.md 為準</div>
+
+  <div class="box zh">
+    <div class="t">怎麼練（每天 20 分鐘）</div>
+    <ul>
+      <li><b>先唸出聲</b>：每句英文唸 3 遍，第 3 遍不看稿。數字一定要唸出來，不要在心裡默念。</li>
+      <li><b>遮住英文</b>：只看右欄中文，說出英文；說不出來就再看一次。</li>
+      <li><b>跟讀（shadowing）</b>：把第 3 章的 30 秒介紹錄下來自己聽，目標是 35 秒內講完、不卡住。</li>
+      <li><span class="star">★</span> 標記的句子一定要背；其他看得懂、說得出意思即可。</li>
+      <li>建議順序：第 1 章（數字怎麼唸）→ 第 3 章（介紹板子）→ 第 4 章（現場情境）→ 第 5 章（對方會問什麼）→ 第 8 章（自我測驗）。</li>
+      <li>出發前把最後一頁「隨身小卡」印出來帶在身上。</li>
+    </ul>
+  </div>
+
+  <div class="toc">
+    <div><span class="n">1</span>Numbers &amp; designators <span class="zh">數字與代號怎麼唸</span></div>
+    <div><span class="n">2</span>Core vocabulary <span class="zh">核心詞彙</span></div>
+    <div><span class="n">3</span>Explaining the board <span class="zh">介紹這塊板子</span></div>
+    <div><span class="n">4</span>On-site scenarios <span class="zh">現場情境對話</span></div>
+    <div><span class="n">5</span>Questions they will ask <span class="zh">對方可能會問的問題</span></div>
+    <div><span class="n">6</span>Survival phrases <span class="zh">溝通救命句</span></div>
+    <div><span class="n">7</span>Common mistakes <span class="zh">容易說錯的地方</span></div>
+    <div><span class="n">8</span>Self-test <span class="zh">自我測驗與解答</span></div>
+    <div><span class="n">A</span>Pocket card <span class="zh">隨身小卡</span></div>
+  </div>
+
+  <div class="box warn zh" style="margin-top:auto">
+    <div class="t">整趟最重要的一句話</div>
+    <p style="font-family:'Segoe UI',sans-serif;font-size:11pt"><b>“Neither terminal of the diode is at ground. If the cathode touches ground, the diode is destroyed.”</b></p>
+    <p>LD 的兩端都不是地。陰極碰到地，LD 就會燒掉。這句話在見面、接線、上電前各講一次。</p>
+  </div>
+</section>
+
+<!-- ============================== 1. NUMBERS ============================== -->
+<h1><span class="num">1</span>Numbers, units &amp; designators<span class="zh">數字、單位、代號怎麼唸</span></h1>
+<p class="lead zh">技術討論中最常卡住的不是文法，而是「數字＋單位」唸不順。這一章每一行都要唸出聲。</p>
+
+<h2>1.1 Values with units <span class="zh">數值與單位</span></h2>
+<table>
+  <tr><th style="width:22%">寫法</th><th style="width:43%">Say it 唸法</th><th>備註</th></tr>
+  <tr><td class="code">6 A</td><td class="say">six amps</td><td class="zh">口語用 amps；書面 amperes。1 amp、2 amps</td></tr>
+  <tr><td class="code">50 mA</td><td class="say">fifty milliamps</td><td class="zh">不要唸 “fifty M-A”</td></tr>
+  <tr><td class="code">0.7 A</td><td class="say">zero point seven amps / point seven amps</td><td class="zh">小數點唸 point，不唸 dot</td></tr>
+  <tr><td class="code">500 µs</td><td class="say">five hundred microseconds</td><td class="zh">µ = micro，唸 MY-kro</td></tr>
+  <tr><td class="code">1.2 ms</td><td class="say">one point two milliseconds</td><td class="zh"></td></tr>
+  <tr><td class="code">800 Hz</td><td class="say">eight hundred hertz</td><td class="zh">hertz 單複數同形</td></tr>
+  <tr><td class="code">2 kHz / 600 kHz</td><td class="say">two kilohertz / six hundred kilohertz</td><td class="zh">600 kHz = buck 開關頻率</td></tr>
+  <tr><td class="code">12 V ±10 %</td><td class="say">twelve volts, plus or minus ten percent</td><td class="zh"></td></tr>
+  <tr><td class="code">2.4–4.0 V</td><td class="say">two point four to four volts</td><td class="zh">範圍用 “from … to …”</td></tr>
+  <tr><td class="code">120 mV</td><td class="say">a hundred and twenty millivolts</td><td class="zh">美式常省略 and</td></tr>
+  <tr><td class="code">0.020 Ω</td><td class="say">twenty milliohms</td><td class="zh">R17 取樣電阻</td></tr>
+  <tr><td class="code">0.33 Ω / 25 W</td><td class="say">a zero-point-three-three-ohm, twenty-five-watt resistor</td><td class="zh">當形容詞時用連字號、單位不加 s</td></tr>
+  <tr><td class="code">40 kΩ</td><td class="say">forty kilohms</td><td class="zh">KILL-ohms 或 KEE-lohms 都可</td></tr>
+  <tr><td class="code">1 MΩ</td><td class="say">one megohm (“one meg”)</td><td class="zh">示波器高阻輸入</td></tr>
+  <tr><td class="code">3.3 nF / 470 nF</td><td class="say">three point three nanofarads / four-seventy nanofarads</td><td class="zh">口語常說 “three-point-three nano”</td></tr>
+  <tr><td class="code">1 µH</td><td class="say">one microhenry</td><td class="zh">1 m 線纜約 1 µH</td></tr>
+  <tr><td class="code">1.55 W</td><td class="say">one point five five watts</td><td class="zh"></td></tr>
+  <tr><td class="code">85 °C</td><td class="say">eighty-five degrees (Celsius)</td><td class="zh">Celsius 唸 SEL-see-us</td></tr>
+  <tr><td class="code">ΔT 60 °C</td><td class="say">a temperature rise of sixty degrees</td><td class="zh">溫升也可說 “sixty kelvin”</td></tr>
+  <tr><td class="code">≤ 30 µs</td><td class="say">thirty microseconds or less / at most thirty</td><td class="zh">≤ = or less / at most / no more than</td></tr>
+  <tr><td class="code">≥ 3 A</td><td class="say">three amps or more / at least three amps</td><td class="zh">≥ = or more / at least</td></tr>
+  <tr><td class="code">&lt; 1 A</td><td class="say">less than one amp / below one amp</td><td class="zh">&gt; = more than / above / over</td></tr>
+  <tr><td class="code">10–90 %</td><td class="say">ten-to-ninety percent rise time</td><td class="zh"></td></tr>
+  <tr><td class="code">42 %</td><td class="say">forty-two percent duty cycle</td><td class="zh"></td></tr>
+  <tr><td class="code">0.02 mV/mA</td><td class="say">point zero two millivolts per milliamp — that's twenty millivolts per amp</td><td class="zh">斜線 / 唸 per</td></tr>
+  <tr><td class="code">9600 8N1</td><td class="say">ninety-six hundred baud, eight-N-one</td><td class="zh">序列埠設定</td></tr>
+  <tr><td class="code">10-bit</td><td class="say">ten-bit</td><td class="zh"></td></tr>
+  <tr><td class="code">110 × 80 mm</td><td class="say">a hundred and ten by eighty millimetres</td><td class="zh">× 唸 by</td></tr>
+  <tr><td class="code">1.6 mm, 1 oz</td><td class="say">one-point-six-millimetre board, one-ounce copper</td><td class="zh"></td></tr>
+  <tr><td class="code">18 AWG</td><td class="say">eighteen gauge / eighteen A-W-G</td><td class="zh"></td></tr>
+  <tr><td class="code">M3 / M2.5</td><td class="say">M-three screw / M-two-point-five</td><td class="zh"></td></tr>
+  <tr><td class="code">5.5/2.1 mm</td><td class="say">five-point-five by two-point-one barrel jack</td><td class="zh">圓孔座</td></tr>
+  <tr><td class="code">1.5 days</td><td class="say">a day and a half</td><td class="zh">0.5 day = half a day</td></tr>
+  <tr><td class="code">19 Oct 2026</td><td class="say">the nineteenth of October / October nineteenth</td><td class="zh">德國人習慣日期在前</td></tr>
+</table>
+
+<div class="box warn zh">
+  <div class="t">三個數字陷阱</div>
+  <ul>
+    <li><b>-teen 和 -ty 很容易聽錯</b>：fif<b>TEEN</b>（15，重音在後）vs <b>FIF</b>ty（50，重音在前）；thir<b>TEEN</b> vs <b>THIR</b>ty。講 15 µs / 50 mA / 13 / 30 這種數字時，加一句 <i>“one-five”</i> 或 <i>“five-zero”</i>，或直接寫在紙上。</li>
+    <li><b>德國的小數點是逗號</b>：德國人手寫或文件上的 <code>0,33 Ω</code> = 0.33 Ω，<code>2,4 V</code> = 2.4 V；<code>1.000</code> 是一千。看到他們的表格要先確認。</li>
+    <li><b>“Half an amp” 比 “zero point five amps” 自然</b>；“a hundred hertz” 比 “one hundred hertz” 口語。</li>
+  </ul>
+</div>
+
+<h2>1.2 Designators, signals &amp; part numbers <span class="zh">元件代號、訊號名、料號</span></h2>
+<table>
+  <tr><th style="width:22%">寫法</th><th style="width:43%">Say it 唸法</th><th>是什麼</th></tr>
+  <tr><td class="code">J3-1 / J3-2</td><td class="say">J-three pin one / J-three pin two</td><td class="zh">LD 輸出：1 陽極、2 陰極</td></tr>
+  <tr><td class="code">TP1 … TP6</td><td class="say">test point one … / T-P-one</td><td class="zh">TP1 SENSE、TP2 AGND、TP3 LD_EN、TP4 GND、TP5 VPWR、TP6 LD_K</td></tr>
+  <tr><td class="code">Q1</td><td class="say">Q-one, the pass FET</td><td class="zh">調整管（MOSFET）</td></tr>
+  <tr><td class="code">R17</td><td class="say">R-seventeen, the sense resistor</td><td class="zh">0.020 Ω 四端點</td></tr>
+  <tr><td class="code">C15</td><td class="say">C-fifteen, the compensation cap</td><td class="zh">3.3 nF（備選 4.7 nF）</td></tr>
+  <tr><td class="code">U9</td><td class="say">U-nine, the buck converter</td><td class="zh">TPS54824</td></tr>
+  <tr><td class="code">SW1</td><td class="say">S-W-one / the arm button</td><td class="zh">板上按鍵</td></tr>
+  <tr><td class="code">SN03</td><td class="say">serial number oh-three / board number three</td><td class="zh">板號</td></tr>
+  <tr><td class="code">rev B0</td><td class="say">revision B-zero / rev B-zero</td><td class="zh"></td></tr>
+  <tr><td class="code">Vds</td><td class="say">V-D-S / drain-source voltage</td><td class="zh">Q1 汲源電壓</td></tr>
+  <tr><td class="code">Vf</td><td class="say">V-F / forward voltage</td><td class="zh">LD 正向電壓</td></tr>
+  <tr><td class="code">Ith</td><td class="say">I-threshold / threshold current</td><td class="zh">約 0.7 A</td></tr>
+  <tr><td class="code">VPWR</td><td class="say">V-power / the power rail</td><td class="zh">LD 陽極電壓 2.4–4.0 V</td></tr>
+  <tr><td class="code">LD_K</td><td class="say">L-D-K / the cathode node</td><td class="zh">Q1 汲極</td></tr>
+  <tr><td class="code">LD_EN</td><td class="say">L-D enable / the gate signal</td><td class="zh">電氣閘門</td></tr>
+  <tr><td class="code">ISET</td><td class="say">I-set / the setpoint</td><td class="zh"></td></tr>
+  <tr><td class="code">FWHM</td><td class="say">F-W-H-M / full width at half maximum</td><td class="zh">半高寬</td></tr>
+  <tr><td class="code">EEPROM</td><td class="say">E-E-PROM / “double-E PROM”</td><td class="zh"></td></tr>
+  <tr><td class="code">MCU</td><td class="say">M-C-U / the microcontroller</td><td class="zh"></td></tr>
+  <tr><td class="code">PIC16F18346</td><td class="say">PIC sixteen-F-one-eight-three-four-six</td><td class="zh">PIC 唸 “pick”</td></tr>
+  <tr><td class="code">TPS54824</td><td class="say">T-P-S five-four-eight-two-four</td><td class="zh">料號逐位唸</td></tr>
+  <tr><td class="code">FT230X</td><td class="say">F-T two-thirty-X</td><td class="zh">USB 轉 UART</td></tr>
+  <tr><td class="code">DG1022A</td><td class="say">D-G ten-twenty-two-A</td><td class="zh">LZH 的函數產生器</td></tr>
+  <tr><td class="code">LDP-CW 40-05</td><td class="say">the Picolas L-D-P C-W forty-oh-five</td><td class="zh">LZH 目前用的驅動器</td></tr>
+  <tr><td class="code">TY-FM-793</td><td class="say">the SkyEra seven-ninety-three F-mount diode</td><td class="zh">泵浦 LD</td></tr>
+  <tr><td class="code">793 / 1047 nm</td><td class="say">seven-ninety-three / ten-forty-seven nanometres</td><td class="zh">泵浦 / 雷射輸出波長</td></tr>
+  <tr><td class="code">LZH</td><td class="say">L-Z-H (German: “el-tset-ha”)</td><td class="zh">Laser Zentrum Hannover</td></tr>
+  <tr><td class="code">Hannover</td><td class="say">English: HAN-oh-ver · German: ha-NO-fer</td><td class="zh"></td></tr>
+</table>
+
+<h2>1.3 Console commands &amp; status aloud <span class="zh">主控台指令與狀態怎麼唸</span></h2>
+<table class="ph">
+  <tr><td class="en">I'll type <code>I 6000</code> — that sets the current to six thousand milliamps.</td><td class="zh">我輸入 I 6000，把電流設成 6000 mA。</td></tr>
+  <tr><td class="en">Now <code>W 500</code> for a five-hundred-microsecond flat-top, and <code>F 400</code> for four hundred hertz.</td><td class="zh">再輸入 W 500（平頂 500 µs）和 F 400（400 Hz）。</td></tr>
+  <tr><td class="en">Let me query the status — question mark, Enter.</td><td class="zh">我查一下狀態：問號、Enter。</td></tr>
+  <tr><td class="en"><i>armed=yes</i>: “Armed is yes.” · <i>fault=none</i>: “No faults.”</td><td class="zh">已解鎖 · 沒有故障。</td></tr>
+  <tr><td class="en"><i>i_pulse=6000mA</i>: “The measured pulse current is six thousand milliamps.”</td><td class="zh">實測脈衝電流 6000 mA。</td></tr>
+  <tr><td class="en"><i>vds_meas=600mV</i>: “Measured V-D-S is six hundred millivolts — right on target.”</td><td class="zh">實測 Vds 600 mV，正好在目標。</td></tr>
+  <tr><td class="en"><i>vpwr_trim=830</i>: “The V-power trim is at eight-thirty.”</td><td class="zh">VPWR 調整值 830。</td></tr>
+  <tr><td class="en"><i>p_q1=1466mW</i>: “Estimated Q1 dissipation is about one point five watts.”</td><td class="zh">Q1 功耗估算約 1.5 W。</td></tr>
+  <tr><td class="en"><i>temp_C=58</i>: “Board temperature is fifty-eight degrees.”</td><td class="zh">板溫 58 °C。</td></tr>
+  <tr><td class="en">It replied <i>OK … (trim reset)</i>. That's expected when you raise the current.</td><td class="zh">回覆 trim reset，調高電流時本來就會這樣。</td></tr>
+  <tr><td class="en">It replied <i>ERR</i> and gave the maximum allowed value: eight hundred twenty-five hertz.</td><td class="zh">回 ERR，並給出最大可用值 825 Hz。</td></tr>
+</table>
+
+<!-- ============================== 2. VOCAB ============================== -->
+<h1><span class="num">2</span>Core vocabulary<span class="zh">核心詞彙</span></h1>
+<p class="lead zh">發音欄用大寫標重音（例：KATH-ode 重音在 KATH）。只標容易唸錯的字。</p>
+
+<h2>2.1 Board &amp; components <span class="zh">板子與元件</span></h2>
+<table class="vocab">
+  <tr><th>English</th><th>發音</th><th>中文</th></tr>
+  <tr><td>pulse driver / laser diode driver</td><td class="pr"></td><td class="zh">脈衝驅動器 / LD 驅動器</td></tr>
+  <tr><td>constant-current (CC)</td><td class="pr"></td><td class="zh">恆流</td></tr>
+  <tr><td>laser diode (LD), pump diode</td><td class="pr">DYE-ode</td><td class="zh">雷射二極體、泵浦二極體</td></tr>
+  <tr><td>single emitter, F-mount</td><td class="pr">ee-MIT-er</td><td class="zh">單發光體、F 型底座</td></tr>
+  <tr><td>anode / cathode</td><td class="pr">AN-ode / KATH-ode</td><td class="zh">陽極 / 陰極</td></tr>
+  <tr><td>pass transistor, pass FET (Q1)</td><td class="pr">MOSS-fet</td><td class="zh">調整管</td></tr>
+  <tr><td>gate / drain / source</td><td class="pr"></td><td class="zh">閘極 / 汲極 / 源極</td></tr>
+  <tr><td>sense resistor, shunt (R17)</td><td class="pr">ri-ZIS-ter</td><td class="zh">取樣電阻、分流器</td></tr>
+  <tr><td>four-terminal (Kelvin) resistor, Kelvin sense</td><td class="pr">KEL-vin</td><td class="zh">四端點電阻、凱文感測</td></tr>
+  <tr><td>op-amp (U1), integrator</td><td class="pr">OP-amp</td><td class="zh">運算放大器、積分器</td></tr>
+  <tr><td>buck converter, step-down regulator (U9)</td><td class="pr"></td><td class="zh">降壓轉換器</td></tr>
+  <tr><td>supply rail, pre-regulator</td><td class="pr"></td><td class="zh">電源軌、前級穩壓</td></tr>
+  <tr><td>inductor (L1)</td><td class="pr">in-DUCK-ter</td><td class="zh">電感</td></tr>
+  <tr><td>compensation capacitor (C15)</td><td class="pr">kuh-PASS-i-ter</td><td class="zh">補償電容</td></tr>
+  <tr><td>snubber (R19/C16)</td><td class="pr">SNUB-er</td><td class="zh">消振（阻尼）電路</td></tr>
+  <tr><td>freewheeling diode (D1)</td><td class="pr"></td><td class="zh">續流二極體</td></tr>
+  <tr><td>Schottky diode</td><td class="pr">SHOT-key</td><td class="zh">蕭特基二極體</td></tr>
+  <tr><td>TVS diode, surge</td><td class="pr"></td><td class="zh">突波抑制二極體、突波</td></tr>
+  <tr><td>resettable fuse / PTC fuse (F1)</td><td class="pr"></td><td class="zh">自復保險絲</td></tr>
+  <tr><td>reverse-polarity protection</td><td class="pr">poh-LAIR-i-tee</td><td class="zh">反接保護</td></tr>
+  <tr><td>thermistor (NTC)</td><td class="pr">ther-MIS-ter</td><td class="zh">熱敏電阻</td></tr>
+  <tr><td>microcontroller (MCU), firmware</td><td class="pr"></td><td class="zh">微控制器、韌體</td></tr>
+  <tr><td>USB-to-UART bridge, virtual COM port</td><td class="pr">YOU-art</td><td class="zh">USB 轉 UART、虛擬序列埠</td></tr>
+  <tr><td>PWM DAC, voltage reference</td><td class="pr">DAK</td><td class="zh">PWM 數類轉換、電壓基準</td></tr>
+  <tr><td>Schmitt trigger, NAND gate</td><td class="pr">SHMIT</td><td class="zh">施密特觸發器、反及閘</td></tr>
+  <tr><td>clamp (verb &amp; noun)</td><td class="pr"></td><td class="zh">鉗位</td></tr>
+  <tr><td>terminal block, barrel jack, pin header</td><td class="pr"></td><td class="zh">端子台、圓孔座、排針</td></tr>
+  <tr><td>centre-positive (center-positive)</td><td class="pr"></td><td class="zh">中心正極</td></tr>
+  <tr><td>push-button, LED indicator</td><td class="pr">L-E-D</td><td class="zh">按鍵、指示燈</td></tr>
+</table>
+
+<h2>2.2 PCB &amp; build <span class="zh">PCB 與製造</span></h2>
+<table class="vocab">
+  <tr><th>English</th><th>發音</th><th>中文</th></tr>
+  <tr><td>schematic</td><td class="pr">ski-MAT-ik</td><td class="zh">原理圖</td></tr>
+  <tr><td>layout, two-layer board</td><td class="pr"></td><td class="zh">佈局、雙層板</td></tr>
+  <tr><td>trace (track), via</td><td class="pr">VY-uh / VEE-uh</td><td class="zh">走線、過孔</td></tr>
+  <tr><td>copper pour, exposed copper</td><td class="pr"></td><td class="zh">鋪銅、裸銅</td></tr>
+  <tr><td>ground plane, ground return path</td><td class="pr"></td><td class="zh">地平面、地回流路徑</td></tr>
+  <tr><td>star ground / single-point ground</td><td class="pr"></td><td class="zh">星形接地 / 單點接地</td></tr>
+  <tr><td>loop area</td><td class="pr"></td><td class="zh">迴路面積</td></tr>
+  <tr><td>pad, footprint</td><td class="pr"></td><td class="zh">焊盤、封裝焊盤圖</td></tr>
+  <tr><td>solder bridge, cold (dry) joint</td><td class="pr">SOD-er (US)</td><td class="zh">連錫、虛焊</td></tr>
+  <tr><td>through-hole (THT) / surface-mount (SMD)</td><td class="pr"></td><td class="zh">插件 / 貼片</td></tr>
+  <tr><td>ENIG finish</td><td class="pr">EE-nig</td><td class="zh">化金表面處理</td></tr>
+  <tr><td>Gerbers, BOM (bill of materials), pick-and-place file</td><td class="pr">GUR-ber, BOM = “bomb”</td><td class="zh">製造檔、料表、座標檔</td></tr>
+  <tr><td>assembly drawing</td><td class="pr"></td><td class="zh">組裝圖</td></tr>
+  <tr><td>nylon standoff, insulating base plate</td><td class="pr">NY-lon</td><td class="zh">尼龍隔離柱、絕緣底板</td></tr>
+  <tr><td>Kapton tape</td><td class="pr">KAP-ton</td><td class="zh">耐熱絕緣膠帶</td></tr>
+  <tr><td>ferrule, ring / fork terminal (lug)</td><td class="pr">FAIR-ul</td><td class="zh">壓接管、環形 / 叉形端子</td></tr>
+  <tr><td>twisted pair, crimp</td><td class="pr"></td><td class="zh">雙絞線、壓接</td></tr>
+  <tr><td>prototype</td><td class="pr">PRO-tuh-type</td><td class="zh">原型</td></tr>
+</table>
+
+<h2>2.3 Pulse parameters &amp; performance <span class="zh">脈衝參數與性能</span></h2>
+<table class="vocab">
+  <tr><th>English</th><th>發音</th><th>中文</th></tr>
+  <tr><td>setpoint, pulse current, amplitude</td><td class="pr"></td><td class="zh">設定值、脈衝電流、振幅</td></tr>
+  <tr><td>flat-top</td><td class="pr"></td><td class="zh">平頂</td></tr>
+  <tr><td>pulse width, FWHM</td><td class="pr">WIDTH（th 要咬舌）</td><td class="zh">脈寬、半高寬</td></tr>
+  <tr><td>repetition rate (rep rate)</td><td class="pr">rep-i-TISH-un</td><td class="zh">重複率</td></tr>
+  <tr><td>duty cycle</td><td class="pr"></td><td class="zh">工作週期</td></tr>
+  <tr><td>rise time / fall time</td><td class="pr"></td><td class="zh">上升 / 下降時間</td></tr>
+  <tr><td>leading edge / trailing edge</td><td class="pr"></td><td class="zh">前緣 / 後緣</td></tr>
+  <tr><td>overshoot, spike</td><td class="pr"></td><td class="zh">過衝、尖峰</td></tr>
+  <tr><td>ringing, oscillation</td><td class="pr">os-i-LAY-shun</td><td class="zh">振鈴、振盪</td></tr>
+  <tr><td>droop, sag</td><td class="pr"></td><td class="zh">平頂下垂</td></tr>
+  <tr><td>ripple</td><td class="pr"></td><td class="zh">漣波</td></tr>
+  <tr><td>jitter, trigger delay (latency)</td><td class="pr">JIT-er</td><td class="zh">抖動、觸發延遲</td></tr>
+  <tr><td>pulse-to-pulse stability</td><td class="pr"></td><td class="zh">逐發穩定度</td></tr>
+  <tr><td>compliance voltage, headroom</td><td class="pr">kum-PLY-ence</td><td class="zh">順從電壓、電壓餘裕</td></tr>
+  <tr><td>forward voltage (Vf)</td><td class="pr"></td><td class="zh">正向電壓</td></tr>
+  <tr><td>threshold current (Ith)</td><td class="pr">THRESH-old（不是 thresh-HOLD）</td><td class="zh">門檻電流</td></tr>
+  <tr><td>sub-threshold bias, inter-pulse bias, pedestal</td><td class="pr">PED-is-tul</td><td class="zh">次閾值偏置、脈衝間偏置、基座</td></tr>
+  <tr><td>start-up delay, dead zone</td><td class="pr"></td><td class="zh">起步延遲、死區</td></tr>
+  <tr><td>loop gain, gain margin, phase margin</td><td class="pr"></td><td class="zh">迴路增益、增益裕度、相位裕度</td></tr>
+  <tr><td>bandwidth, transconductance (gm)</td><td class="pr">trans-con-DUCK-tance</td><td class="zh">頻寬、跨導</td></tr>
+  <tr><td>regulate, servo (verb), converge, settle</td><td class="pr">SUR-vo</td><td class="zh">調節、伺服、收斂、穩定下來</td></tr>
+  <tr><td>power dissipation, temperature rise</td><td class="pr">dis-i-PAY-shun</td><td class="zh">功耗、溫升</td></tr>
+  <tr><td>thermal resistance, derate</td><td class="pr">dee-RATE</td><td class="zh">熱阻、降額</td></tr>
+  <tr><td>L-I curve, slope efficiency</td><td class="pr">L-I = “el-eye”</td><td class="zh">光功率–電流曲線、斜率效率</td></tr>
+  <tr><td>COD (catastrophic optical damage)</td><td class="pr">kat-uh-STROF-ik</td><td class="zh">災難性光學損傷</td></tr>
+</table>
+
+<h2>2.4 Operation &amp; states <span class="zh">操作與狀態</span></h2>
+<table class="vocab">
+  <tr><th>English</th><th>發音</th><th>中文</th></tr>
+  <tr><td>power up / power down; turn on / turn off</td><td class="pr"></td><td class="zh">上電 / 斷電</td></tr>
+  <tr><td><b>arm / disarm</b>; armed, disarmed</td><td class="pr"></td><td class="zh">解鎖（允許出光）/ 鎖定 ※ 不要說 unlock / lock</td></tr>
+  <tr><td>interlock open / interlock closed</td><td class="pr">IN-ter-lock</td><td class="zh">互鎖斷開（停）/ 互鎖閉合（可出光）</td></tr>
+  <tr><td>emergency stop (E-stop), door switch</td><td class="pr"></td><td class="zh">急停、門開關</td></tr>
+  <tr><td>emission, “emission on”</td><td class="pr">ih-MISH-un</td><td class="zh">出光</td></tr>
+  <tr><td>fault, trip, shut down, latch</td><td class="pr"></td><td class="zh">故障、跳脫、關機、鎖住</td></tr>
+  <tr><td>clear (reset) a fault</td><td class="pr"></td><td class="zh">清除故障</td></tr>
+  <tr><td>blink code / flash code</td><td class="pr"></td><td class="zh">閃碼</td></tr>
+  <tr><td>step up / ramp up the current</td><td class="pr"></td><td class="zh">逐步升 / 斜坡升電流</td></tr>
+  <tr><td>default, preset, save to EEPROM</td><td class="pr">PREE-set</td><td class="zh">預設、檔位、存檔</td></tr>
+  <tr><td>internal / external trigger</td><td class="pr"></td><td class="zh">內部 / 外部觸發</td></tr>
+  <tr><td>rising edge / falling edge</td><td class="pr"></td><td class="zh">上升緣 / 下降緣</td></tr>
+  <tr><td>SYNC output</td><td class="pr">SINK</td><td class="zh">同步輸出</td></tr>
+  <tr><td>program / flash the firmware</td><td class="pr"></td><td class="zh">燒錄韌體 ※ 不要說 burn</td></tr>
+  <tr><td>calibration constant, calibrate</td><td class="pr">kal-i-BRAY-shun</td><td class="zh">校準常數、校準</td></tr>
+  <tr><td>console, terminal, command, reply</td><td class="pr">KON-sole</td><td class="zh">主控台、終端機、指令、回應</td></tr>
+  <tr><td>baud rate</td><td class="pr">BAWD</td><td class="zh">鮑率</td></tr>
+  <tr><td>hang, lock up, crash, reboot</td><td class="pr"></td><td class="zh">當機、重開</td></tr>
+  <tr><td>dummy load</td><td class="pr"></td><td class="zh">假負載 ※ 不是 fake load</td></tr>
+  <tr><td>open circuit / short circuit, open load</td><td class="pr"></td><td class="zh">開路 / 短路、負載開路</td></tr>
+  <tr><td>floating, earthed (grounded)</td><td class="pr"></td><td class="zh">浮接、接大地</td></tr>
+  <tr><td>isolate, insulate, insulation</td><td class="pr">EYE-suh-late</td><td class="zh">隔離、絕緣</td></tr>
+</table>
+
+<h2>2.5 Measurement <span class="zh">量測</span></h2>
+<table class="vocab">
+  <tr><th>English</th><th>發音</th><th>中文</th></tr>
+  <tr><td>oscilloscope (“scope”)</td><td class="pr">uh-SIL-uh-scope</td><td class="zh">示波器</td></tr>
+  <tr><td>probe, 1:1 / 10:1 probe</td><td class="pr">“one-to-one”, “times ten”</td><td class="zh">探棒、1:1 / 10:1 探棒</td></tr>
+  <tr><td>ground lead, ground spring</td><td class="pr"></td><td class="zh">探棒地線、彈簧地</td></tr>
+  <tr><td>differential probe, current probe</td><td class="pr">dif-er-EN-shul</td><td class="zh">差動探棒、電流探棒</td></tr>
+  <tr><td>channel, trigger level, single-shot (single sequence)</td><td class="pr"></td><td class="zh">通道、觸發準位、單次觸發</td></tr>
+  <tr><td>infinite persistence</td><td class="pr">per-SIS-tence</td><td class="zh">無限餘暉</td></tr>
+  <tr><td>timebase, “100 µs per division”</td><td class="pr">di-VIZH-un</td><td class="zh">時基、每格 100 µs</td></tr>
+  <tr><td>cursor, screenshot</td><td class="pr"></td><td class="zh">游標、截圖</td></tr>
+  <tr><td>high-Z (1 MΩ) input / 50-ohm termination</td><td class="pr">high-ZEE / ZED</td><td class="zh">高阻輸入 / 50 Ω 終端</td></tr>
+  <tr><td>function generator, signal generator</td><td class="pr"></td><td class="zh">函數產生器</td></tr>
+  <tr><td>bench power supply, current limit</td><td class="pr"></td><td class="zh">實驗室電源、限流</td></tr>
+  <tr><td>multimeter: diode mode, resistance, continuity</td><td class="pr">MUL-tee-mee-ter</td><td class="zh">三用電表：二極體檔、電阻檔、通斷</td></tr>
+  <tr><td>red lead / black lead</td><td class="pr">LEED</td><td class="zh">紅棒 / 黑棒（lead 唸 leed，不是 led）</td></tr>
+  <tr><td>optical power meter</td><td class="pr"></td><td class="zh">光功率計</td></tr>
+  <tr><td>thermal camera, thermocouple</td><td class="pr">THER-mo-cup-ul</td><td class="zh">熱像儀、熱電偶</td></tr>
+  <tr><td>ground loop, ground bounce</td><td class="pr"></td><td class="zh">接地迴路、地彈</td></tr>
+  <tr><td>noise pickup, EMI</td><td class="pr"></td><td class="zh">雜訊耦合、電磁干擾</td></tr>
+  <tr><td>ferrite (clip / bead)</td><td class="pr">FAIR-ite</td><td class="zh">鐵氧體</td></tr>
+</table>
+
+<h2>2.6 Safety &amp; logistics <span class="zh">安全與後勤</span></h2>
+<table class="vocab">
+  <tr><th>English</th><th>發音</th><th>中文</th></tr>
+  <tr><td>laser safety officer (LSO)</td><td class="pr"></td><td class="zh">雷射安全官</td></tr>
+  <tr><td>Class 4 laser</td><td class="pr"></td><td class="zh">第 4 級雷射</td></tr>
+  <tr><td>protective eyewear, laser goggles</td><td class="pr"></td><td class="zh">護目鏡</td></tr>
+  <tr><td>ESD wrist strap, ESD-sensitive</td><td class="pr">E-S-D</td><td class="zh">靜電環、靜電敏感</td></tr>
+  <tr><td>shorting clip</td><td class="pr"></td><td class="zh">（LD 保護用）短路夾</td></tr>
+  <tr><td>dry contact</td><td class="pr"></td><td class="zh">乾接點</td></tr>
+  <tr><td>SELV (safety extra-low voltage)</td><td class="pr">S-E-L-V</td><td class="zh">安全特低電壓</td></tr>
+  <tr><td>condensation; let it acclimatise</td><td class="pr">uh-KLY-muh-tize</td><td class="zh">結露；讓它回溫</td></tr>
+  <tr><td>power adapter, Schuko plug (Type F)</td><td class="pr">SHOO-ko</td><td class="zh">變壓器、德規插頭</td></tr>
+  <tr><td>extension lead rated 250 V</td><td class="pr"></td><td class="zh">額定 250 V 的延長線</td></tr>
+  <tr><td>pro-forma invoice, customs</td><td class="pr"></td><td class="zh">形式發票、海關</td></tr>
+  <tr><td>“no commercial value, to be re-exported”</td><td class="pr"></td><td class="zh">無商業價值、將再出口</td></tr>
+  <tr><td>hand luggage (carry-on)</td><td class="pr"></td><td class="zh">手提行李</td></tr>
+  <tr><td>spare board; swap the board</td><td class="pr"></td><td class="zh">備用板；換板</td></tr>
+  <tr><td>acceptance sheet, test report</td><td class="pr"></td><td class="zh">驗收表、測試報告</td></tr>
+</table>
+
+<div class="box plain zh nobreak">
+  <div class="t">現場可能聽到的德語（他們互相講話時）</div>
+  <table style="margin:0">
+    <tr><td style="width:30%"><b>Masse</b></td><td>電路地 ground</td><td style="width:30%"><b>Erde / Schutzleiter</b></td><td>大地 / 保護地 earth</td></tr>
+    <tr><td><b>Strom</b></td><td>電流 current</td><td><b>Spannung</b></td><td>電壓 voltage</td></tr>
+    <tr><td><b>Netzteil</b></td><td>電源 power supply</td><td><b>Kühlkörper</b></td><td>散熱座 heat sink</td></tr>
+    <tr><td><b>Schutzbrille</b></td><td>護目鏡 goggles</td><td><b>Not-Aus</b></td><td>急停 E-stop</td></tr>
+    <tr><td><b>Laserschutzbeauftragter</b></td><td>雷射安全官 LSO</td><td><b>Achtung! / Vorsicht!</b></td><td>注意！/ 小心！</td></tr>
+  </table>
+</div>
+
+<!-- ============================== 3. EXPLAIN ============================== -->
+<h1><span class="num">3</span>Explaining the board<span class="zh">介紹這塊板子</span></h1>
+
+<h2>3.1 The 30-second introduction <span class="star">★</span><span class="zh">30 秒介紹（整段背起來）</span></h2>
+<div class="pitch">
+  This is the <b>LD-PULSE-6A, revision B0</b>. It's a <b>constant-current pulse driver</b> for a single 793-nanometre F-mount pump diode.
+  It delivers up to <b>six amps</b> in <b>flat-top pulses</b> — five hundred microseconds at up to eight hundred hertz — with
+  <b>rise and fall times of about thirty microseconds</b> and <b>no overshoot</b> on the leading edge.
+  It runs from <b>twelve volts</b>, draws less than one amp on average, and you control it over a <b>USB serial console</b>.
+  For safety, it has a <b>three-path hardware interlock</b>, and it can <b>only be armed with the button on the board</b>.
+</div>
+<p class="pitch-zh zh">這是 LD-PULSE-6A rev B0，給單顆 793 nm F-mount 泵浦二極體用的恆流脈衝驅動板。最大 6 A 平頂脈衝，500 µs、最高 800 Hz，上升下降約 30 µs、前緣無過衝。12 V 供電、平均不到 1 A，用 USB 序列埠主控台控制。安全上有三路硬體互鎖，而且只能用板上按鍵解鎖。</p>
+
+<h2>3.2 The two-minute walkthrough <span class="zh">兩分鐘講解電路（邊指板子邊講）</span></h2>
+
+<div class="para"><span class="k">Power input</span>
+  <div class="en">The twelve-volt input goes through a <b>resettable fuse</b>, a <b>TVS diode</b> and a P-channel MOSFET for <b>reverse-polarity protection</b>. A <b>buck converter</b> then steps it down to a rail we call <b>V-power</b>, between two point four and four volts. That's the anode voltage.</div>
+  <div class="zh">12 V 經自復保險絲、TVS、P-MOS 反接保護，再由 buck 降到 VPWR 2.4–4.0 V，也就是 LD 陽極電壓。</div>
+</div>
+<div class="para"><span class="k">Current loop</span>
+  <div class="en">The diode sits between V-power and the <b>drain of Q1</b>, the pass transistor. An op-amp drives Q1's gate so that the voltage across a <b>twenty-milliohm Kelvin sense resistor</b> equals the setpoint. So <b>six amps corresponds to a hundred and twenty millivolts</b>.</div>
+  <div class="zh">LD 接在 VPWR 與 Q1 汲極之間。運放驅動 Q1 閘極，讓 20 mΩ 凱文取樣電阻上的電壓等於設定值：6 A = 120 mV。</div>
+</div>
+<div class="para"><span class="k">Setpoint</span>
+  <div class="en">The setpoint is a <b>ten-bit PWM</b> from the microcontroller. It goes through a gate powered from a precision two-point-five-volt reference, then an RC filter and a divider — so it's basically a <b>PWM DAC</b> with an accurate amplitude.</div>
+  <div class="zh">設定值來自 MCU 的 10-bit PWM，經 2.5 V 基準供電的閘、RC 濾波與分壓，等於一個振幅精準的 PWM DAC。</div>
+</div>
+<div class="para"><span class="k">Vds servo</span>
+  <div class="en">If we dropped twelve volts linearly, Q1 would burn about <b>sixty watts</b>. Instead, the firmware measures Q1's <b>drain-source voltage on every pulse</b> and trims the buck output so that V-D-S stays around <b>six hundred millivolts</b>. At full load, Q1 dissipates only about <b>one and a half watts</b> on average.</div>
+  <div class="zh">12 V 直接線性降壓 Q1 要燒 60 W。所以韌體每發量 Q1 的 Vds，調整 buck 輸出讓 Vds 維持約 600 mV；滿載時 Q1 平均只有約 1.5 W。</div>
+</div>
+<div class="para"><span class="k">Bias</span>
+  <div class="en">Between pulses we keep a small <b>sub-threshold bias</b> — fifty milliamps by default. That's far below the threshold of about point seven amps, so there's <b>no emission</b>, but the loop stays closed. That's why the rise time is about thirty microseconds and <b>doesn't drift with temperature</b>.</div>
+  <div class="zh">脈衝間維持 50 mA 次閾值偏置（門檻約 0.7 A，不出光），迴路一直閉合，所以上升約 30 µs 而且不隨溫度漂移。</div>
+</div>
+<div class="para"><span class="k">Gating &amp; interlock</span>
+  <div class="en">There are two gating paths. <b>Each pulse</b> is gated by shunting the setpoint. <b>Arming and the interlock</b> clamp Q1's gate and reset the integrator. If the interlock opens, <b>three independent hardware paths</b> shut the output down — the firmware isn't involved.</div>
+  <div class="zh">兩路閘控：每一發由分流設定值控制；解鎖與互鎖則鉗住 Q1 閘極並復位積分器。互鎖一開，三路硬體同時切斷，不經韌體。</div>
+</div>
+<div class="para"><span class="k">Hardware limit &amp; faults</span>
+  <div class="en">There's also a <b>hardware pulse-width limit</b> of about one point two milliseconds, so even if the firmware hangs, a single pulse can't last longer than that. On top of that, the firmware checks for three faults — <b>no current, overheating, and interlock</b> — each with its own <b>blink code</b>.</div>
+  <div class="zh">另有約 1.2 ms 的硬體脈寬上限，韌體當機也不會更長。韌體另外守三種故障：無電流、過熱、互鎖，各有閃碼。</div>
+</div>
+
+<h2>3.3 Key points in one sentence <span class="zh">重點一句話</span></h2>
+<table class="ph">
+  <tr><td class="en"><span class="star">★</span>This is a <b>low-side</b> regulator, so the cathode is <b>not at ground</b> — it sits on the drain of Q1.</td><td class="zh">這是低側恆流，陰極不是地，而是在 Q1 汲極。</td></tr>
+  <tr><td class="en"><span class="star">★</span>Please don't connect either diode terminal to ground or to the heat sink.</td><td class="zh">請不要把 LD 任一端接到地或散熱座。</td></tr>
+  <tr><td class="en">The edges get slower at lower current, because the loop gain goes with the <b>square root of the current</b>.</td><td class="zh">電流越低邊沿越慢，因為迴路增益隨電流平方根變化。</td></tr>
+  <tr><td class="en">Below about three amps, the edges are slower than fifty microseconds.</td><td class="zh">低於約 3 A 時，邊沿會慢於 50 µs。</td></tr>
+  <tr><td class="en">The maximum load voltage is about <b>three volts at six amps</b> — enough for one diode, not two in series.</td><td class="zh">6 A 時負載電壓最高約 3 V，夠一顆 LD，不能兩顆串聯。</td></tr>
+  <tr><td class="en">The pulse width is defined as the <b>FWHM above the bias pedestal</b>.</td><td class="zh">脈寬定義為偏置基座之上的半高寬。</td></tr>
+  <tr><td class="en">The SYNC output marks the electrical gate; the current reaches fifty percent about ten to twenty microseconds later.</td><td class="zh">SYNC 是電氣閘門，電流 50 % 點比它晚約 10–20 µs。</td></tr>
+  <tr><td class="en"><span class="star">★</span>The design figures come from <b>simulation</b>. Each board was then <b>measured and calibrated on a dummy load in Taiwan</b>; the acceptance sheets show the measured values.</td><td class="zh">設計數字來自模擬；每片板子都在台灣用假負載量測與校準過，驗收表上是實測值。</td></tr>
+  <tr><td class="en">Today is the first time it drives a real diode, so we'll start at one amp and go up step by step.</td><td class="zh">今天是第一次接真的 LD，所以從 1 A 開始一步一步升。</td></tr>
+</table>
+
+<!-- ============================== 4. SCENARIOS ============================== -->
+<h1><span class="num">4</span>On-site scenarios<span class="zh">現場情境對話</span></h1>
+<p class="lead zh">藍色 YOU 是你要說的；灰色 LZH 是對方可能說的。先練 YOU 的句子，再請同事扮演 LZH 對練。</p>
+
+<h2>4.1 Arrival &amp; agenda <span class="zh">見面、說明行程</span></h2>
+<div class="dlg">
+  <p class="you"><span class="who">YOU</span>Thanks for having us. Before we start, let me quickly go through the plan for today and tomorrow.<span class="zh">謝謝你們安排。開始前我先快速說明今明兩天的計畫。</span></p>
+  <p class="them"><span class="who">LZH</span>Sure, go ahead.</p>
+  <p class="you"><span class="who">YOU</span><span class="star">★</span>This morning we'd like to do a short <b>transport check</b> on our dummy load — about an hour — to make sure the boards survived the trip. Then we'll connect your diode and <b>step the current up from one amp to six amps</b>.<span class="zh">今天上午先用假負載做約 1 小時的運輸確認，再接你們的 LD，電流從 1 A 逐步升到 6 A。</span></p>
+  <p class="you"><span class="who">YOU</span>In the afternoon we'll test the repetition rate, the external trigger and the interlock, and then <b>integrate the driver into the laser system</b>.<span class="zh">下午測重複率、外部觸發、互鎖，然後整合進雷射系統。</span></p>
+  <p class="you"><span class="who">YOU</span>Tomorrow morning is a <b>buffer</b>, in case we need to repeat anything.<span class="zh">明天上午是緩衝，萬一要重做。</span></p>
+  <p class="you"><span class="who">YOU</span><span class="star">★</span>We brought <b>five calibrated boards</b>. If one behaves differently from our records, we'll simply <b>swap it</b> rather than repair it here.<span class="zh">我們帶了 5 片校準好的板子。哪片和紀錄不同就直接換，不在這裡維修。</span></p>
+  <p class="them"><span class="who">LZH</span>Sounds good. Do you need anything from us?</p>
+  <p class="you"><span class="who">YOU</span>Yes — a two-channel oscilloscope, a current-limited twelve-volt supply if possible, your 793-nanometre power meter, and the LD temperature control.<span class="zh">需要雙通道示波器、可限流的 12 V 電源、793 nm 功率計和 LD 溫控。</span></p>
+</div>
+
+<h2>4.2 Safety briefing with the LSO <span class="zh">和雷射安全官說明安全設計</span></h2>
+<div class="dlg">
+  <p class="you"><span class="who">YOU</span>I'd like to go through the safety features with you before we connect anything.<span class="zh">接任何東西之前，我想先跟你說明安全設計。</span></p>
+  <p class="you"><span class="who">YOU</span><span class="star">★</span>The board always <b>powers up disarmed</b>. It can only be armed with this button, SW1 — <b>not from the console</b>. That's intentional.<span class="zh">上電一律是鎖定。只能用 SW1 解鎖，主控台不行，這是刻意的。</span></p>
+  <p class="them"><span class="who">LZH</span>And what about the interlock?</p>
+  <p class="you"><span class="who">YOU</span>It's a <b>dry contact</b>: five volts open-circuit, half a milliamp when closed. Can we wire it to your <b>door switch or emergency stop</b>?<span class="zh">是乾接點：開路 5 V、閉合 0.5 mA。可以接到你們的門開關或急停嗎？</span></p>
+  <p class="you"><span class="who">YOU</span>If the interlock opens, the current drops below ten percent in about thirty-five microseconds, <b>without any reverse voltage</b> on the diode. We measured that in Taiwan.<span class="zh">互鎖斷開時，電流約 35 µs 內降到 10 % 以下，LD 不受反壓。台灣已量過。</span></p>
+  <p class="them"><span class="who">LZH</span>What happens if the firmware crashes during a pulse?</p>
+  <p class="you"><span class="who">YOU</span>There's a <b>hardware pulse-width limit</b> of about one point two milliseconds. And when the MCU resets, the output stage is forced off.<span class="zh">有約 1.2 ms 的硬體脈寬上限；MCU 重置時輸出級也會強制關閉。</span></p>
+  <p class="you"><span class="who">YOU</span>It's a twelve-volt <b>SELV</b> design, so there are no hazardous voltages on the board.<span class="zh">12 V 安全特低電壓設計，板上沒有危險電壓。</span></p>
+</div>
+<table class="ph">
+  <tr><td class="en">Is everyone wearing eyewear for 793 and 1047 nanometres?</td><td class="zh">大家都戴好 793 / 1047 nm 護目鏡了嗎？</td></tr>
+  <tr><td class="en"><span class="star">★</span>I'm going to arm the board now. Ready? — Armed.</td><td class="zh">我現在要解鎖了。準備好了嗎？——已解鎖。</td></tr>
+  <tr><td class="en">Disarming. — The red LED is off; no emission.</td><td class="zh">鎖定中——紅燈滅了，沒有出光。</td></tr>
+</table>
+
+<h2>4.3 The critical question: F-mount &amp; grounding <span class="star">★</span><span class="zh">最關鍵的問題：底座與接地</span></h2>
+<div class="dlg">
+  <p class="you"><span class="who">YOU</span>One very important question: <b>which electrode is connected to the F-mount base — the anode or the cathode?</b><span class="zh">一個非常重要的問題：F-mount 底座接的是陽極還是陰極？</span></p>
+  <p class="them"><span class="who">LZH</span>I think it's the anode, but I'd have to check.</p>
+  <p class="you"><span class="who">YOU</span>OK. And is your <b>heat sink or TEC plate connected to earth</b>?<span class="zh">那你們的散熱座或 TEC 冷板有接大地嗎？</span></p>
+  <p class="them"><span class="who">LZH</span>It's screwed to the optical table, so yes, it's probably grounded.</p>
+  <p class="you"><span class="who">YOU</span><span class="star">★</span>On our driver, <b>neither terminal of the diode is at ground</b>. The anode is at two point four to four volts, and the cathode is about point six to one and a half volts above ground.<span class="zh">我們的板子 LD 兩端都不是地：陽極 2.4–4.0 V，陰極比地高約 0.6–1.5 V。</span></p>
+  <p class="you"><span class="who">YOU</span><span class="star">★</span>If the cathode touches ground, the current <b>bypasses the regulator</b> and the diode would be destroyed instantly. If the anode touches ground, the buck converter is shorted.<span class="zh">陰極碰到地，電流會繞過恆流級，LD 瞬間燒毀；陽極碰到地則是 buck 短路。</span></p>
+  <p class="you"><span class="who">YOU</span>Could we <b>isolate the mount</b> from the heat sink with a thermal pad and nylon screws? We brought both.<span class="zh">能不能用導熱絕緣墊和尼龍螺絲把底座和散熱座隔開？我們都有帶。</span></p>
+  <p class="you"><span class="who">YOU</span>Let me <b>measure it with the multimeter</b> before we power anything up.<span class="zh">上電前我先用電表量一下。</span></p>
+</div>
+<div class="box zh">
+  <div class="t">量底座極性時要說清楚的順序</div>
+  <p><span style="font-family:'Segoe UI'">“First I'll measure <b>anode to base</b>. If it reads close to zero ohms, the base is the anode and we stop there. If it's open, I'll measure <b>cathode to base</b> — red lead on the base, black lead on the cathode — so the meter never reverse-biases the diode.”</span></p>
+  <p>先量陽極↔底座，≈ 0 Ω 就是陽極、停。開路才量陰極↔底座，紅棒放底座、黑棒放陰極，避免電表反向加壓在 LD 上。</p>
+</div>
+
+<h2>4.4 Pre-power checks <span class="zh">上電前的電表檢查（邊做邊講）</span></h2>
+<table class="ph">
+  <tr><td class="en">Before power-up, I'll do <b>five quick checks</b> with the multimeter. The board is unpowered and the diode is connected to J3.</td><td class="zh">上電前用電表做五項檢查。板子沒電，LD 已接 J3。</td></tr>
+  <tr><td class="en">One: diode mode, red lead on J3 pin one, black on pin two. I expect <b>one point one to one point five volts</b> — that's the diode's forward voltage.</td><td class="zh">一：二極體檔，紅 J3-1、黑 J3-2，預期 1.1–1.5 V（LD 正向）。</td></tr>
+  <tr><td class="en">If it reads about point three volts, the wires are swapped — we're seeing the Schottky diode D1.</td><td class="zh">若約 0.3 V，表示線接反了，量到的是 D1。</td></tr>
+  <tr><td class="en"><span class="star">★</span>Two: cathode to ground. It should be <b>about forty kilohms</b>. If it's below a hundred ohms, <b>we stop</b> — the cathode would be grounded.</td><td class="zh">二：陰極對地約 40 kΩ。低於 100 Ω 就停，代表陰極接地。</td></tr>
+  <tr><td class="en">Three: cathode to the heat sink and to the optical table — open circuit, or about forty kilohms.</td><td class="zh">三：陰極對散熱座、光學桌——開路或約 40 kΩ。</td></tr>
+  <tr><td class="en">Four: anode to ground — about twelve kilohms. It creeps up while the capacitors charge.</td><td class="zh">四：陽極對地約 12 kΩ，電容充電時讀值會慢慢爬。</td></tr>
+  <tr><td class="en">Five: the supply output — twelve point oh volts, centre positive.</td><td class="zh">五：電源輸出 12.0 V，中心正。</td></tr>
+  <tr><td class="en">All five checks passed. I'll connect the interlock first, then USB, and the twelve volts last.</td><td class="zh">五項都過。先接互鎖、再接 USB、最後接 12 V。</td></tr>
+</table>
+
+<h2>4.5 Power-up &amp; current step-up <span class="zh">上電與逐步升電流（口述進度）</span></h2>
+<table class="ph">
+  <tr><td class="en">The green LED is on and the red one is off — the board is disarmed.</td><td class="zh">綠燈亮、紅燈滅——板子是鎖定的。</td></tr>
+  <tr><td class="en">Status: not armed, one thousand milliamps, five hundred microseconds, a hundred hertz, no faults.</td><td class="zh">狀態：未解鎖、1000 mA、500 µs、100 Hz、無故障。</td></tr>
+  <tr><td class="en">Interlock closed — the yellow LED is on. Eyewear on, please. <b>Arming now.</b></td><td class="zh">互鎖閉合，黃燈亮。請戴護目鏡。現在解鎖。</td></tr>
+  <tr><td class="en">We're at one amp. The flat-top on TP1 is twenty millivolts, and the leading edge is clean.</td><td class="zh">現在 1 A。TP1 平頂 20 mV，前緣乾淨。</td></tr>
+  <tr><td class="en">The forward voltage is about one point seven volts at one amp — that's TP5 minus TP6.</td><td class="zh">1 A 時 Vf 約 1.7 V（TP5 減 TP6）。</td></tr>
+  <tr><td class="en">There's only weak emission at one amp, since we're just above threshold.</td><td class="zh">1 A 時只有微弱出光，剛過門檻。</td></tr>
+  <tr><td class="en">Next step: two amps. … Stepping up to four amps. … And now six amps.</td><td class="zh">下一步 2 A……升到 4 A……現在 6 A。</td></tr>
+  <tr><td class="en">The reply says “trim reset” — that's normal. The rail goes back to four volts and <b>settles again within about a second</b>.</td><td class="zh">回應 trim reset 是正常的：VPWR 回 4 V，約 1 秒內重新收斂。</td></tr>
+  <tr><td class="en">V-D-S has converged to about six hundred millivolts, and Q1 dissipation is around one point four watts.</td><td class="zh">Vds 已收斂到約 600 mV，Q1 功耗約 1.4 W。</td></tr>
+  <tr><td class="en">Let's raise the repetition rate to four hundred hertz, and then eight hundred.</td><td class="zh">重複率升到 400 Hz，再到 800 Hz。</td></tr>
+  <tr><td class="en">Let's run it for fifteen minutes and keep an eye on the temperature and the flat-top drift.</td><td class="zh">跑 15 分鐘，注意溫度與平頂漂移。</td></tr>
+  <tr><td class="en">Please don't long-press SW1 — that jumps straight to the two-, four- or six-amp preset.</td><td class="zh">請不要長按 SW1，會直接跳到 2/4/6 A 檔。</td></tr>
+</table>
+<div class="box warn zh nobreak">
+  <div class="t">關機順序（每次碰 LD 線之前都講一次）</div>
+  <p><span style="font-family:'Segoe UI'"><b>“Disarm first, then open the interlock, unplug the twelve volts, and wait ten seconds before touching the LD cable.”</b></span></p>
+  <p>先按 SW1 鎖定 → 打開互鎖 → 拔 12 V → 等 10 秒 → 才動 LD 線。</p>
+</div>
+
+<h2>4.6 Reading the scope <span class="zh">看示波器</span></h2>
+<table class="ph">
+  <tr><td class="en">Could you set channel one to <b>twenty millivolts per division</b> and the timebase to <b>a hundred microseconds per division</b>?</td><td class="zh">通道一設每格 20 mV、時基每格 100 µs。</td></tr>
+  <tr><td class="en"><span class="star">★</span>Please clip the probe ground to <b>TP2, not TP4</b> — otherwise we'll see ground bounce.</td><td class="zh">探棒地請夾 TP2，不要夾 TP4，否則會量到地彈。</td></tr>
+  <tr><td class="en">We need a one-to-one probe here. With a ten-to-one probe, one amp is only two millivolts at the scope.</td><td class="zh">這裡要用 1:1 探棒；10:1 的話 1 A 到示波器只剩 2 mV。</td></tr>
+  <tr><td class="en">Let's trigger on TP3 — that's the gate signal — on the rising edge.</td><td class="zh">用 TP3（閘門訊號）的上升緣當觸發。</td></tr>
+  <tr><td class="en">Let's use <b>single-shot</b> to catch the first pulse after arming.</td><td class="zh">用單次觸發抓解鎖後的第一發。</td></tr>
+  <tr><td class="en"><span class="star">★</span>The leading edge must not exceed the flat-top by more than two percent.</td><td class="zh">前緣不能超過平頂 2 %。</td></tr>
+  <tr><td class="en">Can you turn on <b>infinite persistence</b>? We want to be sure there are no occasional spikes.</td><td class="zh">開無限餘暉，確認沒有偶發尖峰。</td></tr>
+  <tr><td class="en">The ten-to-ninety percent rise time is about thirty microseconds.</td><td class="zh">10–90 % 上升時間約 30 µs。</td></tr>
+  <tr><td class="en">The baseline is about one millivolt — that's the fifty-milliamp bias.</td><td class="zh">基線約 1 mV，就是 50 mA 偏置。</td></tr>
+  <tr><td class="en">The flat-top is nice and flat. / There's a slight droop. / There's a small bump at the corner. / The tail is a bit slow.</td><td class="zh">平頂很平 / 有點下垂 / 轉角有小凸起 / 尾巴有點慢。</td></tr>
+  <tr><td class="en">I can see some ringing on the falling edge. Let's shorten the cable and twist it more tightly.</td><td class="zh">下降緣有振鈴。把線縮短、絞緊一點。</td></tr>
+  <tr><td class="en">Could you save a screenshot to my USB stick? Let's name it SN01, six amps, rising edge.</td><td class="zh">截圖存到我的隨身碟，檔名 SN01_6A_rising。</td></tr>
+</table>
+
+<h2>4.7 Comparing with the Picolas <span class="zh">與 Picolas 驅動器對照</span></h2>
+<div class="dlg">
+  <p class="you"><span class="who">YOU</span><span class="star">★</span>To verify the absolute current, we'd like to compare optical power against your Picolas — <b>same diode, same power meter</b> — at one, two, four and six amps.<span class="zh">為了驗證電流絕對值，想跟你們的 Picolas 比光功率：同一顆 LD、同一顆功率計，1/2/4/6 A。</span></p>
+  <p class="them"><span class="who">LZH</span>The Picolas is CW, though. How do you compare it with pulses?</p>
+  <p class="you"><span class="who">YOU</span>Good point. We can compare the peak power during the flat-top, or average power divided by the duty cycle. Which way do you usually measure it?<span class="zh">好問題。可以比平頂期間的峰值功率，或平均功率除以工作週期。你們平常怎麼量？</span></p>
+  <p class="you"><span class="who">YOU</span>If the two L-I curves <b>overlap</b>, our current calibration is correct.<span class="zh">兩條 L-I 曲線重合，就代表電流校準正確。</span></p>
+  <p class="you"><span class="who">YOU</span>At six amps we get four point two watts, and with the Picolas four point two five — that's about one percent lower, within our calibration tolerance.<span class="zh">（例）6 A 時我們 4.2 W、Picolas 4.25 W，低約 1 %，在校準公差內。</span></p>
+</div>
+<p class="small zh">※ 例句中的功率數字是練習用的假設值，現場換成實測值。</p>
+
+<h2>4.8 External trigger &amp; SYNC <span class="zh">外部觸發與同步</span></h2>
+<table class="ph">
+  <tr><td class="en">Our trigger input accepts <b>three to twenty-four volts</b> and triggers on the <b>falling edge</b>. The pulse needs to be at least five microseconds wide.</td><td class="zh">觸發輸入 3–24 V、下降緣觸發，脈衝寬至少 5 µs。</td></tr>
+  <tr><td class="en"><span class="star">★</span>Please set the generator's <b>output load to High-Z</b>, so the amplitude on its display is what the board actually sees.</td><td class="zh">產生器輸出負載請設 High-Z，螢幕上的振幅才是板子實際收到的。</td></tr>
+  <tr><td class="en">Five-volt TTL, falling edge, and I'll switch the board to external mode with <code>T EXT</code>.</td><td class="zh">5 V TTL、下降緣，我用 T EXT 切成外部觸發。</td></tr>
+  <tr><td class="en">In external mode, F becomes an <b>upper limit</b>. Triggers faster than that are ignored — that's not a fault.</td><td class="zh">外部模式下 F 變上限；比它快的觸發會被丟掉，不是故障。</td></tr>
+  <tr><td class="en">The trigger delay is about six microseconds, twelve at most.</td><td class="zh">觸發延遲約 6 µs，最多 12 µs。</td></tr>
+  <tr><td class="en">The SYNC output is five-volt logic. Please connect it to a <b>one-megohm input, not fifty ohms</b>.</td><td class="zh">SYNC 是 5 V 邏輯，請接 1 MΩ 輸入，不要接 50 Ω。</td></tr>
+  <tr><td class="en">The <code>rate</code> field in the status shows the measured pulse rate over the last second.</td><td class="zh">狀態裡的 rate 是最近 1 秒實測脈衝率。</td></tr>
+</table>
+
+<h2>4.9 Troubleshooting <span class="zh">故障排除</span></h2>
+<table class="ph">
+  <tr><td class="en">It's showing <b>NO_CURRENT — one blink</b>. Let's check the polarity and the terminal screws.</td><td class="zh">NO_CURRENT，閃 1 下。檢查極性與端子螺絲。</td></tr>
+  <tr><td class="en">Let's go back to the dummy load first, to make sure the board itself is fine.</td><td class="zh">先回假負載，確認板子本身沒問題。</td></tr>
+  <tr><td class="en">That's a <b>HEAT fault — two blinks</b>. The rep rate is too high for this load voltage. Let's lower it or add a fan.</td><td class="zh">HEAT，閃 2 下。這個負載電壓下重複率太高，降頻或加風扇。</td></tr>
+  <tr><td class="en"><b>ILOCK — three blinks</b>. The interlock contact probably bounced. Could we use a relay or a solid contact?</td><td class="zh">ILOCK，閃 3 下。互鎖接點可能彈跳，可以改用繼電器或確實的接點嗎？</td></tr>
+  <tr><td class="en"><span class="star">★</span>To clear a fault, press SW1 once. Press it again to arm.</td><td class="zh">按一下 SW1 清除故障，再按一下才解鎖。</td></tr>
+  <tr><td class="en">The board keeps rebooting. I think the adapter is too weak — the pulses draw up to about two amps.</td><td class="zh">板子一直重開。變壓器太弱，脈衝中瞬間到約 2 A。</td></tr>
+  <tr><td class="en">The console doesn't respond. Is this a data cable or a charge-only cable?</td><td class="zh">主控台沒反應。這條是資料線還是只能充電？</td></tr>
+  <tr><td class="en">The flat-top is drooping — the load voltage is above our compliance. Let me lower the Vds target to four hundred millivolts.</td><td class="zh">平頂下垂，負載電壓超過順從範圍。我把 Vds 目標降到 400 mV。</td></tr>
+  <tr><td class="en">Your photodetector picks up noise at six hundred kilohertz. That's the buck's switching frequency. Let's move the board away and add a ferrite.</td><td class="zh">你們探測器有 600 kHz 雜訊，是 buck 開關頻率。板子移遠、加鐵氧體。</td></tr>
+  <tr><td class="en"><span class="star">★</span>This board doesn't match our records. Let's <b>swap it for the next one</b>; we'll investigate it back in Taiwan.</td><td class="zh">這片和紀錄不符，換下一片；帶回台灣再查。</td></tr>
+  <tr><td class="en">The current monitor in the status is only a rough reading — fifty-milliamp resolution. The scope on TP1 is the reference.</td><td class="zh">狀態裡的電流只是粗略監視（50 mA 解析度），以 TP1 示波器為準。</td></tr>
+  <tr><td class="en"><b>Stop! Disarm!</b> / <b>Power it off now!</b> / Don't touch that — it's live.</td><td class="zh">停！鎖定！/ 馬上斷電！/ 別碰，那有電。</td></tr>
+</table>
+
+<h2>4.10 Wrap-up &amp; handover <span class="zh">收尾與交接</span></h2>
+<table class="ph">
+  <tr><td class="en">Let's summarise what we've tested and what's still open.</td><td class="zh">我們整理一下測過什麼、還有什麼沒做。</td></tr>
+  <tr><td class="en">Everything on the acceptance sheet passed, except the ringing test with the long cable.</td><td class="zh">驗收表全部通過，除了長線的振鈴測試。</td></tr>
+  <tr><td class="en">Which settings would you like us to save to the EEPROM?</td><td class="zh">你們要我們存哪組設定到 EEPROM？</td></tr>
+  <tr><td class="en">We'll leave two boards here, with the power adapters, the English manual and the hex files.</td><td class="zh">我們留兩片板子，加變壓器、英文手冊與 hex 檔。</td></tr>
+  <tr><td class="en"><span class="star">★</span>Just a reminder: the console can't arm the board — only SW1 can. And there are three blink codes.</td><td class="zh">提醒：主控台不能解鎖，只有 SW1 可以；故障閃碼有三種。</td></tr>
+  <tr><td class="en">We'll send you the measurement data and the updated manual within two weeks.</td><td class="zh">兩週內寄量測數據與更新的手冊給你們。</td></tr>
+  <tr><td class="en">If anything comes up, just email me directly.</td><td class="zh">有任何問題直接 email 給我。</td></tr>
+  <tr><td class="en">Thanks a lot for your time and help — this was very productive.</td><td class="zh">非常感謝你們的時間和協助，這次很有收穫。</td></tr>
+</table>
+
+<!-- ============================== 5. Q&A ============================== -->
+<h1><span class="num">5</span>Questions they will ask<span class="zh">對方可能會問的問題</span></h1>
+<p class="lead zh">回答原則：先給結論（一句話），再給理由，最後給數字。不知道就說不知道，回去查了再回覆。</p>
+
+<div class="qa"><div class="q">Why do you need a bias current between pulses?</div>
+  <div class="a">It keeps the current loop closed between pulses. Without it, every pulse has to start from zero and the op-amp first has to charge Q1's gate up to threshold. With fifty milliamps of bias, the rise time at six amps is about thirty microseconds, and it doesn't drift with temperature or with the MOSFET.</div>
+  <div class="zh">讓迴路在脈衝間保持閉合；否則每發都要先把 Q1 閘極充到門檻。50 mA 偏置下 6 A 上升約 30 µs，不隨溫度與元件漂移。</div></div>
+
+<div class="qa"><div class="q">Can you switch the bias off?</div>
+  <div class="a">Yes, with <code>B 0</code>. Then the firmware compensates for the dead zone, but the start-up delay goes up to about fifty-six microseconds, it varies with temperature, and at five hundred microseconds the minimum current is three point four amps.</div>
+  <div class="zh">可以，B 0。韌體改用死區補償，但起步延遲約 56 µs 且隨溫度變；W 500 時最小電流 3.4 A。</div></div>
+
+<div class="qa"><div class="q">Is fifty milliamps really safe for the diode?</div>
+  <div class="a">It's far below the threshold of about point seven amps, so there's no lasing, and it adds less than a tenth of a watt. It's adjustable from zero to two hundred milliamps if you want it lower.</div>
+  <div class="zh">遠低於約 0.7 A 門檻，不出光，多耗不到 0.1 W；可在 0–200 mA 調整。</div></div>
+
+<div class="qa"><div class="q">Why isn't the cathode grounded?</div>
+  <div class="a">Because the regulator is on the low side: the MOSFET and the sense resistor sit between the cathode and ground. That gives us a ground-referenced sense resistor, which keeps the current loop simple, fast and accurate. The trade-off is that neither diode terminal can touch ground.</div>
+  <div class="zh">因為是低側恆流：MOSFET 和取樣電阻在陰極與地之間。取樣電阻以地為參考，迴路簡單、快、準；代價是 LD 兩端都不能碰地。</div></div>
+
+<div class="qa"><div class="q">How accurate is the current?</div>
+  <div class="a">After calibration the flat-top is within plus or minus one percent, and pulse-to-pulse it's better than a tenth of a percent. Each board was calibrated individually. Today's comparison with the Picolas will be the independent check.</div>
+  <div class="zh">校準後平頂 ±1 %，逐發 < 0.1 %。每片個別校準；今天和 Picolas 對照就是獨立驗證。</div></div>
+
+<div class="qa"><div class="q">What are the rise times at lower current?</div>
+  <div class="a">About thirty and thirty-three microseconds at six amps, forty and forty-five at three amps, and sixty-two and seventy-two at one amp. The loop gain scales with the square root of the current, so lower currents are slower.</div>
+  <div class="zh">6 A 約 30/33 µs、3 A 約 39/45、1 A 約 62/72 µs。迴路增益隨電流平方根，所以低電流較慢。</div></div>
+
+<div class="qa"><div class="q">Can it run CW?</div>
+  <div class="a">No. The duty cycle is limited to forty-two percent. At five hundred microseconds that means up to about eight hundred and twenty-five hertz.</div>
+  <div class="zh">不行，工作週期上限 42 %；W 500 µs 時最高約 825 Hz。</div></div>
+
+<div class="qa"><div class="q">Can we run it from our 24-volt supply?</div>
+  <div class="a">No, please don't. It's twelve volts plus or minus ten percent only. The buck converter's absolute maximum is seventeen volts.</div>
+  <div class="zh">不行。只能 12 V ±10 %，buck 絕對上限 17 V。</div></div>
+
+<div class="qa"><div class="q">Can we arm it from our control software?</div>
+  <div class="a">Not in this revision. That was a deliberate safety decision: you can change all settings over USB, but arming needs a person to press the button. If you need remote arming, we can discuss it for the next revision.</div>
+  <div class="zh">這版不行，是刻意的安全設計：設定都能用 USB 改，但解鎖要有人按鍵。需要遠端解鎖的話，下一版可以討論。</div></div>
+
+<div class="qa"><div class="q">What happens if the interlock opens in the middle of a pulse?</div>
+  <div class="a">The current ramps down through the setpoint path at the loop's speed and falls below ten percent in about thirty-five microseconds. The hard clamps are delayed by about a tenth of a millisecond on purpose; otherwise the cable inductance would put a reverse voltage on the diode.</div>
+  <div class="zh">電流先經設定值路徑以迴路速度降下，約 35 µs 內到 10 % 以下。硬鉗位刻意延後約 0.1 ms，否則線纜電感會讓 LD 承受反壓。</div></div>
+
+<div class="qa"><div class="q">Can it drive two diodes in series?</div>
+  <div class="a">No. The compliance is about three volts at six amps — enough for one diode, but two in series would need more than three point three volts.</div>
+  <div class="zh">不行。6 A 時順從電壓約 3 V，一顆夠，兩顆串聯要超過 3.3 V。</div></div>
+
+<div class="qa"><div class="q">How long can the cable be? Can we add a capacitor across the diode?</div>
+  <div class="a">Up to one metre of twisted pair — about one microhenry. Please don't put more than one nanofarad across the diode, and no series components; the loop was designed for that.</div>
+  <div class="zh">雙絞線最長 1 m（約 1 µH）。LD 兩端不要並 > 1 nF，也不要串元件；迴路是照這個條件設計的。</div></div>
+
+<div class="qa"><div class="q">How do you define the pulse width? And what's the jitter?</div>
+  <div class="a">Pulse width is the full width at half maximum above the bias pedestal; after calibration it equals the W setting. Internal triggering has less than one microsecond of jitter. External triggering has a delay of about six microseconds and up to about six microseconds of jitter.</div>
+  <div class="zh">脈寬 = 偏置基座之上的半高寬，校準後等於 W。內部觸發抖動 < 1 µs；外部觸發延遲約 6 µs，抖動最多約 6 µs。</div></div>
+
+<div class="qa"><div class="q">How much power does it draw?</div>
+  <div class="a">About point four amps from twelve volts at four hundred hertz, and point seven to point eight amps at eight hundred hertz, at six amps and five hundred microseconds. During the pulse itself it can draw up to about two amps, so the adapter should be rated for at least two amps.</div>
+  <div class="zh">6 A、500 µs 時：400 Hz 約 0.4 A、800 Hz 約 0.7–0.8 A。脈衝中瞬間可到約 2 A，變壓器要 ≥ 2 A。</div></div>
+
+<div class="qa"><div class="q">Has this been tested with a real diode?</div>
+  <div class="a">Not yet — today is the first time. All boards were tested and calibrated on a dummy load in Taiwan, including the interlock test with a one-microhenry cable. That's why we start at one amp.</div>
+  <div class="zh">還沒，今天是第一次。所有板子都在台灣用假負載測試校準過，包括 1 µH 線纜下的互鎖測試，所以我們從 1 A 開始。</div></div>
+
+<div class="qa"><div class="q">Why not just use a linear regulator from 12 V?</div>
+  <div class="a">Q1 would dissipate around sixty watts at six amps. With the buck and the Vds servo, it's about one and a half watts average at eight hundred hertz.</div>
+  <div class="zh">6 A 時 Q1 要燒約 60 W；用 buck 加 Vds 伺服，800 Hz 時平均約 1.5 W。</div></div>
+
+<div class="qa"><div class="q">What if it overheats?</div>
+  <div class="a">The firmware shuts down if the estimated Q1 power stays above three watts for five seconds, or if the board reaches eighty-five degrees. Above thirty degrees ambient at eight hundred hertz, we recommend a small fan.</div>
+  <div class="zh">Q1 估算功耗 > 3 W 持續 5 秒或板溫 85 °C 時韌體停機。環境 > 30 °C 且 800 Hz 時建議加小風扇。</div></div>
+
+<!-- ============================== 6. SURVIVAL ============================== -->
+<h1><span class="num">6</span>Survival phrases<span class="zh">溝通救命句</span></h1>
+<p class="lead zh">技術內容你都懂，卡住通常是因為沒聽清楚或一時想不到字。這些句子讓你爭取時間、確認理解，而且聽起來很專業。</p>
+
+<h2>6.1 When you didn't catch it <span class="zh">沒聽清楚時</span></h2>
+<table class="ph">
+  <tr><td class="en"><span class="star">★</span>Sorry, could you say that again a bit more slowly?</td><td class="zh">不好意思，可以說慢一點再講一次嗎？</td></tr>
+  <tr><td class="en"><span class="star">★</span>Just to make sure I understand: you'd like six amps at four hundred hertz, right?</td><td class="zh">確認一下我的理解：你要 6 A、400 Hz，對嗎？</td></tr>
+  <tr><td class="en">Do you mean the anode or the cathode?</td><td class="zh">你是指陽極還是陰極？</td></tr>
+  <tr><td class="en">Was that fifteen — one-five — or fifty — five-zero?</td><td class="zh">是 15 還是 50？</td></tr>
+  <tr><td class="en">Could you write that number down for me?</td><td class="zh">可以把那個數字寫給我嗎？</td></tr>
+  <tr><td class="en">Sorry, I'm not familiar with that term. What does it mean?</td><td class="zh">抱歉，我不熟那個詞，是什麼意思？</td></tr>
+  <tr><td class="en">Could you show me on the schematic?</td><td class="zh">可以在原理圖上指給我看嗎？</td></tr>
+</table>
+
+<h2>6.2 Buying time &amp; being honest <span class="zh">爭取時間、誠實回答</span></h2>
+<table class="ph">
+  <tr><td class="en">Good question. Let me think about that for a second.</td><td class="zh">好問題，讓我想一下。</td></tr>
+  <tr><td class="en">Let me check my notes. / Give me a minute to look at the schematic.</td><td class="zh">我查一下筆記 / 給我一分鐘看原理圖。</td></tr>
+  <tr><td class="en"><span class="star">★</span>I'm not sure off the top of my head. I'll check and get back to you by email.</td><td class="zh">我一時不確定，查了再用 email 回覆你。</td></tr>
+  <tr><td class="en">That number is from simulation; we haven't measured it with a real diode yet.</td><td class="zh">那是模擬值，還沒用真的 LD 量過。</td></tr>
+  <tr><td class="en">I'm not 100 % sure, but I think it's around thirty microseconds.</td><td class="zh">我不是百分之百確定，但應該約 30 µs。</td></tr>
+  <tr><td class="en">Let me draw a quick sketch — it's easier to explain that way.</td><td class="zh">我畫個簡圖，這樣比較好解釋。</td></tr>
+  <tr><td class="en">How do you say … in English? The thing that … </td><td class="zh">……英文怎麼說？就是那個用來……的東西。</td></tr>
+</table>
+
+<h2>6.3 Suggesting, agreeing, disagreeing <span class="zh">提議、同意、委婉不同意</span></h2>
+<table class="ph">
+  <tr><td class="en">How about we try it at one amp first?</td><td class="zh">我們先用 1 A 試試看如何？</td></tr>
+  <tr><td class="en">Shall we take a short break and look at the data?</td><td class="zh">要不要休息一下看看數據？</td></tr>
+  <tr><td class="en">I'd suggest we check the polarity once more before arming.</td><td class="zh">我建議解鎖前再確認一次極性。</td></tr>
+  <tr><td class="en">That makes sense. / Good point. / I agree.</td><td class="zh">有道理 / 好觀點 / 我同意。</td></tr>
+  <tr><td class="en">I see your point, but I'd rather not skip the dummy-load check, because …</td><td class="zh">我懂你的意思，但我不想跳過假負載確認，因為……</td></tr>
+  <tr><td class="en"><span class="star">★</span>I'd prefer not to go above six amps — the board isn't specified for that.</td><td class="zh">我不想超過 6 A，板子不是為那個設計的。</td></tr>
+  <tr><td class="en">I'm afraid that's not possible with this revision.</td><td class="zh">恐怕這一版做不到。</td></tr>
+  <tr><td class="en">Let's note that down as an open point.</td><td class="zh">把這個記成待辦事項。</td></tr>
+</table>
+
+<h2>6.4 Asking for help &amp; checking before acting <span class="zh">請求協助、動手前確認</span></h2>
+<table class="ph">
+  <tr><td class="en">Could we borrow a current-limited bench supply?</td><td class="zh">可以借一台可限流的實驗室電源嗎？</td></tr>
+  <tr><td class="en">Do you have a one-to-one probe and a ground spring?</td><td class="zh">有 1:1 探棒和彈簧地嗎？</td></tr>
+  <tr><td class="en">Where can I plug in the adapter? / Is this socket 230 volts?</td><td class="zh">變壓器插哪裡？這個插座是 230 V 嗎？</td></tr>
+  <tr><td class="en"><span class="star">★</span>Is it OK if I power it up now?</td><td class="zh">我現在可以上電嗎？</td></tr>
+  <tr><td class="en">Can I touch this, or is it live?</td><td class="zh">這可以碰嗎，還是有電？</td></tr>
+  <tr><td class="en">Could you hold this probe for a moment?</td><td class="zh">可以幫我拿一下探棒嗎？</td></tr>
+  <tr><td class="en">Is it OK to take photos of the setup?</td><td class="zh">可以拍設備照片嗎？</td></tr>
+</table>
+
+<!-- ============================== 7. MISTAKES ============================== -->
+<h1><span class="num">7</span>Common mistakes<span class="zh">容易說錯的地方</span></h1>
+
+<h2>7.1 Direct translations to avoid <span class="zh">中文直譯陷阱</span></h2>
+<table>
+  <tr><th style="width:18%">中文</th><th style="width:32%">✗ 容易說成</th><th>✓ 自然說法</th></tr>
+  <tr><td class="zh">解鎖 / 鎖定</td><td>unlock / lock the board</td><td class="say">arm / disarm the board <span class="zh" style="font-weight:400">（本板最重要的術語）</span></td></tr>
+  <tr><td class="zh">打開互鎖</td><td>open the interlock（意思反了！）</td><td class="say">close the interlock <span class="zh" style="font-weight:400">= 允許出光；open = 斷開、停止</span></td></tr>
+  <tr><td class="zh">開電源 / 關電源</td><td>open / close the power</td><td class="say">turn on / turn off, power up / power down</td></tr>
+  <tr><td class="zh">燒錄韌體</td><td>burn the firmware</td><td class="say">program / flash the firmware <span class="zh" style="font-weight:400">（雷射場合講 burn 會嚇到人）</span></td></tr>
+  <tr><td class="zh">假負載</td><td>fake load</td><td class="say">dummy load</td></tr>
+  <tr><td class="zh">LD 燒了</td><td>The LD is burned.</td><td class="say">The diode burned out. / The diode is damaged.</td></tr>
+  <tr><td class="zh">電流到不了 6 A</td><td>The current can't arrive 6 A.</td><td class="say">The current doesn't reach six amps.</td></tr>
+  <tr><td class="zh">請幫我檢查</td><td>Please help me to check.</td><td class="say">Could you check this for me?</td></tr>
+  <tr><td class="zh">討論一下</td><td>discuss about the bias</td><td class="say">discuss the bias / talk about the bias</td></tr>
+  <tr><td class="zh">板子有問題</td><td>This board has some problem.</td><td class="say">There's a problem with this board.</td></tr>
+  <tr><td class="zh">已經測試 OK</td><td>We have tested it already OK.</td><td class="say">We've already tested it, and it works.</td></tr>
+  <tr><td class="zh">故障發生了</td><td>The fault is happened.</td><td class="say">It tripped. / A fault occurred.</td></tr>
+  <tr><td class="zh">波形很漂亮</td><td>The waveform is very beautiful.</td><td class="say">The waveform looks clean.</td></tr>
+  <tr><td class="zh">怎麼設定觸發？</td><td>How to set the trigger?</td><td class="say">How do I set the trigger?</td></tr>
+  <tr><td class="zh">等一下，我查</td><td>Wait, I check.</td><td class="say">Hang on, let me check.</td></tr>
+  <tr><td class="zh">有問題嗎？</td><td>Do you have any question?</td><td class="say">Do you have any questions?</td></tr>
+  <tr><td class="zh">紅棒 / 黑棒</td><td>red stick / black stick</td><td class="say">red lead / black lead (or probe)</td></tr>
+  <tr><td class="zh">鎖螺絲</td><td>lock the screw</td><td class="say">tighten the screw</td></tr>
+  <tr><td class="zh">量一下電壓</td><td>test the voltage value</td><td class="say">measure the voltage</td></tr>
+  <tr><td class="zh">0.6 V</td><td>zero dot six volts</td><td class="say">zero point six volts</td></tr>
+  <tr><td class="zh">mA</td><td>M-A</td><td class="say">milliamps</td></tr>
+</table>
+
+<h2>7.2 Pronunciation hot spots <span class="zh">發音重點</span></h2>
+<table>
+  <tr><th style="width:24%">Word</th><th style="width:26%">Stress / sound</th><th>注意</th></tr>
+  <tr><td>diode</td><td class="pr">DYE-ode</td><td class="zh">兩個音節，不是 “di-o-de”</td></tr>
+  <tr><td>cathode / anode</td><td class="pr">KATH-ode / AN-ode</td><td class="zh">th 要咬舌；ode 唸「歐德」不要拖</td></tr>
+  <tr><td>oscilloscope</td><td class="pr">uh-SIL-uh-scope</td><td class="zh">重音在第二音節</td></tr>
+  <tr><td>schematic</td><td class="pr">ski-MAT-ik</td><td class="zh">sch 唸 sk</td></tr>
+  <tr><td>thermistor</td><td class="pr">ther-MIS-ter</td><td class="zh">THER-mis-ter 也常聽到</td></tr>
+  <tr><td>compliance</td><td class="pr">kum-PLY-ence</td><td class="zh"></td></tr>
+  <tr><td>threshold</td><td class="pr">THRESH-old</td><td class="zh">只有一個 h 音</td></tr>
+  <tr><td>width / height</td><td class="pr">widθ / hait</td><td class="zh">height 結尾是 t，不是 th</td></tr>
+  <tr><td>Schottky</td><td class="pr">SHOT-key</td><td class="zh"></td></tr>
+  <tr><td>MOSFET</td><td class="pr">MOSS-fet</td><td class="zh"></td></tr>
+  <tr><td>lead (probe)</td><td class="pr">leed</td><td class="zh">同 lead 帶領；不是金屬鉛 led</td></tr>
+  <tr><td>calibration</td><td class="pr">kal-i-BRAY-shun</td><td class="zh"></td></tr>
+  <tr><td>dissipation</td><td class="pr">dis-i-PAY-shun</td><td class="zh"></td></tr>
+  <tr><td>isolate</td><td class="pr">EYE-suh-late</td><td class="zh"></td></tr>
+  <tr><td>micro- / milli-</td><td class="pr">MY-kro / MIL-ee</td><td class="zh">micro 不唸「迷可」</td></tr>
+  <tr><td>Celsius</td><td class="pr">SEL-see-us</td><td class="zh"></td></tr>
+  <tr><td>via</td><td class="pr">VY-uh or VEE-uh</td><td class="zh">兩種都對</td></tr>
+  <tr><td>Kapton / nylon</td><td class="pr">KAP-ton / NY-lon</td><td class="zh"></td></tr>
+  <tr><td>ferrule / ferrite</td><td class="pr">FAIR-ul / FAIR-ite</td><td class="zh">兩個不同的東西，別搞混</td></tr>
+</table>
+
+<div class="box zh">
+  <div class="t">跟德國工程師溝通的小提醒</div>
+  <ul>
+    <li>德國同事講英文通常很直接，「No, that won't work.」不是不禮貌，照技術內容回應即可。</li>
+    <li>他們很重視流程與安全官核可；先講安全設計、再講性能，會比較順利。</li>
+    <li>英文都不是雙方的母語，講慢一點、短句、多用數字和圖，比用難字更有效。</li>
+    <li>說 “Is that OK with you?” 確認共識；會議結束時口頭總結一次「我們決定了什麼」。</li>
+  </ul>
+</div>
+
+<!-- ============================== 8. SELF-TEST ============================== -->
+<h1><span class="num">8</span>Self-test<span class="zh">自我測驗</span></h1>
+<p class="lead zh">把中文說成英文（先用說的，再寫下來）。解答在下一頁。目標：每句 5 秒內開口。</p>
+<ol class="ex zh">
+  <li>板子上電後一律是鎖定狀態。<span class="blank"></span></li>
+  <li>只有板上的按鍵能解鎖，主控台不行。<span class="blank"></span></li>
+  <li>LD 的陰極不是地。<span class="blank"></span></li>
+  <li>F-mount 底座接的是哪一極？<span class="blank"></span></li>
+  <li>你們的散熱座有接大地嗎？<span class="blank"></span></li>
+  <li>我們先用假負載確認板子運輸沒有損壞。<span class="blank"></span></li>
+  <li>電流從 1 A 逐步升到 6 A，每一步都看波形。<span class="blank"></span></li>
+  <li>探棒地請夾 TP2，不要夾 TP4。<span class="blank"></span></li>
+  <li>前緣不能超過平頂 2 %。<span class="blank"></span></li>
+  <li>6 A 時上升時間約 30 微秒。<span class="blank"></span></li>
+  <li>脈衝間有 50 mA 的偏置，不會出光。<span class="blank"></span></li>
+  <li>這是過熱故障，降低重複率或加風扇。<span class="blank"></span></li>
+  <li>按一下 SW1 清除故障，再按一下解鎖。<span class="blank"></span></li>
+  <li>這片和台灣的紀錄差超過 2 %，換下一片。<span class="blank"></span></li>
+  <li>產生器的輸出負載請設成 High-Z。<span class="blank"></span></li>
+  <li>外部觸發是下降緣觸發。<span class="blank"></span></li>
+  <li>這個數字是模擬值，還沒用真的 LD 量過。<span class="blank"></span></li>
+  <li>先鎖定、再斷電，等 10 秒才碰 LD 線。<span class="blank"></span></li>
+  <li>請不要接 24 V。<span class="blank"></span></li>
+  <li>我不確定，查了再用 email 回覆你。<span class="blank"></span></li>
+  <li>可以借一台可限流的 12 V 電源嗎？<span class="blank"></span></li>
+  <li>兩條 L-I 曲線重合，代表電流校準是對的。<span class="blank"></span></li>
+  <li>LD 兩端不要並聯超過 1 nF 的電容。<span class="blank"></span></li>
+  <li>6 A 時負載電壓最高約 3 V，所以不能兩顆串聯。<span class="blank"></span></li>
+</ol>
+
+<h2 style="break-before:page">Answers <span class="zh">解答（參考說法，意思對即可）</span></h2>
+<ol class="ans">
+  <li>The board always powers up disarmed.</li>
+  <li>Only the button on the board can arm it — not the console.</li>
+  <li>The LD cathode is not at ground.</li>
+  <li>Which electrode is connected to the F-mount base?</li>
+  <li>Is your heat sink connected to earth?</li>
+  <li>First, we'll check on the dummy load that the board wasn't damaged in transport.</li>
+  <li>We'll step the current up from one amp to six amps and check the waveform at each step.</li>
+  <li>Please clip the probe ground to TP2, not TP4.</li>
+  <li>The leading edge must not exceed the flat-top by more than two percent.</li>
+  <li>At six amps, the rise time is about thirty microseconds.</li>
+  <li>There's a fifty-milliamp bias between pulses; it doesn't produce any emission.</li>
+  <li>That's a heat fault. Let's lower the repetition rate or add a fan.</li>
+  <li>Press SW1 once to clear the fault, and once more to arm.</li>
+  <li>This board differs from our Taiwan records by more than two percent. Let's swap it for the next one.</li>
+  <li>Please set the generator's output load to High-Z.</li>
+  <li>The external trigger is falling-edge triggered. / It triggers on the falling edge.</li>
+  <li>That number is from simulation; we haven't measured it with a real diode yet.</li>
+  <li>Disarm first, then power down, and wait ten seconds before touching the LD cable.</li>
+  <li>Please don't connect twenty-four volts.</li>
+  <li>I'm not sure. I'll check and get back to you by email.</li>
+  <li>Could we borrow a current-limited twelve-volt bench supply?</li>
+  <li>The two L-I curves overlap, which means the current calibration is correct.</li>
+  <li>Please don't put more than one nanofarad across the diode.</li>
+  <li>The maximum load voltage is about three volts at six amps, so two diodes in series won't work.</li>
+</ol>
+
+<div class="box zh" style="margin-top:5mm">
+  <div class="t">進階練習：角色扮演</div>
+  <ul>
+    <li><b>情境 A（5 分鐘）</b>：同事扮演雷射安全官，問你「為什麼我該讓這塊原型板接我們的 Class 4 雷射？」用 3.1 + 4.2 回答。</li>
+    <li><b>情境 B（5 分鐘）</b>：同事扮演 LZH 工程師，從第 5 章隨機挑 5 題問你，不看稿回答。</li>
+    <li><b>情境 C（3 分鐘）</b>：自己對著手機錄音，從「接線」講到「6 A 出光」（4.4 + 4.5），回放聽數字唸得清不清楚。</li>
+  </ul>
+</div>
+
+<!-- ============================== POCKET CARD ============================== -->
+<h1><span class="num">A</span>Pocket card<span class="zh">隨身小卡（印出來帶著）</span></h1>
+<div class="card">
+  <h3>Must-say sentences <span class="zh" style="color:var(--muted);font-weight:600">一定要講的句子</span></h3>
+  <ol>
+    <li><b>Neither terminal of the diode is at ground.</b> If the cathode touches ground, the diode is destroyed.</li>
+    <li>Which electrode is connected to the F-mount base? Is your heat sink earthed?</li>
+    <li>The board powers up disarmed. Only SW1 can arm it — not the console.</li>
+    <li>First a transport check on the dummy load, then we step up from one amp to six amps.</li>
+    <li>Clip the probe ground to TP2, not TP4. Twenty millivolts per amp.</li>
+    <li>Disarm, open the interlock, unplug twelve volts, wait ten seconds, then touch the cable.</li>
+    <li>If a board doesn't match our records, we swap it — no repairs on site.</li>
+    <li>Twelve volts only — no twenty-four volts.</li>
+    <li>Set the generator load to High-Z. Falling edge. SYNC into one megohm, not fifty ohms.</li>
+    <li>I'm not sure — I'll check and get back to you by email.</li>
+  </ol>
+</div>
+
+<div class="two">
+  <div class="card">
+    <h3>Key numbers <span class="zh" style="color:var(--muted);font-weight:600">關鍵數字</span></h3>
+    <table style="margin:0">
+      <tr><td>Current</td><td>0.05–6 A, ±1 % after cal</td></tr>
+      <tr><td>Pulse width</td><td>20–591 µs (FWHM)</td></tr>
+      <tr><td>Rep rate</td><td>16–2000 Hz, duty ≤ 42 %</td></tr>
+      <tr><td>Rise / fall @ 6 A</td><td>≤ 30 / 33 µs</td></tr>
+      <tr><td>Compliance @ 6 A</td><td>3.0 V guaranteed</td></tr>
+      <tr><td>Bias</td><td>50 mA default (0–200)</td></tr>
+      <tr><td>Supply</td><td>12 V ±10 %, &lt; 0.9 A avg</td></tr>
+      <tr><td>Interlock off</td><td>&lt; 10 % in ~35 µs</td></tr>
+      <tr><td>HW pulse limit</td><td>~1.2 ms</td></tr>
+      <tr><td>TP1 scale</td><td>20 mV/A (120 mV = 6 A)</td></tr>
+      <tr><td>Console</td><td>9600 8N1</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Faults &amp; checks <span class="zh" style="color:var(--muted);font-weight:600">故障與檢查</span></h3>
+    <table style="margin:0">
+      <tr><td>1 blink</td><td>NO_CURRENT — open load / polarity</td></tr>
+      <tr><td>2 blinks</td><td>HEAT — Q1 &gt; 3 W for 5 s or 85 °C</td></tr>
+      <tr><td>3 blinks</td><td>ILOCK — interlock opened</td></tr>
+      <tr><td>Clear</td><td>SW1 once, then once more to arm</td></tr>
+      <tr><td>J3-1 / J3-2</td><td>anode / cathode</td></tr>
+      <tr><td>Diode mode</td><td>1.1–1.5 V (0.3 V = reversed)</td></tr>
+      <tr><td>Cathode–GND</td><td>≈ 40 kΩ (&lt; 100 Ω STOP)</td></tr>
+      <tr><td>Anode–GND</td><td>≈ 12 kΩ</td></tr>
+      <tr><td>LEDs</td><td>green power · red armed · yellow interlock</td></tr>
+    </table>
+  </div>
+</div>
+
+</body>
+</html>

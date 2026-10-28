@@ -48,7 +48,12 @@ Angular 原始碼位於 [`aod_angular/aod_ng/`](aod_angular/aod_ng/)。
 
 ### LD-PULSE-6A 收板測試指南 [`/ld6a_pcb/`](https://jamyang838.github.io/ld6a_pcb/)
 
-LD-PULSE-6A 雷射二極體脈衝驅動板的收板（bring-up）測試步驟，左側為實板圖，點選步驟會放大對應的量測點。
+LD-PULSE-6A 雷射二極體脈衝驅動板的測試與使用指南，左側為實板圖，點選步驟會放大對應的量測點。同資料夾另有：
+
+- [韌體說明](https://jamyang838.github.io/ld6a_pcb/firmware.html)（[PDF](ld6a_pcb/LD-PULSE-6A_firmware.pdf)）
+- [LZH 速查表](https://jamyang838.github.io/ld6a_pcb/cheatsheet.html)（[PDF](ld6a_pcb/LD-PULSE-6A_cheatsheet.pdf)）、[單頁版](https://jamyang838.github.io/ld6a_pcb/cheatsheet_1page.html)（[PDF](ld6a_pcb/LD-PULSE-6A_cheatsheet_1page.pdf)）
+- [攜帶清單](https://jamyang838.github.io/ld6a_pcb/packing_list.html)（[PDF](ld6a_pcb/LD-PULSE-6A_packing_list.pdf)）
+- [英文口說練習](https://jamyang838.github.io/ld6a_pcb/phrasebook.html)
 
 ---
 

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>LD-PULSE-6A 採購與攜帶清單</title>
+<style>
+  @page { size: A4; margin: 6mm 7mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; background: #fff; color: #161616; font: 7.9pt/1.36 "PingFang TC", "Heiti TC", sans-serif; }
+  code { font-family: Menlo, "SF Mono", Consolas, "PingFang TC", monospace; font-size: 7.3pt; }
+  header { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1.3pt solid #12324f; padding-bottom: 1.5pt; margin-bottom: 3pt; }
+  header h1 { margin: 0; font-size: 12.5pt; color: #12324f; }
+  header .meta { font-size: 6.6pt; color: #4a5866; text-align: right; }
+  h2 { font-size: 8.7pt; margin: 3pt 0 1.5pt; padding: .7pt 4pt; background: #12324f; color: #fff; border-radius: 1.3pt; }
+  h3 { font-size: 8pt; margin: 2.5pt 0 1pt; color: #12324f; border-bottom: .5pt solid #b9c3cc; }
+  .grid { display: grid; grid-template-columns: 58% 1fr; gap: 0 8pt; align-items: start; }
+  .grid > div > :first-child { margin-top: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 0 0 2pt; }
+  th, td { border: .45pt solid #b9c3cc; padding: .9pt 2.4pt; vertical-align: top; text-align: left; }
+  th { background: #e4ebf2; color: #12324f; font-weight: 600; }
+  td.box { width: 9pt; text-align: center; color: #12324f; }
+  td.q { white-space: nowrap; text-align: center; }
+  tr.cat td { background: #f1f4f7; color: #12324f; font-weight: 600; }
+  .note { color: #4a5866; font-size: 7.2pt; }
+  ul.chk { list-style: none; margin: 0 0 1.5pt; padding: 0; }
+  ul.chk li { padding-left: 9pt; text-indent: -9pt; margin-bottom: .6pt; }
+  ul.chk li::before { content: "☐ "; color: #12324f; }
+  ul.no { list-style: none; margin: 0; padding: 0; }
+  ul.no li { padding-left: 9pt; text-indent: -9pt; margin-bottom: .6pt; }
+  ul.no li::before { content: "✗ "; color: #a3241b; font-weight: 700; }
+  .tag { display: inline-block; font-size: 6pt; padding: 0 2pt; border-radius: 1.5pt; margin-left: 2pt; text-indent: 0; }
+  .hand { background: #e3f0e6; color: #1d6b2f; }
+  .chkd { background: #fdf0ef; color: #a3241b; }
+  .todo { background: #fff3d9; color: #8a5a00; }
+  .box2 { border: 1pt solid #a3241b; background: #fdf0ef; border-radius: 2pt; padding: 2pt 5pt; margin-top: 3pt; }
+  footer { margin-top: 2pt; font-size: 6pt; color: #6b7785; }
+</style>
+</head>
+<body>
+<header>
+  <h1>LD-PULSE-6A 去 LZH：採購與攜帶清單</h1>
+  <div class="meta">2026-10-23 版 · 依 LZH_TRIP.md §1.3、§1.5、§2 · 已有的打勾略過<br>
+  標記：<span class="tag hand">手提</span> 隨身登機　<span class="tag chkd">託運</span> 工具與刀剪　<span class="tag todo">未完成</span> 出發前要做</div>
+</header>
+
+<div class="grid">
+<!-- ===================== 要買 ===================== -->
+<div>
+<h2>一、要買（出發前到貨；延長線、Type F 轉接頭也可以到德國買）</h2>
+<table>
+  <tr><th style="width:3%"></th><th style="width:16%">品項</th><th style="width:42%">規格／建議</th><th style="width:7%">數量</th><th>用途</th></tr>
+  <tr class="cat"><td colspan="5">電源</td></tr>
+  <tr><td class="box">☐</td><td>12 V 變壓器</td><td>輸入 <b>100–240 V</b>，12 V ≥ 2 A（建議 3 A），5.5/2.1 mm <b>中心正</b>。例：Mean Well GST36A12-P1J</td><td class="q">2</td><td>LZH 供電；1 A 的會在脈衝中掉壓重置</td></tr>
+  <tr><td class="box">☐</td><td>Type F 轉接頭</td><td>台灣插頭 → 德國 Schuko 插座</td><td class="q">3</td><td>筆電、變壓器</td></tr>
+  <tr><td class="box">☐</td><td>延長線</td><td><b>額定 250 V</b>（台灣一般是 125 V，不能插 230 V）</td><td class="q">1</td><td>工作台供電</td></tr>
+  <tr><td class="box">☐</td><td>香蕉頭電源線</td><td>香蕉頭 → 叉形端子或鱷魚夾，紅黑各 1</td><td class="q">1 組</td><td>J2 接 LZH 實驗室電源（限流 2 A）</td></tr>
+  <tr><td class="box">☐</td><td>小風扇</td><td>12 V、40 mm，加一條分接線</td><td class="q">1</td><td>800 Hz、室溫 &gt; 30 °C 時吹 Q1</td></tr>
+  <tr class="cat"><td colspan="5">負載</td></tr>
+  <tr><td class="box">☐</td><td>假負載 A</td><td><b>0.33 Ω / 25 W 鋁殼電阻</b>＋散熱片＋導熱膏。例：Arcol HS25 0R33 J、TE HSA25 0R33J</td><td class="q">2</td><td>運輸確認；6 A 時約 2.0 V，接近 LD</td></tr>
+  <tr><td class="box">☐</td><td>假負載 B</td><td>2.2 Ω / 5 W</td><td class="q">2</td><td>I ≤ 1.5 A 的檢查</td></tr>
+  <tr><td class="box">☐</td><td>精密分流器（選用）</td><td>四端點 0.1 Ω、1 % 以上、≥ 25 W</td><td class="q">1</td><td>獨立電流對照：6 A → 600 mV</td></tr>
+  <tr class="cat"><td colspan="5">線材與接線</td></tr>
+  <tr><td class="box">☐</td><td>LD 線</td><td>18 AWG 紅、黑各 5 m（自己絞）</td><td class="q">1 組</td><td>做 50 cm、100 cm LD 線與 1.5 m 測試線</td></tr>
+  <tr><td class="box">☐</td><td>端子</td><td>0.75 mm² 管形端子（ferrule）；M2 / M2.5 / M3 環形與叉形端子；壓接鉗</td><td class="q">各 1 包</td><td>J3 端壓 ferrule；LD 端視 LZH 接法現場壓</td></tr>
+  <tr><td class="box">☐</td><td>互鎖開關</td><td>撥動開關＋兩條線；另做一條 J4 短路跳線</td><td class="q">2</td><td>J4 互鎖、急停測試</td></tr>
+  <tr><td class="box">☐</td><td>BNC 轉接線</td><td>BNC 母 → 2.54 mm 杜邦母</td><td class="q">3</td><td>J6 觸發入、SYNC 出</td></tr>
+  <tr><td class="box">☐</td><td>BNC 線</td><td>1 m</td><td class="q">2</td><td>接 LZH 產生器、示波器</td></tr>
+  <tr><td class="box">☐</td><td>USB 線材</td><td>USB-C <b>資料線</b> × 2、USB-A → C × 1、小 hub × 1</td><td class="q">1 組</td><td>主控台（筆電可能只有一種口）</td></tr>
+  <tr><td class="box">☐</td><td>膠帶耗材</td><td>Kapton 50 µm、熱縮套、電氣膠帶、束帶、紙膠帶</td><td class="q">各 1</td><td>LD_K 裸銅貼 Kapton、線材整理</td></tr>
+  <tr class="cat"><td colspan="5">板子固定與標示</td></tr>
+  <tr><td class="box">☐</td><td>絕緣底板</td><td>壓克力或 FR4，約 120 × 90 mm</td><td class="q">5</td><td>板子不直接放在接地的光學桌上</td></tr>
+  <tr><td class="box">☐</td><td>尼龍柱</td><td>M3 尼龍柱 ≥ 10 mm＋尼龍螺絲</td><td class="q">20 組</td><td>固定在底板（底層有端子台針腳）</td></tr>
+  <tr><td class="box">☐</td><td>測試點針腳</td><td>1 mm 探針腳或測試勾；TP1/TP2 用短絞線做探棒插座</td><td class="q">30</td><td>TP1–TP6 只有焊墊</td></tr>
+  <tr><td class="box">☐</td><td>英文標籤</td><td>標籤機帶或貼紙</td><td class="q">1</td><td>J7「12 V DC ONLY」、J3 極性、J4、板號與校準日</td></tr>
+  <tr class="cat"><td colspan="5">量測、燒錄、運輸</td></tr>
+  <tr><td class="box">☐</td><td>1:1 探棒套件</td><td>1× / 10× 可切換被動探棒＋彈簧地、迷你夾、探棒 → BNC</td><td class="q">1 套</td><td>TP1 在 1 A 只有 20 mV，10× 看不清楚</td></tr>
+  <tr><td class="box">☐</td><td>防靜電</td><td>靜電環＋小靜電墊</td><td class="q">1 套</td><td>接 LD、拿板子</td></tr>
+  <tr><td class="box">☐</td><td>ICD5 轉接</td><td><b>AC164110</b>（RJ-11 → 1×6 SIL）。先看 ICD5 盒內有沒有轉接板</td><td class="q">1</td><td>ICD5 接 J5 燒錄</td></tr>
+  <tr><td class="box">☐</td><td>包裝</td><td>防靜電袋 × 10、防靜電泡棉、手提尺寸硬殼箱</td><td class="q">1 套</td><td>5 片板子隨身帶</td></tr>
+  <tr><td class="box">☐</td><td>隨身碟</td><td>FAT32</td><td class="q">2</td><td>repo、各板 hex、PDF、示波器截圖</td></tr>
+  <tr><td class="box">☐</td><td>護目鏡</td><td>793 nm＋1047 nm，OD 依 LZH 雷射安全官。<b>先問 LZH，沒有才買</b></td><td class="q">—</td><td>接真 LD 與雷射頭</td></tr>
+</table>
+<p class="note">已經在實驗室的（三用電表、起子、剝線鉗、斜口鉗、鑷子）不用買，直接列在右邊的攜帶清單。</p>
+</div>
+
+<!-- ===================== 要帶 ===================== -->
+<div>
+<h2>二、要帶（裝箱時打勾）</h2>
+
+<h3>板子與燒錄 <span class="tag hand">手提</span></h3>
+<ul class="chk">
+  <li>LD-PULSE-6A SN01–SN05：已校準、裝底板、貼標、焊測試點，各自防靜電袋</li>
+  <li>各板 hex（<code>ld_pulse6a_SNxx.hex</code>）與校準常數表</li>
+  <li>ICD5＋USB-C 線＋RJ-11 → SIL 轉接</li>
+  <li>rev A6 1 A 板（選用，低電流展示）</li>
+</ul>
+
+<h3>筆電 <span class="tag hand">手提</span></h3>
+<ul class="chk">
+  <li>MPLAB IPE v6.20＋XC8 v2.45：<code>make program TOOL=ICD5</code> 在家燒過一次</li>
+  <li>終端機（screen / CoolTerm / PuTTY）9600 8N1，<b>開 log</b></li>
+  <li>KiCad 10＋整個 repo；Python＋pyserial（選用）</li>
+  <li>隨身碟 × 2＋雲端備份（repo zip、hex、PDF）</li>
+</ul>
+
+<h3>電源與負載</h3>
+<ul class="chk">
+  <li>12 V 變壓器 × 2、Type F 轉接頭 × 3、250 V 延長線</li>
+  <li>香蕉頭電源線、40 mm 風扇＋分接線</li>
+  <li>假負載 A 0.33 Ω × 2（已鎖散熱片）、假負載 B 2.2 Ω × 2</li>
+  <li>精密分流器（選用）</li>
+</ul>
+
+<h3>線材</h3>
+<ul class="chk">
+  <li>LD 線 50 cm、100 cm（J3 端已壓 ferrule，LD 端留裸線）、1.5 m 測試線</li>
+  <li>環形／叉形端子、ferrule、壓接鉗 <span class="tag chkd">託運</span></li>
+  <li>互鎖開關線 × 2、J4 短路跳線</li>
+  <li>BNC 轉接線 × 3、BNC 線 × 2</li>
+  <li>USB-C 資料線 × 2、USB-A → C、hub</li>
+  <li>Kapton、熱縮套、電氣膠帶、束帶、紙膠帶</li>
+</ul>
+
+<h3>量測與工具 <span class="tag chkd">託運</span></h3>
+<ul class="chk">
+  <li>4½ 位三用電表（200 mV 檔解析 0.01 mV）</li>
+  <li>1:1 探棒套件（彈簧地、迷你夾、探棒 → BNC）</li>
+  <li>差動探棒（借得到才帶）、熱電偶或熱像儀（選用）</li>
+  <li>螺絲起子（M2.5 一字、十字）、剝線鉗、斜口鉗、鑷子、放大鏡</li>
+  <li>靜電環＋靜電墊、油性筆或標籤機</li>
+</ul>
+
+<h3>文件（紙本） <span class="tag hand">手提</span></h3>
+<ul class="chk">
+  <li>英文 Quick Start × 3 <span class="tag todo">未完成</span></li>
+  <li>英文操作說明 × 1、英文驗收表 × 2 <span class="tag todo">未完成</span></li>
+  <li>原理圖、組裝圖＋測試點座標（<code>output/</code>）</li>
+  <li>每板紀錄表（TEST.md §11）、§7 問答紀錄</li>
+  <li>速查卡：一頁版貼工作台、兩頁版 × 2；§3 硬規則貼工作台</li>
+</ul>
+
+<h3>安全與通關 <span class="tag hand">手提</span></h3>
+<ul class="chk">
+  <li>護目鏡（LZH 有就不帶）</li>
+  <li>形式發票：“Prototype PCB for evaluation, no commercial value, to be re-exported”</li>
+  <li>ITRI 公函、LZH 邀請信</li>
+</ul>
+
+<div class="box2">
+<b style="color:#a3241b">不帶</b>
+<ul class="no">
+  <li>零件備品、電烙鐵：不現場維修，異常板帶回台灣</li>
+  <li>F-mount 絕緣墊、尼龍螺絲：LZH 說是陶瓷絕緣；固定孔 Ø1.8 mm 也鎖不進</li>
+  <li>任何 24 V 電源（板子上限 13.2 V）</li>
+</ul>
+</div>
+<p class="note" style="margin-top:2pt"><b>提醒：</b>板子、筆電、ICD5、行動電源（鋰電池）一律手提；剪鉗、起子等工具放託運，免得安檢沒收。下機後板子回溫 1–2 h 再通電，避免結露。</p>
+</div>
+</div>
+
+<footer>依據 ld6a/LZH_TRIP.md §1.3、§1.5、§2 與 TEST.md §1（2026-10-23）。料號只是例子，同規格即可。</footer>
+</body>
+</html>

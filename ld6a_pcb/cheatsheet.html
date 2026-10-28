@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>LD-PULSE-6A 現場速查卡</title>
+<style>
+  @page { size: A4; margin: 7mm 8mm 7mm 8mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; background: #fff; color: #161616; font: 8.2pt/1.4 "PingFang TC", "Heiti TC", sans-serif; }
+  code, .mono { font-family: Menlo, "SF Mono", Consolas, "PingFang TC", monospace; font-size: 7.6pt; }
+  code { background: #eef1f4; padding: 0 1.6pt; border-radius: 1.5pt; white-space: nowrap; }
+  .page { break-after: page; }
+  .page:last-child { break-after: auto; }
+  header { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1.4pt solid #12324f; padding-bottom: 2pt; margin-bottom: 4pt; }
+  header h1 { margin: 0; font-size: 14pt; color: #12324f; letter-spacing: .3pt; }
+  header .meta { font-size: 7.2pt; color: #4a5866; text-align: right; }
+  h2 { font-size: 8.6pt; margin: 5pt 0 2pt; padding: 1pt 4pt; background: #12324f; color: #fff; border-radius: 1.5pt; break-after: avoid; }
+  h2.red { background: #a3241b; }
+  h2 code { color: #12324f; background: #fff; }
+  .chk { list-style: none; padding-left: 0; }
+  .chk li { padding-left: 11pt; text-indent: -11pt; }
+  .chk li::before { content: "☐ "; color: #12324f; }
+  td.blank { height: 13pt; }
+  p { margin: 0 0 2.5pt; }
+  ul, ol { margin: 0 0 2.5pt; padding-left: 11pt; }
+  li { margin: 0 0 .8pt; }
+  table { width: 100%; border-collapse: collapse; margin: 0 0 3pt; }
+  th, td { border: .5pt solid #b9c3cc; padding: 1pt 2.6pt; vertical-align: top; text-align: left; }
+  th { background: #e4ebf2; color: #12324f; font-weight: 600; }
+  td.c, th.c { text-align: center; }
+  .nw { white-space: nowrap; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 9pt; }
+  .cols > div > :first-child { margin-top: 0; }
+  .danger { border: 1.3pt solid #a3241b; background: #fdf0ef; border-radius: 2pt; padding: 3pt 6pt 2pt; margin: 0 0 4pt; }
+  .danger ol { margin: 0; padding-left: 12pt; columns: 2; column-gap: 14pt; }
+  .danger li { margin-bottom: 1.6pt; break-inside: avoid; }
+  .danger b { color: #a3241b; }
+  .note { color: #4a5866; font-size: 7.4pt; }
+  pre { font-family: Menlo, "SF Mono", Consolas, "PingFang TC", monospace; font-size: 7.3pt; line-height: 1.42; margin: 0 0 3pt; padding: 3pt 5pt; background: #f3f5f7; border-left: 2pt solid #12324f; white-space: pre-wrap; }
+  .top { display: grid; grid-template-columns: 114mm 1fr; gap: 0 8pt; align-items: start; }
+  svg text { font-family: "PingFang TC", sans-serif; }
+  svg .halo { paint-order: stroke; stroke: #fff; stroke-width: .8; stroke-linejoin: round; }
+  .ok { color: #1d6b2f; font-weight: 600; }
+  .bad { color: #a3241b; font-weight: 600; }
+  footer { margin-top: 3pt; font-size: 6.5pt; color: #6b7785; border-top: .5pt solid #c9d1d9; padding-top: 1.5pt; }
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE 1 ============================ -->
+<section class="page">
+<header>
+  <h1>LD-PULSE-6A 現場速查卡（1/2）接線・安全・量測</h1>
+  <div class="meta">rev B0 · 韌體 <code>ld_pulse6a.hex</code> · LZH Hannover 2026-11<br>2026-10-23 版 · 標「模擬」者尚未實測</div>
+</header>
+
+<div class="danger">
+<ol>
+  <li><b>LD 陰極不是地。</b>J3-2、TP6、右側裸銅（下圖紅斜線）都是 LD_K。碰到地，buck 直灌約 10 A，LD 微秒內燒毀。接線前用電表確認<b>兩片 tab 對散熱座都開路</b>。</li>
+  <li><b>料號沒確認前 <span class="nw">≤ <code>I 3000</code></span>。</b>03.0W-01（3 W，最大 3.5 A）永遠 <span class="nw">≤ <code>I 3000</code></span>；06.0W-01 拿到它的 datasheet 才升到 6 A。看不到標籤就當 3 W。</li>
+  <li><b>不要長按 SW1。</b>長按會跳 1→2→4→6 A，立刻生效並存檔，解鎖中也一樣。</li>
+  <li><b>碰 J3、LD、線材之前：</b>SW1 鎖定 → 打開互鎖 → 拔 12 V → 等 10 s。不接 24 V；J7 和 J2 不同時接；出光中不插拔線。</li>
+</ol>
+</div>
+
+<div class="top">
+<div>
+<svg viewBox="-3 -5 127 89" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="hatch" width="1.6" height="1.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="1.6" stroke="#c0392b" stroke-width=".55"/>
+    </pattern>
+  </defs>
+  <!-- board 110 x 80 mm, drawn y-down: Y = 80 - y -->
+  <rect x="0" y="0" width="110" height="80" rx="2" fill="#f4f7f2" stroke="#2b3a46" stroke-width=".5"/>
+  <g fill="#fff" stroke="#8795a1" stroke-width=".35">
+    <circle cx="4" cy="76" r="1.7"/><circle cx="106" cy="76" r="1.7"/><circle cx="4" cy="4" r="1.7"/><circle cx="106" cy="4" r="1.7"/>
+  </g>
+  <!-- LD_K bare copper -->
+  <polygon points="79.6,18.1 94,18.1 94,20.3 109.4,20.3 109.4,66 90,66 90,28 86.3,28 86.3,24.3 79.6,24.3" fill="url(#hatch)" stroke="#c0392b" stroke-width=".45"/>
+  <text class="halo" x="99.7" y="44" font-size="2.5" fill="#a3241b" text-anchor="middle" font-weight="600">LD_K</text>
+  <text class="halo" x="99.7" y="47.2" font-size="2.2" fill="#a3241b" text-anchor="middle">裸銅＝陰極</text>
+  <text class="halo" x="99.7" y="50.2" font-size="2.2" fill="#a3241b" text-anchor="middle">不可碰金屬</text>
+  <!-- big parts for orientation -->
+  <g fill="#e3e8ec" stroke="#8795a1" stroke-width=".35">
+    <circle cx="58.1" cy="21" r="4.2"/><circle cx="67.1" cy="21" r="4.2"/>
+    <rect x="45.4" y="12.4" width="7" height="7"/>
+    <rect x="78.8" y="16" width="6.6" height="10"/>
+  </g>
+  <g font-size="2" fill="#4a5866" text-anchor="middle">
+    <text x="58.1" y="21.7">C1</text><text x="67.1" y="21.7">C2</text><text x="48.9" y="16.6">L1</text><text x="82.1" y="21.7">Q1</text>
+  </g>
+  <!-- J7 barrel -->
+  <rect x="-1.5" y="7.8" width="16" height="9.6" fill="#dfe5ea" stroke="#2b3a46" stroke-width=".4"/>
+  <text x="6.5" y="13.6" font-size="2.6" text-anchor="middle" font-weight="600">J7</text>
+  <text x="17" y="10.2" font-size="2.3">12 V 圓孔，中心 +</text>
+  <!-- J2 terminal -->
+  <rect x="0.3" y="19.8" width="9.9" height="10.2" fill="#dfe5ea" stroke="#2b3a46" stroke-width=".4"/>
+  <circle cx="5.8" cy="22.4" r="1.4" fill="#fff" stroke="#2b3a46" stroke-width=".35"/><circle cx="5.8" cy="27.5" r="1.4" fill="#fff" stroke="#2b3a46" stroke-width=".35"/>
+  <text x="11.3" y="23.2" font-size="2.3" font-weight="600">−</text><text x="11.3" y="28.3" font-size="2.3" font-weight="600">+</text>
+  <text x="14" y="25.9" font-size="2.3"><tspan font-weight="600">J2</tspan> 12 V 備用（擇一）</text>
+  <!-- J5 ICSP: pin1 VPP at bottom -->
+  <g fill="#2b3a46">
+    <rect x="1.1" y="44.4" width="2.6" height="13.1" fill="#dfe5ea" stroke="#2b3a46" stroke-width=".35"/>
+    <circle cx="2.4" cy="45.7" r=".6"/><circle cx="2.4" cy="48.3" r=".6"/><circle cx="2.4" cy="50.8" r=".6"/><circle cx="2.4" cy="53.4" r=".6"/><circle cx="2.4" cy="55.9" r=".6"/>
+  </g>
+  <g font-size="1.8" fill="#2b3a46"><text x="4.4" y="46.3">PGC</text><text x="4.4" y="48.9">PGD</text><text x="4.4" y="51.4">GND</text><text x="4.4" y="54">+5V</text><text x="4.4" y="56.5">VPP 1</text></g>
+  <text x="10.5" y="51.4" font-size="2.3"><tspan font-weight="600">J5</tspan> 燒錄</text>
+  <!-- J6 trig/sync: pin1 TRIG at top -->
+  <g fill="#2b3a46">
+    <rect x="1.1" y="59.8" width="2.6" height="8" fill="#dfe5ea" stroke="#2b3a46" stroke-width=".35"/>
+    <circle cx="2.4" cy="61.1" r=".6"/><circle cx="2.4" cy="63.6" r=".6"/><circle cx="2.4" cy="66.2" r=".6"/>
+  </g>
+  <g font-size="1.8" fill="#2b3a46"><text x="4.4" y="61.7">1 TRIG 入</text><text x="4.4" y="64.2">2 GND</text><text x="4.4" y="66.8">3 SYNC 出</text></g>
+  <text x="14.6" y="64.2" font-size="2.3" font-weight="600">J6</text>
+  <!-- J1 USB-C -->
+  <rect x="35.7" y="72.4" width="8.8" height="8.6" fill="#dfe5ea" stroke="#2b3a46" stroke-width=".4"/>
+  <text x="40.1" y="77.6" font-size="2.2" text-anchor="middle" font-weight="600">J1</text>
+  <text x="40.1" y="70.9" font-size="2.1" text-anchor="middle">USB-C 主控台</text>
+  <!-- SW1 -->
+  <rect x="51.8" y="69.8" width="6.8" height="6.8" rx=".6" fill="#dfe5ea" stroke="#2b3a46" stroke-width=".4"/>
+  <circle cx="55.2" cy="73.2" r="2" fill="#fff" stroke="#2b3a46" stroke-width=".35"/>
+  <text x="55.2" y="68.6" font-size="2.2" text-anchor="middle" font-weight="600">SW1</text>
+  <!-- LEDs -->
+  <circle cx="62.6" cy="75.6" r="1.1" fill="#2e9e4a"/><circle cx="66.7" cy="75.6" r="1.1" fill="#d63a2f"/><circle cx="70.8" cy="75.6" r="1.1" fill="#e9b400"/>
+  <g font-size="1.8" text-anchor="middle"><text x="62.6" y="73.5">PWR</text><text x="66.7" y="79.2">EMIT</text><text x="70.8" y="73.5">ILOCK</text></g>
+  <!-- J3 LD out -->
+  <rect x="99.7" y="13.4" width="9.8" height="10.2" fill="#dfe5ea" stroke="#2b3a46" stroke-width=".4"/>
+  <circle cx="104.2" cy="16" r="1.4" fill="#fff" stroke="#2b3a46" stroke-width=".35"/><circle cx="104.2" cy="21.1" r="1.4" fill="#fff" stroke="#2b3a46" stroke-width=".35"/>
+  <text x="101.3" y="16.8" font-size="2.4" text-anchor="middle" font-weight="700" fill="#a3241b">+</text>
+  <text x="101.3" y="21.9" font-size="2.4" text-anchor="middle" font-weight="700" fill="#a3241b">−</text>
+  <text x="104.6" y="10.9" font-size="2.3" text-anchor="middle" font-weight="600">J3 LD</text>
+  <text x="111" y="16.7" font-size="2">1 陽極</text>
+  <text x="111" y="21.8" font-size="2">2 陰極</text>
+  <!-- J4 interlock -->
+  <rect x="91.7" y="71" width="10.2" height="8.5" fill="#dfe5ea" stroke="#2b3a46" stroke-width=".4"/>
+  <circle cx="94" cy="75.3" r="1.3" fill="#fff" stroke="#2b3a46" stroke-width=".35"/><circle cx="99" cy="75.3" r="1.3" fill="#fff" stroke="#2b3a46" stroke-width=".35"/>
+  <text x="96.8" y="69.6" font-size="2.2" text-anchor="middle"><tspan font-weight="600">J4</tspan> 互鎖</text>
+  <!-- test points -->
+  <g fill="#fff" stroke="#12324f" stroke-width=".55">
+    <circle cx="73.7" cy="38" r="1"/><circle cx="80.7" cy="45.1" r="1"/><circle cx="34.5" cy="43.5" r="1"/><circle cx="34.5" cy="46.1" r="1"/><circle cx="57" cy="12.5" r="1"/><circle cx="98" cy="32" r="1"/>
+  </g>
+  <g font-size="2.2" fill="#12324f" font-weight="600">
+    <text x="72.2" y="38.8" text-anchor="end">TP1 SENSE</text>
+    <text class="halo" x="82.2" y="48.6">TP2 AGND</text>
+    <text x="33" y="44.2" text-anchor="end">TP3 LD_EN</text>
+    <text x="33" y="46.9" text-anchor="end">TP4 GND</text>
+    <text x="59.2" y="11.2">TP5 VPWR</text>
+    <text class="halo" x="91.2" y="35.4" fill="#a3241b">TP6 LD_K</text>
+  </g>
+</svg>
+<p class="note">板子俯視，110 × 80 mm，位置依 PCB 檔。J3 上 + 下 −；J5 第 1 腳（VPP）在下端；J6 第 1 腳（TRIG）在上端。</p>
+</div>
+
+<div>
+<table>
+  <tr><th>接頭</th><th>接法</th></tr>
+  <tr><td class="nw">J7 / J2</td><td>12 V ±10 %，≥ 2 A（脈衝中 1.3–2.2 A）。J7 圓孔 5.5/2.1 中心 +；J2 端子 1 = +。<b>只能接一個</b></td></tr>
+  <tr><td>J3</td><td>LD：<b>1 陽極（上）、2 陰極（下）</b>。線 ≤ 1 m、絞線</td></tr>
+  <tr><td>J4</td><td>互鎖：短路才出光。接門開關或急停（乾接點 5 V / 0.5 mA）</td></tr>
+  <tr><td>J6</td><td>1 外部觸發 3–24 V（<b>上升緣</b>，≥ 5 µs）· 2 GND · 3 SYNC 5 V = LD_EN</td></tr>
+  <tr><td>J1</td><td>USB-C 主控台，只通訊、不供電（要資料線）</td></tr>
+  <tr><td>J5</td><td>ICSP 燒錄（ICD5 / PICkit）；USB 不能燒</td></tr>
+  <tr><td>SW1</td><td>短按：解鎖 ↔ 鎖定；有故障時第一下只清故障</td></tr>
+  <tr><td>LED</td><td>綠 PWR 電源 · 紅 EMIT 解鎖中／閃碼 · 黃 ILOCK 互鎖閉合</td></tr>
+</table>
+
+<h2>開關機順序</h2>
+<pre><b>接線</b>  斷電 → 靜電環 → LD 短路夾先不拔
+      → LD 接 J3 → 拔短路夾
+      → 電表檢查（下表）→ 互鎖（開著）
+      → USB → 最後才接 12 V
+<b>上電</b>  綠亮紅滅 → <code>?</code>：armed=no、fault=none、
+      I=1000 W=500 F=100 B=50（保守設定）
+      → 示波器、護目鏡就位
+      → 互鎖閉合（黃亮）→ SW1 短按
+      （約 25 ms 後第一發）
+<b>關機</b>  SW1 鎖定 → 打開互鎖 → 拔 12 V
+      → 等 10 s 才碰 LD 線</pre>
+</div>
+</div>
+
+<div class="cols">
+<div>
+<h2>上電前電表檢查（LD 已接 J3、未上電）</h2>
+<table>
+  <tr><th>量</th><th>預期</th><th>不符就停</th></tr>
+  <tr><td>二極體檔 紅 J3-1、黑 J3-2</td><td><b>1.1–1.5 V</b>（LD 正向）</td><td>OL：LD 反或沒接；≈ 0.3 V：線接反</td></tr>
+  <tr><td>二極體檔 紅 J3-2、黑 J3-1</td><td>≈ 0.3 V（D1）</td><td>—</td></tr>
+  <tr><td>電阻 紅 J3-2、黑 TP4</td><td><b>≈ 40 kΩ</b></td><td class="bad">&lt; 100 Ω = 陰極接地，絕不上電</td></tr>
+  <tr><td>電阻 J3-2 ↔ 散熱座、光學桌</td><td>OL 或 ≈ 40 kΩ</td><td class="bad">&lt; 100 Ω 停</td></tr>
+  <tr><td>電阻 紅 J3-1、黑 TP4</td><td>≈ 12 kΩ（會爬）</td><td>&lt; 100 Ω = 陽極接地</td></tr>
+  <tr><td>12 V 電源輸出</td><td>11.5–12.5 V、中心 +</td><td>24 V 電源不得靠近</td></tr>
+</table>
+<p class="note">極性只在 J3 端量（D1 把反向夾在 0.3 V）；不要直接量裸 LD 的反向。<br>
+<b>tab 對散熱座</b>（LD 還沒接 J3）：先量陽極 tab ↔ 散熱座，≈ 0 Ω 就停；再量陰極 tab，<b>紅棒放散熱座、黑棒放陰極</b>。兩次都 OL 才接。</p>
+</div>
+
+<div>
+<h2>示波器與測試點</h2>
+<table>
+  <tr><th>點</th><th>看什麼</th></tr>
+  <tr><td class="nw"><b>TP1</b> 對 <b>TP2</b></td><td>電流：<b>0.02 mV = 1 mA</b>。1 A = 20 mV、3 A = 60 mV、6 A = 120 mV；偏置 50 mA = 1 mV 基座。<b>探棒地夾 TP2，不夾 TP4</b>；用 <b>1:1 探棒</b></td></tr>
+  <tr><td><b>TP3</b>（地 TP4）</td><td>LD_EN = W + 9 µs，當觸發（上升緣、單次）</td></tr>
+  <tr><td><b>TP5</b> / <b>TP6</b></td><td>VPWR / LD_K（地 TP4）。<b>Vf = TP5 − TP6</b>。剛上電 TP5 ≈ 4.0 V；6 A 時 TP5 ≈ Vf + 0.72 V</td></tr>
+</table>
+<ul>
+  <li>前緣不得超過平頂 +2 %（6 A：TP1 ≤ 122.4 mV）。</li>
+  <li>6 A 邊沿：上升 ≈ 30 µs、下降 ≈ 33 µs（模擬）；電流越低越慢（1 A：62 / 72 µs）。</li>
+  <li>SYNC（J6-3）給 LZH 示波器：輸入設 <b>1 MΩ</b>，不要 50 Ω。電流 50 % 點比 SYNC 晚 10–20 µs。</li>
+  <li>假負載 0.33 Ω / 25 W：6 A 時 ≈ 2.0 V，接近 LD。低電流時 <code>vpwr_trim</code> 卡 1023 正常。</li>
+</ul>
+</div>
+</div>
+
+<h2>板號紀錄（每片用自己的 hex；運輸確認的 6 A 平頂和台灣差 &gt; 2 % 就換下一片）</h2>
+<table>
+  <tr><th>SN</th><th>hex</th><th style="width:15%">台灣 6 A 平頂（mV）</th><th style="width:15%">LZH 6 A 平頂（mV）</th><th style="width:15%">LD 料號 / 上限</th><th>狀態</th><th style="width:22%">備註</th></tr>
+  <tr><td class="blank nw">SN01</td><td class="nw">ld_pulse6a_SN01.hex</td><td></td><td></td><td></td><td>用／備／換下</td><td></td></tr>
+  <tr><td class="blank nw">SN02</td><td class="nw">ld_pulse6a_SN02.hex</td><td></td><td></td><td></td><td>用／備／換下</td><td></td></tr>
+  <tr><td class="blank nw">SN03</td><td class="nw">ld_pulse6a_SN03.hex</td><td></td><td></td><td></td><td>用／備／換下</td><td></td></tr>
+  <tr><td class="blank nw">SN04</td><td class="nw">ld_pulse6a_SN04.hex</td><td></td><td></td><td></td><td>用／備／換下</td><td></td></tr>
+  <tr><td class="blank nw">SN05</td><td class="nw">ld_pulse6a_SN05.hex</td><td></td><td></td><td></td><td>用／備／換下</td><td></td></tr>
+</table>
+
+<footer>依據 ld6a/MANUAL.md、LZH_TRIP.md、TEST.md、韌體 main.c（2026-10-23）。完整步驟與理由在 LZH_TRIP.md §3–§5。</footer>
+</section>
+
+<!-- ============================ PAGE 2 ============================ -->
+<section class="page">
+<header>
+  <h1>LD-PULSE-6A 現場速查卡（2/2）操作・故障・LZH 系統</h1>
+  <div class="meta">主控台 9600 8N1 · 只有 SW1 能解鎖<br>板子本身異常一律換下一片，不現場維修</div>
+</header>
+
+<div class="cols">
+<div>
+<h2>主控台（USB-C J1）</h2>
+<pre>macOS   ls /dev/cu.usbserial-*
+        screen /dev/cu.usbserial-XXXX 9600
+        離開 screen：Ctrl-A、K、Y
+Windows COMx，PuTTY / Tera Term，9600 8N1</pre>
+<table>
+  <tr><th>指令</th><th>範圍</th><th>說明</th></tr>
+  <tr><td><code>I &lt;mA&gt;</code></td><td class="nw">50–6000</td><td>平頂電流；調高時回應 <code>(trim reset)</code>，約 1 s 收斂</td></tr>
+  <tr><td><code>W &lt;us&gt;</code></td><td class="nw">20–591</td><td>脈寬（電流半高寬）；LD_EN = W + 9</td></tr>
+  <tr><td><code>F &lt;Hz&gt;</code></td><td class="nw">16–2000</td><td>重複率；外部觸發時是上限</td></tr>
+  <tr><td><code>B &lt;mA&gt;</code></td><td class="nw">0–200</td><td>脈衝間偏置（預設 50，LZH 已同意）；I ≥ 2B</td></tr>
+  <tr><td><code>T INT</code>/<code>EXT</code></td><td>—</td><td>內部自振 / J6-1 外部觸發</td></tr>
+  <tr><td><code>V &lt;mV&gt;</code></td><td class="nw">300–1500</td><td>Q1 Vds 目標，預設 600</td></tr>
+  <tr><td><code>SAVE</code> <code>?</code> <code>H</code></td><td>—</td><td>存 EEPROM · 狀態（4 行）· 說明</td></tr>
+</table>
+<ul>
+  <li><b>工作週期 ≤ 42 %</b>：(W + 9) × F ≤ 420000。W 500 → F ≤ 825；F 800 → W ≤ 516；F 400 → W ≤ 591。</li>
+  <li>一行一個指令，按 Enter；<b>等回應出來再送下一個</b>，不然回 <code>ERR rx</code>。超限回 <code>ERR</code> 加可用上限，設定不變。</li>
+  <li>改設定立即生效（解鎖中也是），<b>不會自動存</b>，要 <code>SAVE</code>。重燒韌體會清空 EEPROM。</li>
+  <li>保守設定（每片出發前已存）：<code>I 1000</code> <code>W 500</code> <code>F 100</code> <code>B 50</code> <code>T INT</code> <code>V 600</code></li>
+</ul>
+
+<h2>升流步驟（真 LD；每步看完波形、存截圖與 <code>?</code>）</h2>
+<table>
+  <tr><th class="c">步</th><th>指令</th><th>TP1</th><th>看</th></tr>
+  <tr><td class="c">1</td><td>解鎖前 <code>I 500</code>，<code>W 500</code> <code>F 100</code>，SW1</td><td class="nw">10 mV</td><td>平頂乾淨；3 W 料號約 0.26 W 光</td></tr>
+  <tr><td class="c">2</td><td><code>I 1000</code></td><td class="nw">20 mV</td><td>前緣無尖峰；Vf ≈ 1.5–1.8 V</td></tr>
+  <tr><td class="c">3</td><td><code>I 2000</code></td><td class="nw">40 mV</td><td><code>vds_meas</code>、<code>vpwr_trim</code> 往下收斂</td></tr>
+  <tr><td class="c">4</td><td><code>I 3000</code></td><td class="nw">60 mV</td><td>3 W：Vf ≤ 2.2 V、約 2.8 W。<b class="bad">3 W 料號到此為止</b></td></tr>
+  <tr><td class="c">5</td><td><code>I 4000</code>（只限 6 W）</td><td class="nw">80 mV</td><td>—</td></tr>
+  <tr><td class="c">6</td><td><code>I 6000</code>（只限 6 W）</td><td class="nw">120 mV</td><td>TP5 ≈ 2.7–3.3 V、<code>vds_meas</code> 550–650、<code>p_q1</code> &lt; 1600</td></tr>
+  <tr><td class="c">7</td><td>實際線纜、單次觸發看第一發</td><td class="nw">≤ +2 %</td><td>振鈴 → 線縮短絞緊 → 換板</td></tr>
+  <tr><td class="c">8</td><td><code>F 400</code> → <code>F 800</code>，對照 Picolas</td><td>—</td><td>同一顆 LD、同一功率計，L-I 曲線應重合；<code>SAVE</code></td></tr>
+</table>
+<h2>現場流程</h2>
+<ul class="chk">
+  <li>板子回溫 1–2 h；目視端子台、C1/C2、Q1 有沒有鬆動</li>
+  <li>運輸確認：電表檢查 → 空載上電（&lt; 150 mA、TP5 4.0 V）→ 0.33 Ω 假負載 <code>I 1000</code>→<code>6000</code> @ <code>F 100</code>。和台灣差 &gt; 2 % 換下一片</li>
+  <li>和 LZH 工程師、雷射安全官過一次 Quick Start 與鐵則</li>
+  <li>讀 LD 標籤 → 上限 3 A 或 6 A；tab 對散熱座開路；TEC 31 °C 穩定</li>
+  <li>電表檢查 → 上電 → 升流步驟 1–8；每步記 Vf</li>
+  <li>Picolas 對照：同一顆 LD、同一功率計，0.5 / 1 / 2 / 3 A（6 W 再加 4 / 6 A）</li>
+  <li><code>F 400</code>、<code>F 800</code> 各 15 分鐘：<code>temp_C</code>、<code>p_q1</code>、12 V 電流、平頂漂移 &lt; 1 %</li>
+  <li>外部觸發 100–800 Hz（DG1022A、High-Z），SYNC 給他們的量測</li>
+  <li>互鎖急停：先在 1 A 看 J3 反壓 ≤ 0.3 V，再到上限電流</li>
+  <li>接 Q 開關雷射：每個泵浦脈衝一個雷射脈衝；平均功率 ÷ 重複率 = 能量</li>
+  <li>填英文驗收表；每半天備份 log 與示波器截圖</li>
+</ul>
+</div>
+
+<div>
+<h2><code>?</code> 正常長這樣（6 A、800 Hz 示例）</h2>
+<pre>armed=yes ilock=closed
+I=6000mA W=500us F=800Hz B=50mA T=INT V=600mV LD_EN=509us
+comp=9us dac=5903mA duty=40.72% rate=800Hz preset=4 i_pulse=6000mA ...
+... vds_meas=600mV vpwr_trim=830 temp_C=58 fault=none</pre>
+<table>
+  <tr><th>欄位</th><th>正常</th></tr>
+  <tr><td><code>armed</code></td><td><code>no</code> 鎖定 · <code>arming</code> 解鎖後 25 ms · <code>yes</code> 出光</td></tr>
+  <tr><td><code>i_pulse</code></td><td>≈ I（解析度 50 mA，只是監視；以 TP1 為準）</td></tr>
+  <tr><td><code>vds_meas</code></td><td>600 ± 50 mV。真 LD 1 A 時約 750 也正常</td></tr>
+  <tr><td><code>vpwr_trim</code></td><td>0 = 4.0 V、1023 = 2.4 V。卡 0 且 vds &lt; 300：負載電壓太高</td></tr>
+  <tr><td><code>p_q1</code> / <code>temp_C</code></td><td>連續運轉 &lt; 1600 mW / &lt; 85 °C</td></tr>
+  <tr><td><code>rate</code></td><td>最近 1 秒實際脈衝數（外部觸發看這個）</td></tr>
+</table>
+
+<h2 class="red">故障（紅燈閃 N 下、停 1.5 s）</h2>
+<table>
+  <tr><th class="c">閃</th><th>故障</th><th>原因 → 處置</th></tr>
+  <tr><td class="c">1</td><td class="nw">NO_CURRENT</td><td>LD 沒接、極性反、J3 鬆、Vf 太高 → 先回假負載確認板子，再查線</td></tr>
+  <tr><td class="c">2</td><td class="nw">HEAT</td><td><code>p_q1</code> &gt; 3 W 持續 5 s 或板溫 &gt; 85 °C → 降 F、加風扇（&gt; 30 °C 室溫 800 Hz）</td></tr>
+  <tr><td class="c">3</td><td class="nw">ILOCK</td><td>解鎖中互鎖斷開、接點彈跳 → 用實心接點／繼電器</td></tr>
+</table>
+<p>處理：排除原因 → <b>SW1 按一下清除</b>（<code>SW1: fault cleared</code>）→ 再按一下才解鎖。</p>
+
+<h2>現場故障排除</h2>
+<table>
+  <tr><th>症狀</th><th>先看</th></tr>
+  <tr><td>綠燈不亮</td><td>12 V 極性（中心 +）、J7 J2 同時接？F1 自復保險絲跳（斷電 1 分鐘）</td></tr>
+  <tr><td><code>boot:</code> 一直出現</td><td>變壓器太弱 → ≥ 2 A、短線，或 J2 接實驗室電源（限流 2 A）</td></tr>
+  <tr><td>主控台沒反應</td><td>資料線？9600 8N1？Enter？等上一個回應？</td></tr>
+  <tr><td>平頂到不了設定值</td><td><code>vpwr_trim=0</code> 且 <code>vds_meas</code> &lt; 300 → 負載 &gt; 4.0 − 0.6 − 0.02·I → <code>V 400</code></td></tr>
+  <tr><td>外部觸發沒脈衝</td><td><code>T EXT</code>？上升緣？≥ 3 V（產生器設 High-Z）？<code>F</code> ≥ 觸發率？</td></tr>
+  <tr><td>探測器有 600 kHz 雜訊</td><td>buck；板子遠離、LD 線絞緊、加鐵氧體</td></tr>
+  <tr><td>冒煙、燒味、過熱</td><td>立刻斷電 → 換下一片，新板先假負載 → 壞板帶回</td></tr>
+</table>
+
+<h2>LZH 系統（報告 2026-08-30 + Q&amp;A）</h2>
+<ul>
+  <li>LD：BOM 是 <b>06.0W-01（6 W）</b>；10/20 寄來的 datasheet 是 03.0W-01（3 W：Ith 0.25 A、Vop 1.75 / 2.2 V、最大 3.5 A）。<b>先讀標籤。</b></li>
+  <li>TEC 31 °C（Meerstetter TEC1091 + Pt100，不在本板）。泵浦 500 µs、400 Hz（測過 100–800），運轉中不改重複率。</li>
+  <li>現用：Picolas LDP-CW 40-05，<b>240 mV = 6 A</b>；Rigol DG1022A 500 µs / 5 V。需求上升／下降 &lt; 100 µs。</li>
+  <li>能量：3 W 泵浦 90 µJ、5 W 200 µJ、6 W 225 µJ（報告 223 µJ）。<b>&gt; 200 µJ 要 6 W 料號約 5–6 A。</b></li>
+  <li>每脈衝能量 = 平均功率 ÷ 重複率：223 µJ × 400 Hz ≈ <b>89 mW</b>。判準：<b>每個泵浦脈衝只出一個雷射脈衝</b>。</li>
+  <li>外部觸發：<code>T EXT</code>、<code>F</code> ≥ 觸發率；DG1022A 負載設 High-Z。延遲約 6 µs（≤ 12 µs）。</li>
+  <li>板子留在 LZH：存好設定 <code>SAVE</code>、貼標，告訴對方「主控台不能解鎖」與三個故障碼。每半天結束：鎖定、斷電、備份 log 與截圖。</li>
+</ul>
+</div>
+</div>
+</section>
+
+</body>
+</html>

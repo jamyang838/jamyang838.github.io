@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LD-PULSE-6A 收板測試</title>
+<title>LD-PULSE-6A 測試與使用指南</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -165,14 +165,14 @@ button, input { font: inherit; color: inherit; }
 .stage-nav a b { font: 700 15px var(--f-display); color: var(--accent); }
 .stage-nav a.done b { color: var(--ok); }
 
-.stage { display: flex; flex-direction: column; gap: 6px; scroll-margin-top: 56px; }
+.stage { display: flex; flex-direction: column; gap: 6px; scroll-margin-top: 120px; }
 .stage-h { display: flex; align-items: baseline; gap: 10px; margin: 10px 0 4px; flex-wrap: wrap; }
 .stage-h .letter { font: 700 34px/1 var(--f-display); color: var(--accent); width: 26px; }
 .stage-h h2 { margin: 0; font-size: 18px; font-weight: 700; text-wrap: balance; }
 .stage-h .sub { font-size: 13px; color: var(--muted); }
 .stage-h .cnt { margin-left: auto; font: 600 12px var(--f-mono); color: var(--muted); }
 
-.step { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; scroll-margin-top: 60px; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; scroll-margin-top: 124px; }
 .step.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .step-row { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: stretch; }
 .step-row .chk { display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--line); }
@@ -246,12 +246,37 @@ td.n { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
   .mk::after { animation: none; display: none; }
   .bar i { transition: none; }
 }
+
+/* ---------- reference sections, expand-all, print ---------- */
+.stage-nav .grp { font: 600 12px/1 var(--f-mono); color: var(--muted); align-self: center; letter-spacing: .04em; }
+.stage-nav .grp.ref { padding-left: 8px; border-left: 1px solid var(--line); margin-left: 4px; }
+.btn.small { height: 30px; padding: 0 10px; font-size: 13px; }
+.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+#stageList.all .step-body { display: block; }
+.step-body ol.rules { padding-left: 0; }
+.step-body a { color: var(--accent); }
+.step-body .dot { vertical-align: -1px; margin: 0 2px; }
+.print-head { display: none; }
+@media print {
+  body { background: #fff; color: #000; padding: 0; font-size: 11pt; }
+  .app { display: block; max-width: none; }
+  .board-panel, .stage-nav, .toolbar, .boardid .btn, .bar, .copyrow, .mk, .lb { display: none !important; }
+  .print-head { display: block; font: 700 18pt/1.2 var(--f-display); margin: 0 0 8pt; }
+  .step-body { display: block !important; padding-left: 16px; }
+  .step, .card { border-color: #bbb; }
+  .step.sel { box-shadow: none; border-color: #bbb; }
+  .probes, .expect, .stop, .note, pre, tr { break-inside: avoid; }
+  .stage-h, .step-head { break-after: avoid; }
+  .chip { border: 1px solid #999; background: none; color: #000; }
+  pre { white-space: pre-wrap; }
+}
 </style>
 
+<div class="print-head">LD-PULSE-6A rev B0 — 收板測試・使用指南（2026-10-28）</div>
 <div class="app">
   <section class="board-panel" aria-label="電路板">
     <div class="brand">
-      <h1>LD-PULSE-6A <span>收板測試</span></h1>
+      <h1>LD-PULSE-6A <span>收板測試・使用指南</span></h1>
       <div class="meta">rev B0 · 110 × 80 mm · 頂面</div>
     </div>
     <div class="toolbar">
@@ -286,6 +311,7 @@ td.n { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
       <div class="boardid">
         <label for="boardNo">板號</label>
         <input id="boardNo" value="1" maxlength="12">
+        <button class="btn small" id="expandAll" type="button" aria-pressed="false">展開全部</button>
         <span class="progress" id="progress"></span>
       </div>
       <div class="bar"><i id="barFill"></i></div>
@@ -293,6 +319,7 @@ td.n { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
         <li><span>接雷射二極體之前，A–F 全部要過。假負載怎麼錯都燒不掉，真 LD 一個尖峰就報銷。</span></li>
         <li><span>每一步都有「停」條件。碰到就停下來找原因，不要往下做。</span></li>
         <li><span>示波器量電流一律 <b>TP1 對 TP2</b>。換算 <b class="mono">20 mV = 1 A</b>、<b class="mono">120 mV = 6 A</b>。</span></li>
+        <li><span>真 LD：料號沒確認前不超過 <b class="mono">I 3000</b>、不長按 SW1（3 W 料號最大 3.5 A）。</span></li>
       </ol>
     </div>
     <nav class="stage-nav" id="stageNav" aria-label="階段"></nav>
@@ -307,15 +334,21 @@ td.n { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
    role: red = 紅棒/探棒尖, black = 黑棒/探棒地, conn = 接線/操作, look = 目視/觸摸
    {REF} in text becomes a clickable chip that shows the part on the board. */
 const STAGES = [
-  { id: "O", name: "板上位置", sub: "先認識板子與器材" },
-  { id: "A", name: "不通電檢查", sub: "板子剛拿到，什麼都不插" },
-  { id: "B", name: "首次通電", sub: "不接負載、不插 USB、J4 開路" },
-  { id: "C", name: "燒韌體・主控台", sub: "12 V 供電，燒錄器不供電" },
-  { id: "D", name: "假負載脈衝", sub: "0.33 Ω / 25 W 鎖散熱片" },
-  { id: "E", name: "校準", sub: "每片都要做，改常數重燒" },
-  { id: "F", name: "驗收・保護功能", sub: "仍是假負載" },
-  { id: "G", name: "接雷射二極體", sub: "A–F 全過才做" },
-  { id: "T", name: "問題排除・紀錄", sub: "" },
+  { id: "O", g: "收板測試", name: "板上位置", sub: "先認識板子與器材" },
+  { id: "A", g: "收板測試", name: "不通電檢查", sub: "板子剛拿到，什麼都不插" },
+  { id: "B", g: "收板測試", name: "首次通電", sub: "不接負載、不插 USB、J4 開路" },
+  { id: "C", g: "收板測試", name: "燒韌體・主控台", sub: "12 V 供電，燒錄器不供電" },
+  { id: "D", g: "收板測試", name: "假負載脈衝", sub: "0.33 Ω / 25 W 鎖散熱片" },
+  { id: "E", g: "收板測試", name: "校準", sub: "每片都要做，改常數重燒" },
+  { id: "F", g: "收板測試", name: "驗收・保護功能", sub: "仍是假負載" },
+  { id: "G", g: "收板測試", name: "接雷射二極體", sub: "A–F 全過才做" },
+  { id: "T", g: "收板測試", name: "問題排除・紀錄", sub: "" },
+  { id: "S", g: "參考", name: "規格", sub: "設計值與模擬；實測後更新" },
+  { id: "U", g: "參考", name: "使用方式", sub: "安裝、上電、主控台、觸發、關機" },
+  { id: "N", g: "參考", name: "注意事項", sub: "雷射、電氣、LD 料號、線材、禁止事項" },
+  { id: "P", g: "參考", name: "保護與故障", sub: "故障碼、硬體保護、操作者排除" },
+  { id: "M", g: "參考", name: "維護", sub: "校準、C15、定期檢查、韌體" },
+  { id: "R", g: "參考", name: "文件與版本", sub: "" },
 ];
 
 const DMM = "三用電表", SCOPE = "示波器";
@@ -350,7 +383,7 @@ const STEPS = [
 <tr><td>假負載 B（選用）</td><td>2.2 Ω / 5 W</td><td>只用在 I ≤ 1500</td></tr>
 <tr><td>示波器</td><td>≥ 20 MHz、2 通道、單次、無限餘暉</td><td>TP1、TP3、TP5/TP6</td></tr>
 <tr><td>三用電表</td><td>4½ 位（200 mV 檔 0.01 mV）</td><td>不通電、電源軌、偏置校準</td></tr>
-<tr><td>PICkit 4 / SNAP</td><td>接 J5</td><td>燒韌體</td></tr>
+<tr><td>PICkit 4 / SNAP / ICD5</td><td>接 J5；ICD5 要 RJ-11 → 1×6 SIL 轉接</td><td>燒韌體（USB 不能燒，沒有 bootloader）</td></tr>
 <tr><td>USB-C 線</td><td>資料線，不是充電線</td><td>主控台 9600 8N1</td></tr>
 <tr><td>互鎖開關</td><td>撥動開關 + 兩條線接 J4</td><td>解鎖、急停測試</td></tr>
 <tr><td>函數產生器（選用）</td><td>5 V TTL、100–800 Hz、≥ 5 µs</td><td>外部觸發 J6-1</td></tr>
@@ -475,10 +508,10 @@ const STEPS = [
   /* ---------- C ---------- */
   { s: "C", id: "c1", t: "燒錄韌體", m: ["PICkit 4 / SNAP"],
     pts: [["J5.1","conn","pin 1 VPP"],["J5","conn","ICSP"]],
-    body: `<p>板子由 12 V 供電，<b>燒錄器不要供電給目標</b>（J5-2 已經有 5 V）。{J5} pin 1（VPP）在下方那端，看絲印。LVP 已開，SNAP 可用；USB 可同時插著。</p>
+    body: `<p>板子由 12 V 供電，<b>燒錄器不要供電給目標</b>（J5-2 已經有 5 V）。{J5} pin 1（VPP）在下方那端，看絲印。LVP 已開，SNAP 可用；ICD5 經 RJ-11 → 1×6 SIL 轉接（AC164110），SIL 的 ▲ 對 J5-1，第 6 腳懸空。板上<b>沒有 bootloader</b>，USB 只接 UART，不能拿來燒錄；USB 可同時插著。</p>
 <pre>cd ld6a/firmware
-make            # 產生 ld_pulse6a.hex（repo 裡已有）
-make program    # ipecmd -TPPK4；SNAP 改 -TPSNAP，或用 MPLAB IPE</pre>` },
+make                      # 產生 ld_pulse6a.hex（repo 裡已有）
+make program              # PICkit 4；ICD5：make program TOOL=ICD5；SNAP：TOOL=SNAP；或用 MPLAB IPE 燒 hex</pre>` },
   { s: "C", id: "c2", t: "主控台開機訊息", v: "fault=none", m: ["USB","9600 8N1"],
     pts: [["J1","conn","USB-C"]],
     body: `<p>插 {J1}；電腦出現 FTDI 序列埠。按燒錄器 reset 或重新上電：</p>
@@ -588,7 +621,7 @@ bias=50mA trig=int vds_target=600mV vds_meas=- vpwr_trim=0 temp_C=25 fault=none<
   { s: "F", id: "f5", t: "外部觸發與 SYNC", v: "延遲 ≈ 6 µs", m: ["函數產生器", SCOPE],
     pts: [["J6.1","red","觸發入"],["J6.2","black","GND"],["J6.3","conn","SYNC 出"],["TP3","red","LD_EN"],["TP4","black"]],
     body: `<p>TTL 5 V、400 Hz、脈寬 ≥ 5 µs 接 {J6}-1 / J6-2。<code>T EXT</code>、<code>F 800</code>（F 是上限）。</p>
-<ul><li>每個<b>下降緣</b>後約 6 µs（≤ 12 µs）{TP3} 拉高 509 µs；100–800 Hz 都跟得上。</li>
+<ul><li>每個<b>上升緣</b>後約 6 µs（≤ 12 µs）{TP3} 拉高 509 µs；100–800 Hz 都跟得上。</li>
 <li>J6-3 SYNC = LD_EN（5 V）。延遲抖動 ≤ 6 µs。觸發率 &gt; F 時多的被丟掉（不是故障）。</li><li>測完 <code>T INT</code>。</li></ul>` },
   { s: "F", id: "f6", t: "主控台限制與 EEPROM", v: "9 項一字不差", m: ["主控台"],
     pts: [["J1","conn","USB"]],
@@ -625,10 +658,21 @@ bias=50mA trig=int vds_target=600mV vds_meas=- vpwr_trim=0 temp_C=25 fault=none<
   { s: "G", id: "g1", t: "接線與安全", v: "先當 3 W 料號", m: ["護目鏡","靜電環"],
     pts: [["J3.1","red","陽極 +"],["J3.2","black","陰極 −"],["J4","conn","門開關/急停"]],
     body: `<ol><li>護目鏡（793 nm + 1047 nm）；靜電環；{J4} 接真正的門開關／急停。</li>
-<li>斷電、拆假負載。<b>J3-1 = 陽極、J3-2 = 陰極</b>（datasheet：左 tab −、右 tab +）。接線前用電表確認兩片 tab 對散熱座開路。</li>
+<li>斷電、拆假負載。<b>J3-1 = 陽極、J3-2 = 陰極</b>（datasheet：左 tab −、右 tab +）。接線前用電表確認兩片 tab 對散熱座開路（量法 N-6）。</li>
 <li>維持 <code>B 50</code>（LZH 已接受脈衝間 50 mA 偏置）。</li>
 <li><b>讀 LD 本體標籤確認料號</b>：03.0W-01（3 W）最大 3.5 A，上限 <code>I 3000</code>；06.0W-01 才做到 6 A。沒確認就當 3 W。</li></ol>
 <div class="stop"><b>不要</b><span>長按 SW1（會換到 6 A 檔）</span></div>` },
+  { s: "G", id: "g1b", t: "上電前五項電表檢查（LD 已接 J3、未上電）", v: "J3 正向 1.1–1.5 V", m: [DMM, "12 V 未插"],
+    pts: [["J3.1","red","陽極"],["J3.2","black","陰極"],["TP4","black","GND"]],
+    body: `<p>極性檢查<b>只在 J3 端子做</b>（接在 J3 上時 {D1} 把反向夾在 0.3 V；裸 LD 用電表量反向，電表開路電壓可能超過 LD 的反向額定）。板子未上電、12 V 未插：</p>
+<div class="tbl"><table><tr><th>#</th><th>量</th><th>預期</th><th>不符則停</th></tr>
+<tr><td>1</td><td>二極體檔：紅 {J3.1}（陽極）、黑 {J3.2}</td><td class="n"><b>1.1–1.5 V</b>（LD 正向，~1 mA 不出光）</td><td>OL = LD 接反或沒接；~0.3 V = 線反了（量到 D1）</td></tr>
+<tr><td></td><td>二極體檔：紅 J3-2、黑 J3-1</td><td class="n">≈ 0.3 V（D1 正向；LD 反向只承受 0.3 V）</td><td>—</td></tr>
+<tr><td>2</td><td>電阻檔：紅 J3-2、黑 {TP4}</td><td class="n"><b>≈ 40 kΩ</b>（R54 + R55）</td><td><b>&lt; 100 Ω = 陰極接地，絕對不可上電</b></td></tr>
+<tr><td>3</td><td>電阻檔：J3-2 ↔ 散熱座、J3-2 ↔ 光學桌</td><td class="n">OL（散熱座浮接）或 ≈ 40 kΩ（同為大地）</td><td>&lt; 100 Ω 停</td></tr>
+<tr><td>4</td><td>電阻檔：紅 J3-1、黑 TP4</td><td class="n">≈ 12 kΩ（R41 + R42，隨電容充電爬）</td><td>&lt; 100 Ω = 陽極接地（buck 會短路）</td></tr>
+<tr><td>5</td><td>12 V 電源輸出</td><td class="n">11.5–12.5 V，中心正</td><td>任何 24 V 電源不得接近這塊板子</td></tr></table></div>
+<p>之後：接互鎖開關（開著）→ 接 USB → 接 12 V → <code>?</code> 確認 <code>armed=no</code>、<code>fault=none</code> → 示波器 TP1（對 TP2）與 TP3 就位、護目鏡 → 互鎖閉合 → 才按 SW1（順序見 U-8）。</p>` },
   { s: "G", id: "g2", t: "首次出光 0.5 → 1 A", v: "Vf ≈ 1.6–1.7 V", m: [SCOPE],
     pts: [["TP1","red","CH1"],["TP2","black"],["TP5","red","陽極"],["TP6","red","陰極"],["SW1","conn","解鎖"]],
     body: `<p>上電，<code>?</code> 確認 <code>I=1000 W=500 F=100 B=50 V=600</code>；先 <code>I 500</code> 再按 {SW1} 解鎖，看完 0.5 A 再 <code>I 1000</code>。</p>
@@ -662,6 +706,330 @@ bias=50mA trig=int vds_target=600mV vds_meas=- vpwr_trim=0 temp_C=25 fault=none<
   { s: "T", id: "t2", t: "測試紀錄表（每片一份）", nochk: true, pts: [],
     body: `<div class="copyrow"><button class="btn" type="button" id="copyRec">複製紀錄表</button><span class="msg" id="copyMsg" aria-live="polite"></span></div>
 <pre id="recText"></pre>` },
+
+  /* ---------- S 規格（MANUAL.md §1、§3、§10；SPEC.md §1.2） ---------- */
+  { s: "S", id: "s1", t: "主要規格", nochk: true, v: "6 A · 500 µs · ≤ 825 Hz", pts: [],
+    body: `<p>標「模擬」的數字來自 <code>sim/REPORT.md</code>，第一片板子實測後改成實測值。出廠預設：<code>I 1000</code> <code>W 500</code> <code>F 400</code> <code>B 50</code> <code>T INT</code> <code>V 600</code>。</p>
+<div class="tbl"><table><tr><th>項目</th><th>規格</th><th>備註</th></tr>
+<tr><td>輸出電流</td><td class="n">50–6000 mA，6.4 mA／步</td><td>硬體上限約 6.6 A；校準後平頂 ±1 %</td></tr>
+<tr><td>平頂精度／漣波</td><td class="n">±1 %；逐發 &lt; 0.1 %；漣波 &lt; 0.2 %</td><td>模擬（漣波是 buck 600 kHz 漏入）</td></tr>
+<tr><td>脈寬 W（電流平頂 FWHM）</td><td class="n">20–591 µs；電氣閘門 = W + 9 µs ≤ 600 µs</td><td>硬體上限 ~1.2 ms；逐發 &lt; 1 µs</td></tr>
+<tr><td>重複率</td><td class="n">16–2000 Hz；(W + 9) × F ≤ 42 %</td><td>W 500 → F ≤ 825 Hz</td></tr>
+<tr><td>上升／下降 10–90 %</td><td class="n">6 A ≤ 30 / 33 µs；3 A 39 / 45；1 A 62 / 72</td><td>模擬，含起步延遲；&lt; 50 µs 只在 ≥ 3 A</td></tr>
+<tr><td>前緣過衝</td><td class="n">≤ 0.01 %（模擬）</td><td>驗收門檻 ≤ +2 %</td></tr>
+<tr><td>觸發抖動</td><td class="n">內部 ≤ 1 µs；外部延遲 6 µs、抖動 ≤ 6 µs</td><td></td></tr>
+<tr><td>順從電壓</td><td class="n">負載 ≤ 4.0 − 0.6 − 0.02·I</td><td>6 A：3.28 V 典型、3.0 V 保證；VPWR 2.4–4.0 V 自動調整（S-2）</td></tr>
+<tr><td>脈衝間偏置 B</td><td class="n">0–200 mA，0.24 mA／步，預設 50</td><td>I ≥ 2 B；要低於 LD 門檻</td></tr>
+<tr><td>監視</td><td class="n">電流 50 mA；Vds 4 mV；板溫 1 °C</td><td>主控台 <code>?</code>，不是量測儀器</td></tr>
+<tr><td>供電</td><td class="n">12 V ±10 %（10.8–13.2 V）；平均 &lt; 0.9 A</td><td>UVLO 約 9 V 起／8 V 停；反接保護、TVS、PTC 2 A；<b>不可 24 V</b></td></tr>
+<tr><td>外部觸發</td><td class="n">3–24 V 正脈衝，≥ 5 µs，上升緣</td><td>{J6}-1，輸入電流 ≤ 10 mA</td></tr>
+<tr><td>SYNC 輸出</td><td class="n">5 V 邏輯 = 電氣閘門（W + 9 µs）</td><td>{J6}-3，負載 ≥ 1 kΩ，不接 50 Ω</td></tr>
+<tr><td>互鎖</td><td class="n">乾接點 5 V / 0.5 mA；斷開 &lt; 35 µs 停</td><td>{J4}，硬體三路切斷</td></tr>
+<tr><td>主控台</td><td class="n">USB-C（USB 2.0 FS）FTDI 虛擬序列埠 9600 8N1</td><td>{J1}；只通訊不供電；不能解鎖</td></tr>
+<tr><td>設定記憶</td><td class="n">EEPROM，<code>SAVE</code></td><td></td></tr>
+<tr><td>Q1 功耗</td><td class="n">滿載平均 1.55 W（溫升約 60 °C）</td><td>守門 3 W / 5 s、板溫 85 °C</td></tr>
+<tr><td>環境</td><td class="n">0–40 °C</td><td>800 Hz 滿載且 &gt; 30 °C 要風扇吹 {Q1}</td></tr>
+<tr><td>板子</td><td class="n">110 × 80 × 1.6 mm，2 層，4 × M3</td><td>最高零件約 12 mm（端子台、圓孔座、C1/C2）</td></tr></table></div>` },
+  { s: "S", id: "s2", t: "負載電壓範圍", nochk: true, v: "6 A：1.68–3.28 V", pts: [["TP5","red","VPWR"],["TP6","red","LD_K"],["Q1","look"]],
+    body: `<p><b>上限</b>：脈衝中板子要供應 負載電壓 + {Q1} 的 0.6 V（伺服目標）+ 0.02 Ω × I，而 VPWR 最高 4.0 V：<b>負載電壓最高 = 4.0 − 0.6 − 0.02 × I</b>。</p>
+<div class="tbl"><table><tr><th>電流</th><th>負載電壓上限（典型）</th><th>保證值</th></tr>
+<tr><td class="n">6 A</td><td class="n">3.28 V</td><td class="n">3.0 V</td></tr>
+<tr><td class="n">4 A</td><td class="n">3.32 V</td><td class="n">3.1 V</td></tr>
+<tr><td class="n">2 A</td><td class="n">3.36 V</td><td class="n">3.1 V</td></tr>
+<tr><td class="n">≤ 1 A</td><td class="n">3.38 V</td><td class="n">3.2 V</td></tr></table></div>
+<ul><li>單顆 793 nm 泵浦 LD（6 A 時 Vf 約 2.0–2.5 V）在範圍內；<b>兩顆串聯（&gt; 3.3 V）不行</b>。</li>
+<li>超過上限：電流到不了設定值（平頂下垂或整個偏低），不會壞板子。</li>
+<li><code>V 400</code> 可把伺服目標降到 400 mV，上限多 0.2 V（精度仍 &lt; 0.3 %，模擬）；不建議為此犧牲餘裕。</li></ul>
+<p><b>下限</b>：VPWR 最低 2.4 V。負載電壓低於 <b>1.8 − 0.02 × I</b>（6 A 時 1.68 V）時伺服到底，多的電壓全落在 Q1：<b>Q1 平均功耗 = I × (2.4 − V負載 − 0.02 × I) × W × F</b>。連續運轉壓在 <b>1.6 W 以下</b>；&gt; 3 W 持續 5 s 韌體停機（HEAT）。6 A、W 500 µs：</p>
+<div class="tbl"><table><tr><th>負載電壓</th><th>Q1 峰值功耗</th><th>連續運轉的工作週期上限</th><th>W 500 時 F 上限</th></tr>
+<tr><td class="n">0 V（短路）</td><td class="n">13.7 W</td><td class="n">12 %</td><td class="n">230 Hz</td></tr>
+<tr><td class="n">1.0 V</td><td class="n">7.7 W</td><td class="n">21 %</td><td class="n">410 Hz</td></tr>
+<tr><td class="n">1.5 V</td><td class="n">4.7 W</td><td class="n">34 %</td><td class="n">670 Hz</td></tr>
+<tr><td class="n">≥ 1.68 V（LD 正常）</td><td class="n">3.6 W</td><td class="n">42 %（韌體上限）</td><td class="n">825 Hz</td></tr></table></div>
+<div class="note"><b>假負載</b><span>0.33 Ω / 25 W 在 6 A 時 2.0 V，行為接近 LD；1–4 A 時屬低電壓負載，照上表。短路負載安全，只是工作週期要低；F ≤ 100 Hz 時任何負載電壓都沒有功耗問題。</span></div>` },
+  { s: "S", id: "s3", t: "脈衝參數：邊沿、W/F 組合、偏置、短脈衝", nochk: true, v: "W + 9 ≤ 600；(W+9)·F ≤ 42 %", pts: [],
+    body: `<p><b>邊沿</b>（模擬，最差角落）：恆流迴路增益隨 √I，電流越低越慢。</p>
+<div class="tbl"><table><tr><th>電流</th><th>10–90 % 上升 / 下降</th><th>要有平頂的最小 W</th></tr>
+<tr><td class="n">6 A</td><td class="n">30 / 33 µs</td><td class="n">≥ 100 µs</td></tr>
+<tr><td class="n">3 A</td><td class="n">39 / 45 µs</td><td class="n">≥ 130 µs</td></tr>
+<tr><td class="n">1 A</td><td class="n">62 / 72 µs</td><td class="n">≥ 200 µs</td></tr>
+<tr><td class="n">0.5 A</td><td class="n">82 / 95 µs</td><td class="n">≥ 300 µs</td></tr>
+<tr><td class="n">0.2 A</td><td class="n">119 / 132 µs</td><td class="n">≥ 400 µs</td></tr></table></div>
+<ul><li><b>&lt; 50 µs 的邊沿只在 ≥ 3 A 達成。</b>W 可以設到 20 µs，但比上表短的脈衝是三角／梯形，峰值到不了設定值（6 A、W 20 只到 75 %）。</li>
+<li>脈寬 = 偏置基座之上的半高寬，校準後等於 W；SYNC 標的是電氣閘門，電流 50 % 點比它晚約 10–20 µs。</li></ul>
+<p><b>可用組合</b>：三條同時成立 <b>W + 9 ≤ 600 µs</b>、<b>(W + 9) × F ≤ 420000</b>（42 %）、<b>F ≤ 2000</b>。超限的指令被拒絕並回報最大可用值。</p>
+<div class="tbl"><table><tr><th>W</th><th>F 上限</th><th>W</th><th>F 上限</th></tr>
+<tr><td class="n">20–200 µs</td><td class="n">2000 Hz</td><td class="n">400 µs</td><td class="n">1026 Hz</td></tr>
+<tr><td class="n">250 µs</td><td class="n">1621 Hz</td><td class="n">500 µs</td><td class="n"><b>825 Hz</b></td></tr>
+<tr><td class="n">300 µs</td><td class="n">1359 Hz</td><td class="n">591 µs（最大）</td><td class="n">700 Hz</td></tr></table></div>
+<p><b>脈衝間偏置 B</b>：解鎖期間 LD 持續流 B（預設 50 mA），低於 LD 門檻（3 W 料號 0.25 A），不出光、LD 多耗 &lt; 0.1 W；好處是 6 A 起步只要 30 µs 且不隨溫度與元件差異漂移。LZH 10/20 已接受。</p>
+<ul><li><b>B 必須低於你的 LD 門檻</b>；門檻 &lt; 100 mA 的小 LD 設 <code>B 10</code> 或 <code>B 0</code>。</li>
+<li>規則 <b>I ≥ 2 × B</b>（B 50 → I 最低 100 mA）。</li>
+<li><code>B 0</code>：韌體改用死區補償，W 500 時 <b>I 必須 ≥ 3.4 A</b>、I &lt; 586 mA 不能用，而且每台要校準（E-1 #5）。</li></ul>
+<div class="note"><b>W &lt; 55 µs</b><span>韌體來不及在平頂取樣：<b>沒有 Vds 伺服、沒有開路偵測</b>。VPWR 停在上次的值，電流調高後是 4.0 V；Q1 功耗用 Vds = 4.0 − V負載 算（6 A、Vf 2.0 V：11 W 峰值 → 工作週期 ≤ 15 %）。</span></div>` },
+  { s: "S", id: "s4", t: "LZH 需求對照", nochk: true, v: "設計值全部符合（未實測）", pts: [],
+    body: `<p>來源：LZH 2026-08-30 需求文件 p.21–23（現用 Picolas LDP-CW 40-05 + Rigol DG1022A，設定值 240 mV → 6 A）。本板的數字是設計值與模擬，<b>板子還沒有實測</b>；實測驗收表在 F-8。</p>
+<div class="tbl"><table><tr><th>項目</th><th>LZH 需求</th><th>本板</th></tr>
+<tr><td>供電</td><td>12 V DC，系統 &lt; 1 A</td><td class="n">12 V ±10 %；板子 0.70–0.80 A @ 6 A / 500 µs / 800 Hz</td></tr>
+<tr><td>LD 電流</td><td>6 A ±0.1 A</td><td class="n">0.05–6.0 A；校準後 ±1 %</td></tr>
+<tr><td>順從電壓</td><td>≥ 3 V @ 6 A</td><td class="n">3.0 V 保證（3.28 V 典型）</td></tr>
+<tr><td>脈寬</td><td>固定 500 µs，穩定 &lt; 1 %</td><td class="n">W 20–591 µs；逐發 &lt; 1 µs</td></tr>
+<tr><td>觸發 jitter</td><td>&lt; 100 µs</td><td class="n">內部 ≤ 1 µs；外部 ≤ 12 µs</td></tr>
+<tr><td>電流上升</td><td>&lt; 100 µs，最好 &lt; 50</td><td class="n">≤ 30 µs @ 6 A（模擬）</td></tr>
+<tr><td>電流下降</td><td>&lt; 50 µs</td><td class="n">≤ 33 µs @ 6 A（模擬）</td></tr>
+<tr><td>重複率</td><td>&gt; 100 Hz；用 400，測過 100–800</td><td class="n">16–2000 Hz；500 µs 時 ≤ 825 Hz</td></tr>
+<tr><td>控制</td><td>脈衝產生器與設定值可內建</td><td>MCU 內建、USB 主控台、外部 TTL 觸發；取代 Picolas + 5 V 電源 + 設定值電源 + DG1022A 四台</td></tr>
+<tr><td>過衝</td><td>不得有前緣尖峰（COD）</td><td class="n">前緣 ≤ 平頂 +2 %（模擬 0.003 %）</td></tr></table></div>
+<p>TEC 溫控（LD 穩定在 31 °C）、溫度感測、風扇<b>不在本板範圍</b>，仍用 LZH 的 Meerstetter TEC1091。細節：<code>lzh/analysis/2026-10-23_system_drive_requirements.md</code>。</p>` },
+  { s: "S", id: "s5", t: "不適用的場合", nochk: true, pts: [],
+    body: `<ul><li>LD 串聯超過一顆（Vf &gt; 3.3 V）。</li><li>CW 連續出光（工作週期上限 42 %）。</li><li>電流 &gt; 6 A、脈寬 &gt; 591 µs、重複率 &gt; 2 kHz。</li><li>24 V 供電（TPS54824 上限 17 V；TVS 15 V 以上開始動作）。</li><li>需要 &lt; 50 µs 邊沿但電流 &lt; 3 A 的應用。</li><li>需要遠端（無人按鍵）解鎖的場合：主控台刻意不能解鎖。</li></ul>` },
+
+  /* ---------- U 使用方式（MANUAL.md §4–§6、附錄；LZH_TRIP.md §3.3） ---------- */
+  { s: "U", id: "u1", t: "安裝與接線順序", nochk: true, v: "12 V 最後接", pts: [["J4","conn","② 互鎖"],["J3","conn","③ LD"],["J1","conn","④ USB"],["J7","conn","⑤ 12 V"],["J2","conn","或 J2"]],
+    body: `<p>第一次使用一塊新板子之前，必須做過本頁 A–F 的檢測與校準（每片板子的校準常數不同）。</p>
+<ol><li><b>固定板子</b>：絕緣柱，4 × M3。頂面 {Q1} 的散熱銅是裸銅、帶 LD 陰極電位，不要讓金屬碰到板子頂面，不直接放金屬桌面。</li>
+<li><b>互鎖</b> {J4}：接真正的門開關或急停（乾接點），不要長期用跳線短路。</li>
+<li><b>LD</b> {J3}：<b>1 = 陽極（上）、2 = 陰極</b>。戴靜電環；雙絞線 ≤ 1 m；接好後照 G-2 的五項電表檢查確認極性與接地。</li>
+<li><b>USB</b> {J1}（選用）：有資料線的 USB-C 線；不供電也不吃電。</li>
+<li><b>最後接 12 V</b>：{J7} 圓孔座 5.5 / 2.1 mm 中心正，或 {J2} 端子台（1 = +）。<b>兩者只能用一個</b>。電源 ≥ 2 A（平均 0.7–0.8 A，脈衝中瞬間 1.3–2.2 A）。</li></ol>
+<p>外部觸發／SYNC 用 {J6}（1 觸發入、2 地、3 SYNC 出，2.54 mm 排針），見 U-7。{J5} 是燒錄用，使用者不用。</p>` },
+  { s: "U", id: "u2", t: "上電、指示燈、按鍵 SW1", nochk: true, v: "只有 SW1 能解鎖", pts: [["SW1","conn"],["D2","look","綠 電源"],["D3","look","紅 出光/故障"],["D4","look","黃 互鎖"]],
+    body: `<p>上電：綠燈 {D2} 亮；黃燈 {D4} 隨互鎖開關亮滅；紅燈 {D3} 滅（鎖定）。設定值從 EEPROM 載入，出廠預設 <code>I 1000 W 500 F 400 B 50 T INT V 600</code>。<b>上電後一律鎖定，不會自己出光。</b></p>
+<div class="tbl"><table><tr><th>SW1 動作</th><th>效果</th></tr>
+<tr><td>短按</td><td>解鎖 ↔ 鎖定。解鎖後紅燈亮，約 25 ms 後開始發脈衝（<code>armed=arming</code> → <code>yes</code>）</td></tr>
+<tr><td>短按（有故障時）</td><td>第一下只清除故障（<code>SW1: fault cleared</code>），再按一下才解鎖</td></tr>
+<tr><td>長按 ≥ 0.8 s</td><td>電流檔 1000 → 2000 → 4000 → 6000 → 1000 mA 循環<b>並存檔</b>；鎖定時紅燈閃 1–4 下表示檔位</td></tr></table></div>
+<ul><li>互鎖開著（黃燈滅）時按 SW1 不會解鎖。</li><li>紅燈閃碼（每組閃 N 下、暗 1.5 s）：1 無電流、2 過熱、3 互鎖，見 P-1。</li></ul>
+<div class="stop"><b>真 LD</b><span>接 3 W 料號時不要長按 SW1：按兩次就到 4 A 檔，超過它的 3.5 A 最大值。</span></div>` },
+  { s: "U", id: "u3", t: "主控台連線", nochk: true, v: "9600 8N1", pts: [["J1","conn","USB-C"],["U11","look","FT230XS"]],
+    body: `<p>接 {J1}，電腦出現一個序列埠（FTDI 驅動 Windows / macOS / Linux 內建）：</p>
+<div class="tbl"><table><tr><th>系統</th><th>埠名</th><th>終端機</th></tr>
+<tr><td>macOS</td><td class="n">/dev/cu.usbserial-XXXX</td><td class="n">screen /dev/cu.usbserial-XXXX 9600</td></tr>
+<tr><td>Windows</td><td class="n">COMx</td><td>PuTTY / Tera Term，Serial，9600；建議開 session logging 把整天的 <code>?</code> 留檔</td></tr>
+<tr><td>Linux</td><td class="n">/dev/ttyUSB0</td><td class="n">screen /dev/ttyUSB0 9600</td></tr></table></div>
+<ul><li><b>9600 8N1</b>，無流控。一行一個指令，大小寫不拘，Enter（CR 或 LF）結尾。</li>
+<li>板子會回顯，然後回 <code>OK …</code>（整行目前設定）或 <code>ERR …</code>（原因與可用上限）。<b>每個指令等上一個回應完再送</b>，不要整段貼上。</li>
+<li>重新上電會印 <code>LD-PULSE-6A console, H for help</code> 與 <code>boot: …</code>；<code>H</code> 列指令表。</li>
+<li>USB 線拔掉不影響出光（板子由 12 V 供電，{U11} 是自供電接法）。</li></ul>` },
+  { s: "U", id: "u4", t: "指令表與錯誤訊息", nochk: true, pts: [],
+    body: `<div class="tbl"><table><tr><th>指令</th><th>範圍</th><th>說明</th></tr>
+<tr><td class="n">I &lt;mA&gt;</td><td class="n">50–6000</td><td>平頂電流</td></tr>
+<tr><td class="n">W &lt;us&gt;</td><td class="n">20–591</td><td>電流平頂寬度（FWHM）</td></tr>
+<tr><td class="n">F &lt;Hz&gt;</td><td class="n">16–2000</td><td>重複率；外部觸發時是上限</td></tr>
+<tr><td class="n">B &lt;mA&gt;</td><td class="n">0–200</td><td>脈衝間偏置（預設 50）</td></tr>
+<tr><td class="n">T INT / T EXT</td><td>—</td><td>內部自振 / 外部觸發（J6-1 上升緣）</td></tr>
+<tr><td class="n">V &lt;mV&gt;</td><td class="n">300–1500</td><td>Q1 伺服目標（預設 600，一般不用改）</td></tr>
+<tr><td class="n">SAVE</td><td>—</td><td>存到 EEPROM，下次上電沿用。<b>沒 SAVE 斷電就不見</b></td></tr>
+<tr><td class="n">? 或 S</td><td>—</td><td>狀態（四行）</td></tr>
+<tr><td class="n">H</td><td>—</td><td>指令表</td></tr></table></div>
+<p>常見回應：</p>
+<div class="tbl"><table><tr><th>回應</th><th>意思</th></tr>
+<tr><td class="n">ERR W max 591us at 6000mA (LD_EN&lt;=600us)</td><td>W 太寬</td></tr>
+<tr><td class="n">ERR … F&lt;=825Hz (duty&lt;=42%)</td><td>工作週期超限，照它給的上限設</td></tr>
+<tr><td class="n">ERR I min 100mA at B=50mA (I&gt;=2xB)</td><td>電流必須 ≥ 2 × 偏置</td></tr>
+<tr><td class="n">ERR B max 100mA at I=200mA (I&gt;=2xB)</td><td>偏置必須 ≤ I ÷ 2</td></tr>
+<tr><td class="n">OK … (W shrunk from 500us)</td><td>為了塞進限制 W 被自動縮小，<b>請檢查</b></td></tr>
+<tr><td class="n">OK … (trim reset)</td><td>電流調高，VPWR 先回 4.0 V 再重新收斂（約 1 秒），正常</td></tr>
+<tr><td class="n">FAULT … - disarmed, press SW1 to clear</td><td>故障鎖定，見 P-1</td></tr></table></div>
+<p>主控台<b>不能解鎖</b>，任何指令都不會讓 <code>armed=yes</code>；只有 SW1 能（刻意設計，防遠端誤觸）。</p>` },
+  { s: "U", id: "u5", t: "狀態 ? 怎麼讀", nochk: true, v: "vds_meas ≈ 600", pts: [["RT1","look","temp_C"]],
+    body: `<pre>armed=yes ilock=closed
+I=6000mA W=500us F=800Hz B=50mA T=INT V=600mV LD_EN=509us
+comp=9us dac=5903mA duty=40.72% rate=800Hz preset=4 i_pulse=6000mA ld_k=720mV p_q1=1466mW
+bias=50mA trig=int vds_target=600mV vds_meas=600mV vpwr_trim=830 temp_C=58 fault=none</pre>
+<div class="tbl"><table><tr><th>欄位</th><th>意思</th></tr>
+<tr><td class="n">armed</td><td><code>yes</code> 出光中、<code>arming</code> 解鎖後 25 ms 的準備期、<code>no</code> 鎖定</td></tr>
+<tr><td class="n">ilock</td><td><code>closed</code> 互鎖閉合（黃燈亮）／<code>open</code></td></tr>
+<tr><td class="n">LD_EN</td><td>電氣閘門寬度 = W + 補償（SYNC 輸出的寬度）</td></tr>
+<tr><td class="n">dac</td><td>DAC 設定值 = I − 1.947 × B（偏置的脈衝增益已扣除）</td></tr>
+<tr><td class="n">duty</td><td>LD_EN × F，上限 42 %</td></tr>
+<tr><td class="n">rate</td><td>最近 1 秒實測脈衝數（外部觸發時看這個）</td></tr>
+<tr><td class="n">preset</td><td>SW1 長按檔位 1–4（1 / 2 / 4 / 6 A）</td></tr>
+<tr><td class="n">i_pulse</td><td>平頂實測電流，解析度 50 mA（監視用，不是量測儀器）</td></tr>
+<tr><td class="n">ld_k / vds_meas</td><td>LD 陰極電壓 / Q1 的 Vds（正常收斂到 600 ± 50 mV）</td></tr>
+<tr><td class="n">p_q1</td><td>Q1 功耗估算；連續運轉請 &lt; 1600 mW</td></tr>
+<tr><td class="n">vpwr_trim</td><td>0 = VPWR 4.0 V、1023 = 2.4 V。卡在 1023 = 負載電壓偏低（S-2）；卡在 0 且 vds 很大 = 負載電壓太高</td></tr>
+<tr><td class="n">temp_C</td><td>Q1 旁板溫（{RT1}）；<code>n/a</code> = 感測器開／短路</td></tr>
+<tr><td class="n">fault</td><td><code>none</code> / <code>NO_CURRENT</code> / <code>HEAT</code> / <code>ILOCK</code></td></tr></table></div>` },
+  { s: "U", id: "u6", t: "建議的操作流程", nochk: true, pts: [["SW1","conn"],["J4","conn","互鎖"]],
+    body: `<ol><li>鎖定狀態下設好 <code>I</code>、<code>W</code>、<code>F</code>（<code>B</code>、<code>T</code> 通常不動），<code>SAVE</code>。</li>
+<li>互鎖閉合（黃燈亮），按 {SW1} 解鎖（紅燈亮）。</li>
+<li>看 <code>?</code>：<code>i_pulse</code> ≈ 設定值、<code>vds_meas</code> ≈ 600、<code>fault=none</code>。</li>
+<li>要停：按 SW1，或打開互鎖 {J4}。</li></ol>
+<ul><li>出光中可以改 <code>I</code>／<code>W</code>／<code>F</code>，下一個週期生效。電流<b>調高</b>時有約 1 秒 Q1 較熱的過渡（VPWR 先回 4.0 V），設定值以約 20 ms 的斜坡移動，每一發都不會超過命令值；需要乾淨的階躍請在鎖定狀態改。</li>
+<li>真 LD 的第一次出光與升流順序照 G-3、G-4（0.5 → 1 → 2 → 3 A …，每步看完波形再進下一步）。</li>
+<li>典型設定（LZH）：<code>I 6000</code>（6 W 料號；3 W 料號最多 <code>I 3000</code>）、<code>W 500</code>、<code>F 400</code>（測試 100–800）、<code>B 50</code>、<code>T INT</code> 或 <code>T EXT</code>、<code>V 600</code>，<code>SAVE</code>。12 V 輸入約 0.4 A @ 400 Hz、0.75 A @ 800 Hz；Q1 溫升約 30 °C @ 400 Hz、60 °C @ 800 Hz。</li></ul>` },
+  { s: "U", id: "u7", t: "外部觸發與 SYNC", nochk: true, v: "上升緣；延遲 ≈ 6 µs", pts: [["J6.1","red","觸發入"],["J6.2","black","GND"],["J6.3","conn","SYNC 出"]],
+    body: `<ul><li><code>T EXT</code> 後，{J6}-1 每個<b>上升緣</b>發一個脈衝，寬度仍由 W 決定；延遲約 6 µs（最多約 12 µs）。輸入 3–24 V 正脈衝、寬 ≥ 5 µs（10 µs 更保險）。</li>
+<li><code>F</code> 變成<b>上限</b>：觸發比 F 快時多出來的被丟掉（不是故障）；工作週期限制用 F 計算，熱保護用實測 <code>rate</code>。</li>
+<li>J6-3 SYNC = 電氣閘門（5 V，寬 W + 9 µs），給示波器或量測系統當觸發；電流 50 % 點比它晚約 10–20 µs。負載 ≥ 1 kΩ，<b>示波器輸入設 1 MΩ，不是 50 Ω</b>。</li>
+<li>內部觸發（<code>T INT</code>）時 J6-1 的訊號被忽略。</li>
+<li>用 Rigol DG1022A 觸發：輸出負載設 <b>High-Z</b>、TTL 5 V、脈寬 ≥ 5 µs；<code>T EXT</code>、<code>F</code> ≥ 觸發率。</li></ul>` },
+  { s: "U", id: "u8", t: "關機、接線與更換 LD 的順序", nochk: true, v: "先鎖定再斷電", pts: [["SW1","conn","① 鎖定"],["J4","conn","② 開互鎖"],["J7","conn","③ 拔 12 V"],["J3","conn","⑤ 才動 LD"]],
+    body: `<pre>關機：  按 SW1 鎖定（紅燈滅）→ 打開互鎖 → 拔 12 V → 等 10 秒（VPWR 放電）→ 才動 LD 線
+接線：  板子斷電 → 戴靜電環 → LD 保持短路夾 → LD 線接 J3（1 陽極、2 陰極）→ LD 端接線、最後拔短路夾
+        → G-2 五項電表檢查 → 接互鎖開關（開著）→ 接 USB → 接 12 V
+上電：  綠燈亮、紅燈滅 → 主控台 ? 確認 armed=no、設定值、fault=none、temp_C 合理
+        → 示波器就位、護目鏡 → 互鎖閉合（黃燈）→ 按 SW1</pre>
+<ul><li>任何要碰 {J3}、LD、線材的動作，<b>先鎖定再斷電</b>；不在通電下插拔 LD。</li>
+<li>不要用電源開關「硬關」正在出光的板子；先按 {SW1}。</li>
+<li>LD 不用時兩腳短路（ESD）。</li></ul>` },
+  { s: "U", id: "u9", t: "指令速查", nochk: true, pts: [],
+    body: `<pre>I 6000      電流 6 A              W 500       平頂 500 µs
+F 400       400 Hz                B 50        脈衝間偏置 50 mA
+T INT       內部觸發              T EXT       外部觸發（J6-1 上升緣）
+V 600       Q1 伺服目標（預設）   SAVE        存設定
+?           狀態（四行）          H           指令表
+SW1 短按    解鎖/鎖定/清故障      SW1 長按    1/2/4/6 A 換檔（存檔）
+紅燈閃 1/2/3 下 = 無電流 / 過熱 / 互鎖
+TP1 對 TP2：20 mV = 1 A、120 mV = 6 A</pre>` },
+
+  /* ---------- N 注意事項（MANUAL.md §2、§3；LZH_TRIP.md §3） ---------- */
+  { s: "N", id: "n1", t: "雷射安全", nochk: true, pts: [["J4","conn","門開關/急停"],["SW1","conn"]],
+    body: `<ul><li>出光前配戴對應波長的護目鏡：793 nm 泵浦；接在雷射頭上還有 1047 nm 輸出。</li>
+<li>{J4} 互鎖接<b>真正的門開關或急停</b>，不要長期用跳線短路。互鎖斷開時三路硬體立即切斷（&lt; 35 µs），不經韌體。</li>
+<li>上電後一律<b>鎖定</b>，不會自己出光；只有板上 {SW1} 能解鎖，主控台不能（刻意設計）。</li>
+<li>即使韌體當機，硬體脈寬上限也把單次出光限制在約 1.2 ms；MCU 重置時輸出級強制關閉。</li>
+<li>脈衝間偏置 50 mA 低於 LD 門檻（0.25 A），只有 mW 級自發輻射；仍把「解鎖」當成「出光中」。</li></ul>` },
+  { s: "N", id: "n2", t: "電氣安全與接地", nochk: true, v: "LD 兩端都不是地", pts: [["J3.1","red","陽極 VPWR"],["J3.2","red","陰極 LD_K"],["Q1","look","裸銅 = LD_K"],["TP4","black","GND"]],
+    body: `<ul><li><b>LD 的兩端都不是地</b>：陽極在 VPWR（2.4–4.0 V），陰極在 {Q1} 汲極（脈衝中約 0.6–0.8 V，脈衝間更高）。LD 座或散熱座若和任一端相連，必須對機殼／接地的散熱器<b>絕緣</b>（量法 N-6）。</li>
+<li>板子頂面 Q1 的散熱銅是<b>裸銅、帶 LD 陰極電位</b>：絕緣柱固定；金屬工具、螺絲、線頭不得掉在通電的板子上。</li>
+<li>12 V 負端、USB 地、J6 地都是同一個地；接地型電源或示波器探棒一接上，整塊板子的地就是大地。</li>
+<li>LD 是靜電敏感元件：戴靜電環，先接 LD 再上電；運輸與存放時 LD 兩腳短路。</li>
+<li>12 V 接反不會壞（Q8 阻隔），但不動作。<b>任何 24 V 電源不得接近這塊板子。</b></li>
+<li>LD 極性只在 {J3} 端子上量：接在 J3 上時 D1 把反向夾在 0.3 V；裸 LD 用電表量反向，電表開路電壓（&gt; 3 V）可能超過 LD 的反向額定。</li></ul>` },
+  { s: "N", id: "n3", t: "LD 料號：3 W 與 6 W 的上限差一倍", nochk: true, v: "沒確認 = 當 3 W", pts: [["J3","conn"]],
+    body: `<p>設計目標是 SkyEra <b>TY-FM-793±03nm-06.0W-01</b>（6 W，@ 6 A）。LZH 10/20 附的 datasheet 卻是同系列 <b>03.0W-01（3 W）</b>，最大電流 <b>3.5 A</b>。料號裡的 W 是 LD 額定光功率；本板是恆流源，光功率由接上的 LD 決定。</p>
+<ol><li>接線前讀 LD 本體標籤（或請 LZH 讀），記進紀錄表。</li>
+<li><b>03.0W-01：上限 <code>I 3000</code></b>，升流 0.5 / 1 / 2 / 3 A，<b>不長按 SW1</b>（檔位 1/2/4/6 A，按兩次就 4 A）。</li>
+<li><b>06.0W-01</b>：先拿到它的 datasheet（Ith、最大電流、6 A 時 Vop），才照原計畫升到 6 A。</li>
+<li>標籤看不到、LZH 也說不清楚：當 3 W 處理。</li></ol>
+<div class="tbl"><table><tr><th>3 W 料號（散熱座 25 °C）</th><th>典型</th><th>最大</th><th>對本板</th></tr>
+<tr><td>操作電流</td><td class="n">3.0 A</td><td class="n"><b>3.5 A</b></td><td>硬上限；本板可到 6 A，靠操作者守</td></tr>
+<tr><td>操作電壓</td><td class="n">1.75 V</td><td class="n">2.2 V</td><td>順從電壓 3.0 V 足夠</td></tr>
+<tr><td>閾值電流</td><td class="n">0.25 A</td><td>—</td><td>50 mA 偏置是門檻的 1/5，不出光</td></tr>
+<tr><td>斜率效率</td><td class="n">1.03 W/A</td><td>—</td><td>峰值：0.5 A ≈ 0.26 W、1 A ≈ 0.8 W、2 A ≈ 1.8 W、3 A ≈ 2.8 W</td></tr>
+<tr><td>中心波長</td><td class="n">793 nm</td><td class="n">790–796 nm</td><td>0.35 nm/°C；LZH 的 TEC 設 31 °C</td></tr>
+<tr><td>外形</td><td colspan="2">35 × 8 × 3 mm，兩片 0.20 mm 平板 tab</td><td><b>左 − 陰極、右 + 陽極</b></td></tr></table></div>
+<ul><li>datasheet：&gt; 6 A 要用焊接接 tab（260 °C、&lt; 10 s）；恆流驅動、避免突波；運輸存放兩腳短路。</li><li>3 W 料號<b>不能</b>靠低工作週期打到 6 A：沒有脈衝降額，500 µs 對晶片等於連續出光。</li><li>datasheet 沒寫最大反向電壓與模組內有無並聯元件：急停時 J3 反壓仍以 ≤ 0.3 V 為準。</li></ul>` },
+  { s: "N", id: "n4", t: "線材與負載形式", nochk: true, v: "≤ 1 m 雙絞；不並聯 > 1 nF", pts: [["J3.1","red","陽極"],["J3.2","black","陰極"],["C15","look","3.3 nF"]],
+    body: `<div class="tbl"><table><tr><th>項目</th><th>範圍</th></tr>
+<tr><td>LD 線</td><td>雙絞線 18–20 AWG，<b>≤ 1 m（≤ 1 µH）</b>，越短越好。1.5 m 以上先用假負載確認前後緣無振鈴（F-2）</td></tr>
+<tr><td>極性</td><td><b>J3-1 = 陽極、J3-2 = 陰極</b>。接反時 LD 承受最高 4 V 反壓可能損壞；接之前用電表二極體檔在 J3 端確認（G-2）</td></tr>
+<tr><td>並聯電容</td><td>LD 兩端<b>不要</b>並聯 &gt; 1 nF 的電容（迴路與消振以 LD 本身 ≤ 1 nF 設計）</td></tr>
+<tr><td>串聯元件</td><td>線材以外不串二極體、電感、保險絲</td></tr>
+<tr><td>開路</td><td>I ≥ 500 mA 時連續 8 發無電流 → 自動停機 NO_CURRENT；I &lt; 500 mA 不偵測</td></tr>
+<tr><td>短路</td><td>安全，但是低電壓負載，工作週期照 S-2 的下限表</td></tr>
+<tr><td>假負載</td><td>0.33 Ω / 25 W 鋁殼鎖散熱片（6 A 時 2.0 V）；2.2 Ω / 5 W 只用在 I ≤ 1500</td></tr></table></div>
+<div class="note"><b>振鈴</b><span>真 LD 的 C_LD 與 Vf 動態阻抗和電阻不同，換成實際線纜後要重看前後緣；有振鈴把 {C15} 換 4.7 nF（M-2）。</span></div>` },
+  { s: "N", id: "n5", t: "不得做的事（貼在工作台）", nochk: true, pts: [["J7","conn"],["J2","conn"],["SW1","conn"]],
+    body: `<ol class="rules"><li><span>不接 24 V；{J7} 與 {J2} 不同時接。</span></li>
+<li><span>LD 兩端不並聯 &gt; 1 nF 的電容；線材以外不串任何元件；不接兩顆 LD 串聯（Vf &gt; 3.3 V）。</span></li>
+<li><span>LD 線 ≤ 1 m，絞線。</span></li>
+<li><span>金屬工具、螺絲、線頭不得掉在通電的板子上；板子不直接放金屬桌面。</span></li>
+<li><span>不在出光中插拔 LD 線、USB 以外的任何線。</span></li>
+<li><span>不用 CW（工作週期上限 42 %）；短路／低電壓負載時照 S-2 降工作週期。</span></li>
+<li><span>不讓偏置 B 高於 LD 門檻（3 W 料號 Ith 0.25 A；B 50 已經 LZH 同意）。</span></li>
+<li><span>料號沒確認前不超過 <code>I 3000</code>；3 W 料號永遠不超過 <code>I 3000</code>；不長按 {SW1}。</span></li>
+<li><span>不要用電源開關硬關正在出光的板子；先按 SW1 鎖定。</span></li></ol>` },
+  { s: "N", id: "n6", t: "F-mount 底座與散熱座：量到絕緣才接", nochk: true, v: "兩次都 OL", pts: [["J3","conn"]],
+    body: `<p>LZH 10/20 說這顆 F-mount 是陶瓷、應該絕緣——是推論不是實測，散熱座是否接地也沒答。LZH 的散熱座／TEC 冷板通常鎖在接地的光學桌上，而板子的地在接探棒或接地型電源那一刻就是大地，所以：</p>
+<div class="tbl"><table><tr><th>底座接的是</th><th>散熱座接地時</th><th>後果</th></tr>
+<tr><td><b>陰極</b></td><td>LD_K 接地 → VPWR 經 LD 直通地，不經 Q1</td><td><b>LD 在第一次解鎖瞬間燒毀</b>（~10 A，buck 限流值）</td></tr>
+<tr><td>陽極</td><td>VPWR 接地 → buck 短路、限流／打嗝、PTC 跳</td><td>LD 無電流，板子受壓力</td></tr></table></div>
+<p><b>量法</b>（LD 裝在散熱座上、還沒接 {J3}；不要讓電表反向加在 LD 上）：先量 <b>陽極 tab ↔ 散熱座</b>，≈ 0 Ω 就是底座 = 陽極，停。若開路，再量陰極 tab ↔ 散熱座，<b>紅棒放散熱座、黑棒放陰極</b>。兩次都 OL 才算絕緣。量到導通就停，請 LZH 改絕緣安裝或散熱座浮接；接上 J3 後再做 G-2。</p>` },
+
+  /* ---------- P 保護與故障（MANUAL.md §7、§9；SPEC.md §3.4） ---------- */
+  { s: "P", id: "p1", t: "故障碼與處理", nochk: true, v: "閃 1/2/3 = 無電流/過熱/互鎖", pts: [["D3","look","紅燈閃碼"],["SW1","conn","清除"]],
+    body: `<p>任一故障：立即鎖定、紅燈 {D3} 閃故障碼（每組閃 N 下、暗 1.5 s，重複）、主控台印 <code>FAULT … - disarmed, press SW1 to clear</code>。<b>處理</b>：排除原因 → 按 {SW1} 一下清除（<code>SW1: fault cleared</code>）→ 再按一下解鎖。</p>
+<div class="tbl"><table><tr><th>閃</th><th>故障</th><th>條件</th><th>常見原因</th></tr>
+<tr><td class="n">1</td><td class="n">NO_CURRENT</td><td>I ≥ 500 mA 時連續 8 發實測電流 &lt; 20 % 設定值（約 20 ms）</td><td>LD 沒接、線斷、極性反、負載電壓太高（S-2）</td></tr>
+<tr><td class="n">2</td><td class="n">HEAT</td><td>Q1 功耗估算 &gt; 3 W 持續 5 s，或板溫 &gt; 85 °C 連續 3 次</td><td>負載電壓偏低而工作週期太高、沒風扇、環境太熱。板子過熱時無法解鎖</td></tr>
+<tr><td class="n">3</td><td class="n">ILOCK</td><td>解鎖中互鎖斷開</td><td>門開了、急停、互鎖線斷或接點彈跳（板上去彈跳只有 ~100 µs，用實心接點／繼電器）</td></tr></table></div>
+<ul><li>未解鎖時開合 J4 不算故障（只有黃燈跟著亮滅）。</li><li>RT1 開／短路：<code>temp_C=n/a</code>、印 <code>WARN ntc open</code>，只留功率估算守門，不鎖定。</li><li>W &lt; 55 µs 時沒有開路偵測與 Vds 伺服（S-3）。</li></ul>` },
+  { s: "P", id: "p2", t: "硬體保護", nochk: true, pts: [["Q8","look","反接"],["D5","look","TVS"],["F1","look","PTC 2 A"],["U6","look","脈寬上限"],["U7","look","互鎖"],["Q3","look","鉗 GATE"],["Q7","look","復位"],["D1","look","續流"]],
+    body: `<ul><li><b>互鎖三路切斷</b>：{U7} 施密特輸出 ILOCK_C 同時關掉脈衝設定值（Q6）、鉗住 Q1 閘極（{Q3}）、復位積分器（{Q7}），不經韌體；C54/C55 讓鉗位延後 ~35 µs，電流先以迴路速率降下來，LD 不受反壓（≤ 0.3 V）。</li>
+<li><b>硬體脈寬上限</b> ~1.2 ms：{U6} 施密特 + C21/R31，韌體當機也只出一發。</li>
+<li><b>MCU 重置／空片</b>：所有 PWM 腳是輸入，DAC、偏置、TRIM 被拉到 0，Q1 被鉗住，VPWR 在 4.0 V 上限——安全狀態。</li>
+<li><b>12 V 輸入</b>：{Q8} P-FET 反接阻隔；{D5} TVS 15 V；{F1} PTC 2 A 自復保險絲；UVLO 約 9 V 起／8 V 停。</li>
+<li><b>{D1}</b> SS54 續流／反接救援：急停時 LD 反壓被夾在 0.3 V。</li>
+<li><b>韌體守門</b>：NO_CURRENT、HEAT（功率估算 + NTC）、ILOCK；工作週期 ≤ 42 %；I ≥ 2 B；ARM 後 ≥ 12 ms 才發第一發。</li></ul>` },
+  { s: "P", id: "p3", t: "簡易故障排除（操作者）", nochk: true, pts: [],
+    body: `<div class="tbl"><table><tr><th>現象</th><th>看</th></tr>
+<tr><td>綠燈不亮</td><td>12 V 有沒有、極性（中心正）、{J7} 與 {J2} 是否同時接了</td></tr>
+<tr><td>黃燈不亮</td><td>互鎖開關／線</td></tr>
+<tr><td>按 SW1 沒反應</td><td>黃燈要亮；紅燈若在閃碼，先清故障</td></tr>
+<tr><td>解鎖後立刻 NO_CURRENT</td><td>LD 接線、極性；負載電壓是否超過 S-2 的上限</td></tr>
+<tr><td>電流到不了設定值、平頂下垂</td><td>負載電壓太高（S-2）；<code>vpwr_trim=0</code> 且 <code>vds_meas</code> &lt; 300</td></tr>
+<tr><td>常常 HEAT</td><td>負載電壓偏低的工作週期（S-2）；風扇；<code>p_q1</code> 是否 &gt; 1600</td></tr>
+<tr><td>主控台沒反應</td><td>USB 線要有資料線；9600 8N1；行尾要 Enter；每個指令等上一個回應完再送</td></tr>
+<tr><td>設定上電後不見了</td><td>沒有 <code>SAVE</code></td></tr>
+<tr><td>外部觸發沒脈衝</td><td><code>T EXT</code>；上升緣；幅度 ≥ 3 V（產生器 High-Z）；F 設得比觸發率高</td></tr>
+<tr><td><code>i_pulse</code> 與示波器差 &gt; 100 mA</td><td>監視用途，解析度 50 mA；以 TP1 為準；<code>ADC_FVR_MV</code> 校準（E-1 #6）</td></tr>
+<tr><td><code>vpwr_trim</code> 卡 1023、<code>vds_meas</code> 偏高</td><td>低電壓負載（假負載 1–4 A）正常；真 LD 1 A 時 Vds ≈ 0.75 V 也正常，非故障</td></tr>
+<tr><td>探測器雜訊 600 kHz</td><td>buck 開關頻率：距離、鐵氧體、金屬盒</td></tr></table></div>
+<p>板級（零件層）的排除表在 T-1。</p>` },
+
+  /* ---------- M 維護（MANUAL.md §8；TEST.md §7） ---------- */
+  { s: "M", id: "m1", t: "校準：何時要重做", nochk: true, v: "7 個常數，每片不同", pts: [["Q1","look"],["R17","look"],["U1","look"],["U2","look"],["C15","look"]],
+    body: `<p>每片板子出廠時依 E-1 校準 7 個常數（<code>ISET_CAL_DEN</code>、<code>BIAS_CAL_DEN</code>、<code>BIAS_PULSE_NUM</code>、<code>RISE_COMP</code>、<code>DEADZONE_CAL</code>、<code>ADC_FVR_MV</code>、<code>VDS_DIV_X1000</code>），寫在 <code>firmware/main.c</code>，編進那一片的 hex。</p>
+<ul><li>換 {Q1}、{R17}、{U1}、{U2} 或 {C15} 後要重做。</li>
+<li>更新韌體時校準常數要一起帶過去（每片一份 hex，檔名帶板號，例如 <code>ld_pulse6a_SN03.hex</code>）。</li>
+<li>只用 B &gt; 0 的機台，<code>DEADZONE_CAL</code>（#5）的精度不影響正常運作；只在 6 A 用的機台 <code>RISE_COMP</code> 可直接取 7 µs。</li>
+<li>校準後驗收：6 A 平頂 118–122 mV、FWHM 495–505 µs。</li></ul>` },
+  { s: "M", id: "m2", t: "C15 選項（線纜振鈴）", nochk: true, v: "3.3 nF → 4.7 nF", pts: [["C15","look","OPOUT–FB"]],
+    body: `<p>{C15}（3.3 nF）是恆流迴路的補償電容；模擬裡最不確定的是 Q1 的 Cgd 與線纜電感。若實際 LD 線纜造成前後緣振鈴：C15 換 <b>4.7 nF</b>（邊沿慢約 40 %，6 A 仍 &lt; 50 µs），然後重做校準 #4（<code>RISE_COMP</code>）與 F-1 第一發驗收。LZH 現場不做板上維修，帶回再改。</p>` },
+  { s: "M", id: "m3", t: "定期檢查", nochk: true, v: "每半年或換 LD 時", pts: [["J3","conn","0.33 Ω"],["TP1","red"],["TP2","black"],["J4","conn"]],
+    body: `<ul><li>0.33 Ω 假負載看 6 A 波形（D-2 步 4）：平頂 118–122 mV、前緣無尖峰、FWHM 495–505 µs。</li>
+<li><code>?</code>：<code>temp_C</code> 合理、<code>vds_meas</code> 600 ± 50、<code>fault=none</code>。</li>
+<li>互鎖急停有效（F-3）：撥開 {J4} 立即 <code>FAULT ILOCK</code>、紅燈閃 3 下。</li>
+<li>目視：端子台螺絲、{J7} 圓孔座、C1/C2 OS-CON、Q1 有沒有鬆動；{RT1}（0603）還在。</li></ul>` },
+  { s: "M", id: "m4", t: "韌體更新", nochk: true, v: "ICSP J5；沒有 bootloader", pts: [["J5.1","conn","pin 1 VPP"],["J5","conn","ICSP"]],
+    body: `<p>韌體 <code>firmware/ld_pulse6a.hex</code>（XC8 v2.45，<code>make</code> 零警告）。板上<b>沒有 bootloader</b>，USB 只接 UART，不能拿來燒錄；要用 PICkit 4 / SNAP / ICD5 接 {J5}（1 VPP 2 VDD 3 GND 4 PGD 5 PGC，pin 1 在下方那端，看絲印）。</p>
+<pre>cd ld6a/firmware
+make                       # 產生 ld_pulse6a.hex
+make program               # PICkit 4
+make program TOOL=ICD5     # MPLAB ICD 5（RJ-11 → 1×6 SIL 轉接 AC164110，SIL ▲ 對 J5-1，第 6 腳懸空）
+make program TOOL=SNAP     # SNAP（LVP 已開）</pre>
+<ul><li>板子由 12 V 供電，<b>燒錄器不要供電給目標</b>（J5-2 已經有 5 V）；USB 可同時插著。</li>
+<li>Windows：Makefile 的 XC8 與 ipecmd 路徑是 macOS 預設，要設 <code>XC8=</code>、<code>IPECMD=</code>，或用 MPLAB IPE 直接燒 hex。</li>
+<li>燒完重新上電看開機訊息；EEPROM 格式變更時舊設定退回預設（<code>(defaults, EEPROM blank)</code>），重新設定並 <code>SAVE</code>。</li>
+<li>校準常數跟著 hex 走（M-1）。</li></ul>` },
+  { s: "M", id: "m5", t: "清潔、機械、運輸", nochk: true, pts: [["RT1","look","別碰掉"],["C1","look"],["C2","look"],["J7","look"]],
+    body: `<ul><li>板面不要用導電性清潔劑；{Q1} 散熱銅上的 NTC {RT1}（0603）不要碰掉。</li>
+<li>絕緣柱固定，4 × M3；最高零件約 12 mm（端子台、圓孔座、{C1}/{C2}）。</li>
+<li>運輸後：回溫 1–2 小時再上電；目視端子台、OS-CON、Q1 有沒有鬆動；先做 A-5～A-17 的電表檢查與 D-2 假負載波形，與出廠紀錄差 &gt; 2 % 的板子不用。</li>
+<li>存放：LD 要短路存放；板子 {J3} 空著即可。</li></ul>` },
+
+  /* ---------- R 文件與版本 ---------- */
+  { s: "R", id: "r1", t: "相關文件", nochk: true, pts: [],
+    body: `<div class="tbl"><table><tr><th>檔案</th><th>內容</th></tr>
+<tr><td class="n"><a href="https://github.com/jamyang838/T20260928_PCB_TEST/blob/main/ld6a/MANUAL.md">MANUAL.md</a></td><td>使用說明書（操作者）：本頁 S／U／N／P／M 的來源</td></tr>
+<tr><td class="n"><a href="https://github.com/jamyang838/T20260928_PCB_TEST/blob/main/ld6a/TEST.md">TEST.md</a></td><td>收板測試程序：本頁 A–G／T 的來源</td></tr>
+<tr><td class="n"><a href="https://github.com/jamyang838/T20260928_PCB_TEST/blob/main/ld6a/SPEC.md">SPEC.md</a></td><td>設計規格，唯一依據；改規格先改這裡</td></tr>
+<tr><td class="n"><a href="https://github.com/jamyang838/T20260928_PCB_TEST/blob/main/ld6a/README.md">README.md</a></td><td>電路說明、零件、佈線、產生流程</td></tr>
+<tr><td class="n"><a href="https://github.com/jamyang838/T20260928_PCB_TEST/blob/main/ld6a/LZH_TRIP.md">LZH_TRIP.md</a></td><td>LZH 出差：硬規則、攜帶清單、現場流程、問答</td></tr>
+<tr><td class="n"><a href="https://github.com/jamyang838/T20260928_PCB_TEST/blob/main/ld6a/firmware/NOTES.md">firmware/NOTES.md</a></td><td>韌體筆記；§5 校準常數定義、§8 上板要確認的事</td></tr>
+<tr><td class="n"><a href="https://github.com/jamyang838/T20260928_PCB_TEST/blob/main/ld6a/sim/REPORT.md">sim/REPORT.md</a></td><td>模擬報告：本頁所有「模擬」數字的出處</td></tr>
+<tr><td class="n">output/</td><td>Gerber、<code>ld6a_BOM.csv</code>（152 件）、<code>ld6a_CPL.csv</code>、組裝圖 <code>ld6a_assembly.pdf</code></td></tr>
+<tr><td class="n">lzh/cheatsheet/、lzh/packing/</td><td>現場速查卡（A4）、採購與攜帶清單</td></tr>
+<tr><td class="n">lzh/analysis/</td><td>LZH 系統驅動需求 vs 本板（2026-10-23）</td></tr></table></div>
+<p>連結是相對於 <code>ld6a/</code> 的路徑；從本機 file:// 開本頁時 .md 會以純文字顯示。</p>` },
+  { s: "R", id: "r2", t: "版本與數據來源", nochk: true, v: "rev B0 · 2026-10-28", pts: [],
+    body: `<div class="tbl"><table><tr><th>項目</th><th>值</th></tr>
+<tr><td>硬體</td><td>LD-PULSE-6A rev B0，110 × 80 mm 2 層，152 件，ENIG（0.5 mm QFN）；Gerber 2026-09-30 出圖</td></tr>
+<tr><td>韌體</td><td><code>firmware/ld_pulse6a.hex</code>，PIC16F18346，XC8 v2.45；EEPROM v3</td></tr>
+<tr><td>本頁</td><td>2026-10-28：加入規格、使用方式、注意事項、保護、維護、文件六節與 G-2 上電前檢查；外部觸發改為上升緣；燒錄加 ICD5；展開全部、列印</td></tr>
+<tr><td>板圖</td><td><code>gen/make_test_guide.py</code> 從 <code>ld6a.kicad_pcb</code> 匯出 F.Cu／絲印／外框 + <code>geom.json</code> 焊墊 + CPL 零件值，寫進本頁的 <code>board-data</code>；PCB 改了就在 ld6a/ 重跑 <code>python gen/make_test_guide.py</code>（只換板圖，不動文字）</td></tr>
+<tr><td>數字</td><td>標「模擬」= <code>sim/REPORT.md</code>（行為級，絕對值 ±20–30 %）；<b>本板尚未實測</b>，第一片板子的實測就是這些數字的驗證，實測後更新 TEST.md／MANUAL.md 與本頁</td></tr>
+<tr><td>LZH 狀態</td><td>10/20 回覆：偏置可、F-mount 陶瓷（推論）、附 3 W datasheet；11/9 ITRI 拜訪、11/10–12 測試。LD 料號待確認</td></tr></table></div>` },
+  { s: "R", id: "r3", t: "本頁怎麼用", nochk: true, pts: [["TP1","red","示範"],["TP2","black","示範"],["J3","conn","示範"],["Q1","look","示範"]],
+    body: `<ul><li>點任一步驟，左邊的板子會縮放到那一步的探棒點：<i class="dot red"></i> 紅棒／探棒尖、<i class="dot black"></i> 黑棒／探棒地、<i class="dot conn"></i> 接線／操作、<i class="dot look"></i> 目視／觸摸。</li>
+<li>文字裡的零件編號（例如 {C45}、{U5.11}）是按鈕，點了在板子上標出來；搜尋框可找零件、腳位（U5.11）或網路名（VPWR），同網路的焊墊全部藍框。</li>
+<li>板子：滾輪或兩指縮放、拖曳平移、雙擊放大、⤢ 看全板；滑鼠移到焊墊上看零件值與網路名。「走線」「絲印」可關掉。</li>
+<li>勾選框與板號存在這台瀏覽器的 localStorage（每個板號一份進度），<b>不會同步到別台電腦</b>；正式紀錄用 T-2 的紀錄表複製到檔案。</li>
+<li>「展開全部」把所有步驟內容攤開，適合閱讀或列印；列印時左邊板子不印、所有步驟展開。</li>
+<li>網址加 <code>#步驟 id</code>（例如 <code>#d2</code>、<code>#u4</code>）直接開到那一步。</li></ul>` },
 ];
 
 const RECORD = `板號 {BOARD}  日期 ______  貼片批號 ______  測試者 ______
@@ -675,7 +1043,7 @@ E 校準     ISET_CAL_DEN ____  BIAS_CAL_DEN ____  BIAS_PULSE_NUM ____  RISE_COM
            ADC_FVR_MV ____  VDS_DIV_X1000 ____   校準後 6 A 平頂 ___ mV  FWHM ___ µs
 F 驗收     第一發 ×3 □   餘暉 1 min □   1 µH 無振鈴 □ (C15 = 3.3 / 4.7 nF)   急停 ___ µs、反向 ___ V □
            HEAT 5 s □   EXT 觸發延遲 ___ µs □   主控台 9 項 □   EEPROM □   SW1 換檔 □
-G 接 LD    Vf @1A ___ V  @6A ___ V   TP5 @6A ___ V   光功率 ______   LZH 確認：偏置 □  極性 □`;
+G 接 LD    料號 ______   tab↔散熱座 OL □   五項電表檢查 □   Vf @1A ___ V  @6A ___ V   TP5 @6A ___ V   光功率 ______   LZH 確認：偏置 □  極性 □`;
 </script>
 
 <script>
@@ -938,8 +1306,10 @@ const chipify = (html) => html.replace(/\{([A-Z]{1,3}\d{1,3}(?:\.\w+)?)\}/g, (m,
 function stepCode(st) { const list = STEPS.filter((x) => x.s === st.s); return st.s + "-" + (list.indexOf(st) + 1); }
 
 const nav = $("stageNav"), list = $("stageList");
+let lastGrp = null;
 STAGES.forEach((sg) => {
   const steps = STEPS.filter((s) => s.s === sg.id);
+  if (sg.g !== lastGrp) { const g = document.createElement("span"); g.className = "grp" + (lastGrp ? " ref" : ""); g.textContent = sg.g; nav.appendChild(g); lastGrp = sg.g; }
   const a = document.createElement("a"); a.href = "#stage-" + sg.id; a.dataset.stage = sg.id;
   a.innerHTML = `<b>${sg.id === "O" ? "0" : sg.id}</b>${sg.name}`; nav.appendChild(a);
   const sec = document.createElement("section"); sec.className = "stage"; sec.id = "stage-" + sg.id;
@@ -1027,6 +1397,15 @@ $("copyRec").addEventListener("click", () => {
   const fallback = () => { const r = document.createRange(); r.selectNodeContents($("recText")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); msg.textContent = "已選取，按 Ctrl+C 複製"; };
   try { navigator.clipboard.writeText(txt).then(() => { msg.textContent = "已複製"; }, fallback); } catch (e) { fallback(); }
 });
+
+/* ---------- expand all (reading / printing) ---------- */
+const expandBtn = $("expandAll");
+function setExpand(on) {
+  list.classList.toggle("all", on); expandBtn.setAttribute("aria-pressed", on ? "true" : "false");
+  expandBtn.textContent = on ? "只看選取" : "展開全部"; store.set("ld6a-guide:all", on);
+}
+expandBtn.addEventListener("click", () => setExpand(!list.classList.contains("all")));
+setExpand(!!store.get("ld6a-guide:all", false));
 
 /* ---------- search ---------- */
 const dl = $("qlist");

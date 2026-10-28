@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>LD-PULSE-6A 韌體功能說明</title>
+<style>
+  @page {
+    size: A4;
+    margin: 16mm 15mm 16mm 15mm;
+    @bottom-center { content: counter(page) " / " counter(pages); font: 8pt "PingFang TC", sans-serif; color: #777; }
+    @top-right { content: "LD-PULSE-6A 韌體功能說明 · rev B0"; font: 8pt "PingFang TC", sans-serif; color: #999; }
+  }
+  @page :first { @top-right { content: none; } }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0; background: #fff; color: #1d1d1f;
+    font: 9.6pt/1.6 "PingFang TC", "Heiti TC", "Noto Sans TC", sans-serif;
+  }
+  h1 { font-size: 20pt; line-height: 1.25; margin: 0 0 4pt; color: #12324f; letter-spacing: .5pt; }
+  .sub { font-size: 11pt; color: #3a5670; margin: 0 0 10pt; }
+  h2 {
+    font-size: 13pt; color: #12324f; margin: 16pt 0 6pt; padding-bottom: 3pt;
+    border-bottom: 1.2pt solid #12324f; break-after: avoid;
+  }
+  h3 { font-size: 10.8pt; color: #12324f; margin: 11pt 0 4pt; break-after: avoid; }
+  p { margin: 0 0 6pt; }
+  ul, ol { margin: 0 0 6pt; padding-left: 16pt; }
+  li { margin: 0 0 2pt; }
+  code, pre, .mono { font-family: Menlo, "SF Mono", Consolas, "PingFang TC", monospace; }
+  code { font-size: 8.8pt; background: #eef2f6; padding: 0 2.5pt; border-radius: 2pt; white-space: nowrap; }
+  pre {
+    font-size: 8.3pt; line-height: 1.5; background: #f4f6f8; border: .6pt solid #d5dbe1;
+    border-left: 2.5pt solid #12324f; padding: 6pt 8pt; margin: 0 0 8pt; white-space: pre-wrap;
+    break-inside: avoid; border-radius: 0 2pt 2pt 0;
+  }
+  pre .in { color: #0b5cad; font-weight: 600; }
+  pre .ok { color: #1d6b2f; }
+  pre .err { color: #a3241b; }
+  pre .cm { color: #6b7785; }
+  table { width: 100%; border-collapse: collapse; margin: 2pt 0 9pt; font-size: 8.9pt; break-inside: auto; }
+  tr { break-inside: avoid; }
+  th, td { border: .6pt solid #c9d1d9; padding: 3pt 5pt; vertical-align: top; text-align: left; }
+  th { background: #e4ebf2; color: #12324f; font-weight: 600; }
+  td code { white-space: nowrap; }
+  .nw { white-space: nowrap; }
+  .meta { width: auto; font-size: 8.8pt; margin: 0 0 10pt; }
+  .meta td { border: none; padding: 1pt 10pt 1pt 0; }
+  .meta td:first-child { color: #5b6b7a; }
+  .box { border: .8pt solid #c9d1d9; border-radius: 3pt; padding: 7pt 9pt; margin: 4pt 0 10pt; break-inside: avoid; }
+  .warn { border-color: #d98b1f; background: #fff7ea; }
+  .warn b.t { color: #9a5a00; }
+  .safe { border-color: #b8322a; background: #fdf0ef; }
+  .safe b.t { color: #a3241b; }
+  .note { border-color: #8aa6c1; background: #f2f6fa; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; }
+  .two > div { break-inside: avoid; }
+  figure { margin: 4pt 0 10pt; break-inside: avoid; }
+  figcaption { font-size: 8.4pt; color: #5b6b7a; margin-top: 2pt; }
+  .toc { columns: 2; column-gap: 18pt; font-size: 9pt; margin: 0 0 6pt; padding-left: 14pt; }
+  .small { font-size: 8.5pt; color: #4a5866; }
+  .pb { break-before: page; }
+  .keep { break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<h1>LD-PULSE-6A 韌體功能說明</h1>
+<p class="sub">PIC16F18346 脈衝產生韌體 · USB 主控台控制方法</p>
+
+<table class="meta">
+  <tr><td>適用硬體</td><td>LD-PULSE-6A rev B0（12 V 輸入、50–6000 mA 脈衝、USB-C 主控台）</td></tr>
+  <tr><td>韌體</td><td><code>ld6a/firmware/ld_pulse6a.hex</code>（<code>main.c</code>，XC8 v2.45，8056 / 16384 words）</td></tr>
+  <tr><td>文件日期</td><td>2026-10-23</td></tr>
+  <tr><td>相關文件</td><td><code>MANUAL.md</code>（操作）· <code>TEST.md</code>（收板與校準）· <code>firmware/NOTES.md</code>（實作細節）</td></tr>
+</table>
+
+<div class="box warn">
+  <b class="t">驗證狀態。</b>本文件依韌體原始碼與 host 模擬測試整理。文中主控台回應都是模擬器實際印出的文字，
+  但<b>板子尚未上板驗證</b>：實測電流、電壓、溫度等數值以示例表示，第一次上電請照 <code>TEST.md</code> 的步驟，先接假負載。
+</div>
+
+<ol class="toc">
+  <li>韌體功能總覽</li>
+  <li>脈衝參數與限制</li>
+  <li>USB 主控台連線</li>
+  <li>指令一覽</li>
+  <li>回應與錯誤訊息</li>
+  <li>狀態查詢 <code>?</code></li>
+  <li>SW1、解鎖與指示燈</li>
+  <li>故障保護</li>
+  <li>外部觸發與 SYNC</li>
+  <li>設定保存與開機</li>
+  <li>操作範例</li>
+  <li>用程式控制（Python）</li>
+  <li>編譯、燒錄與校準常數</li>
+  <li>附錄：<code>H</code> 說明全文</li>
+</ol>
+
+<h2>1. 韌體功能總覽</h2>
+<p>MCU 只負責「什麼時候出脈衝、電流設多少」，電流本身由類比迴路（Q1 + 積分器）調節；互鎖與脈寬上限是硬體，韌體不能蓋過。</p>
+<table>
+  <tr><th style="width:19%">功能</th><th>韌體做什麼</th></tr>
+  <tr><td>脈衝時序</td><td>LD_EN（RC5）每 1/F 拉高一次（內部觸發），或每個外部觸發拉高一次；高電位時間 = W + 補償。TMR1 定週期、TMR0 定脈寬，解析度 1 µs。</td></tr>
+  <tr><td>電流設定</td><td>DAC_PWM（PWM5，31.25 kHz、10 bit）經濾波成脈衝設定值，滿刻度 6.56 A，每格約 6.41 mA。設定上限 6000 mA。</td></tr>
+  <tr><td>偏置電流</td><td>BIAS_PWM（PWM6）設定脈衝之間的偏置 B（0–200 mA），讓 Q1 閘極停在臨界點，6 A 時邊沿才能 &lt; 50 µs。</td></tr>
+  <tr><td>VPWR 伺服</td><td>每一發在平頂量 Q1 的 Vds，每 10 ms 調 TRIM_PWM（CCP1），讓 buck 的 VPWR（2.4–4.0 V）剛好夠用，Vds 維持在目標 V（預設 600 mV），減少 Q1 發熱。</td></tr>
+  <tr><td>量測</td><td>每發取樣兩次：電流 ISNS（每格 50 mA）與 LD 陰極電壓。板溫 NTC 每 100 ms 讀一次。統計最近 1 秒的實際脈衝數。</td></tr>
+  <tr><td>故障保護</td><td>NO_CURRENT（LD 開路）、HEAT（Q1 過熱）、ILOCK（互鎖斷開）。任一發生立即停止輸出並鎖定。</td></tr>
+  <tr><td>人機介面</td><td>SW1 短按解鎖／鎖定；長按切換電流檔。紅色 EMIT 燈顯示解鎖、檔位與故障碼。</td></tr>
+  <tr><td>USB 主控台</td><td>經 FT230XS 的虛擬序列埠，9600 8N1。可設定全部參數、查詢狀態、存檔。<b>不能解鎖</b>，只有 SW1 能。</td></tr>
+  <tr><td>設定保存</td><td>I、W、F、B、T、V 六項存在 EEPROM（含檢查碼），下次上電沿用；紀錄損壞就用預設值。</td></tr>
+</table>
+
+<h2>2. 脈衝參數與限制</h2>
+<figure>
+<svg viewBox="0 0 680 230" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="PingFang TC, sans-serif" font-size="11">
+  <defs>
+    <marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="#3a5670"/></marker>
+  </defs>
+  <!-- LD_EN -->
+  <text x="8" y="44" fill="#12324f" font-weight="600">LD_EN</text>
+  <text x="8" y="58" fill="#5b6b7a" font-size="9.5">（= SYNC）</text>
+  <polyline points="70,60 110,60 110,30 330,30 330,60 520,60 520,30 600,30" fill="none" stroke="#12324f" stroke-width="1.8"/>
+  <line x1="110" y1="16" x2="330" y2="16" stroke="#3a5670" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text x="220" y="12" text-anchor="middle" fill="#3a5670">LD_EN = W + 補償（B &gt; 0 時 9 µs）</text>
+  <!-- current -->
+  <text x="8" y="140" fill="#12324f" font-weight="600">LD 電流</text>
+  <line x1="70" y1="190" x2="640" y2="190" stroke="#9aa7b4" stroke-dasharray="3 3"/>
+  <text x="644" y="194" fill="#5b6b7a" font-size="9.5">0</text>
+  <path d="M70,178 L122,178 C128,178 130,100 140,100 L330,100 C334,100 336,178 342,178 L520,178 C526,178 528,100 538,100 L600,100" fill="none" stroke="#b8322a" stroke-width="2"/>
+  <!-- FWHM -->
+  <line x1="131" y1="139" x2="336" y2="139" stroke="#b8322a" stroke-dasharray="2 2"/>
+  <line x1="131" y1="152" x2="336" y2="152" stroke="#3a5670" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text x="233" y="166" text-anchor="middle" fill="#3a5670">W（半高寬，示波器在 TP1 量到的寬度）</text>
+  <!-- I, B -->
+  <line x1="352" y1="100" x2="352" y2="190" stroke="#3a5670" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text x="360" y="128" fill="#3a5670">I（平頂電流）</text>
+  <line x1="470" y1="178" x2="470" y2="190" stroke="#3a5670"/>
+  <text x="408" y="174" fill="#3a5670">B（偏置）</text>
+  <!-- period -->
+  <line x1="110" y1="212" x2="520" y2="212" stroke="#3a5670" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text x="315" y="226" text-anchor="middle" fill="#3a5670">週期 = 1 / F</text>
+  <line x1="110" y1="60" x2="110" y2="216" stroke="#c9d1d9" stroke-dasharray="2 3"/>
+  <line x1="520" y1="60" x2="520" y2="216" stroke="#c9d1d9" stroke-dasharray="2 3"/>
+</svg>
+<figcaption>圖 1　參數定義。電流比 LD_EN 晚「補償」那麼久才起來，韌體把 LD_EN 拉長同樣的時間，使電流半高寬正好是 W。</figcaption>
+</figure>
+
+<table>
+  <tr><th style="width:9%">參數</th><th>意義</th><th class="nw">範圍</th><th class="nw">預設</th></tr>
+  <tr><td><code>I</code></td><td>平頂電流。偏置在脈衝中的份量（1.947 × B）由韌體自動從 DAC 扣掉，平頂就是 I。</td><td class="nw">50–6000 mA</td><td class="nw">1000 mA</td></tr>
+  <tr><td><code>W</code></td><td>電流半高寬（脈衝寬度）。實際 LD_EN = W + 補償。</td><td class="nw">20–591 µs*</td><td class="nw">500 µs</td></tr>
+  <tr><td><code>F</code></td><td>重複率，週期 = 1/F（整數 Hz：例如 2.5 ms → <code>F 400</code>）。外部觸發時是觸發率上限。</td><td class="nw">16–2000 Hz</td><td class="nw">400 Hz</td></tr>
+  <tr><td><code>B</code></td><td>脈衝之間的偏置電流。0 = 關閉（回到 rev A6 的死區，邊沿變慢）。</td><td class="nw">0–200 mA</td><td class="nw">50 mA</td></tr>
+  <tr><td><code>T</code></td><td>觸發來源：<code>INT</code> 板上自振，<code>EXT</code> J6-1 外部觸發。</td><td class="nw">INT / EXT</td><td class="nw">INT</td></tr>
+  <tr><td><code>V</code></td><td>Q1 Vds 伺服目標，一般不用改。</td><td class="nw">300–1500 mV</td><td class="nw">600 mV</td></tr>
+</table>
+<p class="small">* 指令本身接受 20–600，但 LD_EN 不能超過 600 µs，所以 B &gt; 0 時 W 最大 591 µs；B = 0 時補償 = 339900 / I µs（1 A 時 339 µs），W 上限更小，而且 I &lt; 586 mA 完全放不下。</p>
+
+<h3>四條硬限制（每個指令、SW1 和開機都要通過）</h3>
+<ol>
+  <li><b>I ≤ 6000 mA。</b></li>
+  <li><b>LD_EN ≤ 600 µs</b>（硬體另有約 1.2 ms 的脈寬限制，韌體當機也不會一直開著）。</li>
+  <li><b>工作週期 LD_EN × F ≤ 42 %</b>（即 LD_EN [µs] × F [Hz] ≤ 420000）。</li>
+  <li><b>I ≥ 2 × B。</b></li>
+</ol>
+<p>超限的 W 或 F 直接拒絕，回應會給你最大可用值；改 I 或 B 造成超限時，韌體會把 W 縮到放得下並在回應中說明（見第 5 節）。</p>
+
+<div class="two">
+<div>
+<table>
+  <tr><th>W（B &gt; 0）</th><th>最高 F</th></tr>
+  <tr><td>591 µs</td><td>700 Hz</td></tr>
+  <tr><td>500 µs</td><td>825 Hz</td></tr>
+  <tr><td>400 µs</td><td>1026 Hz</td></tr>
+  <tr><td>300 µs</td><td>1359 Hz</td></tr>
+  <tr><td>≤ 201 µs</td><td>2000 Hz</td></tr>
+</table>
+</div>
+<div>
+<table>
+  <tr><th>F</th><th>最大 W（B &gt; 0）</th></tr>
+  <tr><td>≤ 700 Hz</td><td>591 µs</td></tr>
+  <tr><td>800 Hz</td><td>516 µs</td></tr>
+  <tr><td>1000 Hz</td><td>411 µs</td></tr>
+  <tr><td>1500 Hz</td><td>271 µs</td></tr>
+  <tr><td>2000 Hz</td><td>201 µs</td></tr>
+</table>
+</div>
+</div>
+
+<h2>3. USB 主控台連線</h2>
+<p>J1（USB-C）只做通訊：FT230XS 由板上 5 V 供電，<b>USB 不供電給板子</b>，板子要先接 12 V。開關序列埠不會重置 MCU；燒錄器（J5）和 USB 可以同時插著。</p>
+<table>
+  <tr><th style="width:18%">項目</th><th>設定</th></tr>
+  <tr><td>序列埠</td><td>macOS：<code>/dev/cu.usbserial-XXXX</code>　Windows：<code>COMx</code>（裝置管理員查看）。兩者都是內建 FTDI 驅動。</td></tr>
+  <tr><td>格式</td><td><b>9600 bps、8 資料位元、無同位、1 停止位元（8N1）</b>，無流量控制。</td></tr>
+  <tr><td>行尾</td><td>CR 或 LF 都可以（CR LF 算一個行尾）。板子會回顯你打的字，Backspace / Delete 可刪字。</td></tr>
+  <tr><td>終端機程式</td><td>macOS：<code>screen /dev/cu.usbserial-XXXX 9600</code>（離開：Ctrl-A、K、Y）或 CoolTerm。Windows：PuTTY、Tera Term。</td></tr>
+</table>
+<pre><span class="cm"># macOS：找序列埠並連線</span>
+<span class="in">ls /dev/cu.usbserial-*</span>
+<span class="in">screen /dev/cu.usbserial-XXXX 9600</span></pre>
+<p>上電時板子會印開機訊息（USB 要在上電前就插著才看得到）：</p>
+<pre>LD-PULSE-6A console, H for help
+boot: I=1000mA W=500us F=400Hz B=50mA T=INT V=600mV LD_EN=509us (defaults, EEPROM blank)</pre>
+<div class="box note"><b>一次一個指令。</b>韌體在送出回應時不收字（接收緩衝只有 2 個字元），回應還沒印完就打下一行，那一行會遺失並回 <code>ERR rx</code>。等上一個回應出來再送下一個；用程式控制時尤其要注意（第 12 節）。</div>
+
+<h2>4. 指令一覽</h2>
+<table>
+  <tr><th style="width:17%">指令</th><th style="width:16%">範圍</th><th>作用</th></tr>
+  <tr><td><code>I &lt;mA&gt;</code></td><td>50–6000</td><td>平頂電流。調高時 VPWR 伺服重新起步，回應加 <code>(trim reset)</code>。</td></tr>
+  <tr><td><code>W &lt;us&gt;</code></td><td>20–600</td><td>脈衝寬度（電流半高寬）。</td></tr>
+  <tr><td><code>F &lt;Hz&gt;</code></td><td>16–2000</td><td>重複率；外部觸發時是上限。</td></tr>
+  <tr><td><code>B &lt;mA&gt;</code></td><td>0–200</td><td>脈衝之間的偏置；0 = 關閉。</td></tr>
+  <tr><td><code>T INT</code> / <code>T EXT</code></td><td>—</td><td>觸發來源。T 和參數之間要有空白。</td></tr>
+  <tr><td><code>V &lt;mV&gt;</code></td><td>300–1500</td><td>Q1 Vds 伺服目標。</td></tr>
+  <tr><td><code>SAVE</code></td><td>—</td><td>把六項設定存進 EEPROM，下次上電沿用。</td></tr>
+  <tr><td><code>?</code> 或 <code>S</code></td><td>—</td><td>狀態（4 行，見第 6 節）。</td></tr>
+  <tr><td><code>H</code> 或 <code>HELP</code></td><td>—</td><td>指令說明（附錄）。</td></tr>
+</table>
+<ul>
+  <li><b>語法：</b>一行一個指令，大小寫不拘，十進位整數。數字前的空白可省（<code>I500</code> = <code>I 500</code>），但 <code>TINT</code> 是未知指令。</li>
+  <li><b>生效時機：</b>指令收到就套用，<b>解鎖中也一樣</b>，新的電流與寬度從下一發開始。被拒絕的指令什麼都不改。</li>
+  <li><b>不會自動存檔：</b>主控台改的設定在斷電後消失，要保留請送 <code>SAVE</code>（SW1 長按則會自動存檔）。</li>
+  <li><b>主控台沒有解鎖指令。</b>可以先用 USB 設好參數，再按 SW1 開始出光。</li>
+</ul>
+
+<h2>5. 回應與錯誤訊息</h2>
+<p>成功回 <code>OK</code> 加上<b>目前生效的全部設定</b>；失敗回 <code>ERR</code> 加原因與可用上限。以下都是模擬器實際印出的文字：</p>
+<pre><span class="in">I 3000</span>
+<span class="ok">OK I=3000mA W=500us F=400Hz B=50mA T=INT V=600mV LD_EN=509us (trim reset)</span>
+<span class="in">F 800</span>
+<span class="ok">OK I=3000mA W=500us F=800Hz B=50mA T=INT V=600mV LD_EN=509us</span>
+<span class="in">SAVE</span>
+<span class="ok">OK saved, 13 bytes written</span></pre>
+<table>
+  <tr><th style="width:24%">回應附註</th><th>意思</th></tr>
+  <tr><td><code>(trim reset)</code></td><td>電流調高，VPWR 回到 4.0 V 再由伺服往下調（約 1 秒內穩定），避免電壓不夠讓電流不足。</td></tr>
+  <tr><td><code>(W shrunk from 500us)</code></td><td>新的 I 或 B 讓原本的 W 放不下，W 被縮小。<b>之後改回去不會自動恢復</b>，要自己再下 <code>W</code>。</td></tr>
+  <tr><td><code>OK saved, N bytes written</code></td><td>只寫有變的位元組；N = 0 表示 EEPROM 已經是這組設定。</td></tr>
+</table>
+<table>
+  <tr><th style="width:52%">錯誤訊息（實例）</th><th>原因與處理</th></tr>
+  <tr><td><code>ERR I range 50-6000 mA</code></td><td>超出範圍（W、F、B、V 同格式）。</td></tr>
+  <tr><td><code>ERR F max 825Hz at LD_EN=509us (duty&lt;=42%)</code></td><td>工作週期超過 42 %；F 降到 825 以下，或先縮 W。</td></tr>
+  <tr><td><code>ERR W max 516us at 3000mA 800Hz (duty&lt;=42%)</code></td><td>同上，這次是 W 太寬。</td></tr>
+  <tr><td><code>ERR W max 591us at 3000mA (LD_EN&lt;=600us)</code></td><td>LD_EN 會超過 600 µs。</td></tr>
+  <tr><td><code>ERR B max 50mA at I=100mA (I&gt;=2xB)</code></td><td>偏置不能超過電流的一半。</td></tr>
+  <tr><td><code>ERR I min 400mA at B=200mA (I&gt;=2xB)</code></td><td>同上，先降 B 再降 I。</td></tr>
+  <tr><td><code>ERR I=400mA needs B&gt;0 or I&gt;=586mA (LD_EN&lt;=600us)</code></td><td>B = 0 時小電流的死區太長；把 B 開起來。</td></tr>
+  <tr><td><code>ERR</code></td><td>未知指令或格式錯（例如 <code>X 1</code>、<code>TINT</code>、<code>I</code> 沒有數字）。</td></tr>
+  <tr><td><code>ERR rx</code></td><td>接收錯誤：前一個回應還沒印完就打字、雜訊或鮑率錯。重送即可。</td></tr>
+</table>
+
+<h2>6. 狀態查詢 <code>?</code></h2>
+<p>回 4 行。以下是解鎖中、1 A 的示例（量測值為示意）：</p>
+<pre>armed=yes ilock=closed
+I=1000mA W=500us F=400Hz B=50mA T=INT V=600mV LD_EN=509us
+comp=9us dac=903mA duty=20.36% rate=400Hz preset=1 i_pulse=1000mA ld_k=720mV p_q1=142mW
+bias=50mA trig=int vds_target=600mV vds_meas=700mV vpwr_trim=37 temp_C=41 fault=none</pre>
+<table>
+  <tr><th style="width:17%">欄位</th><th>意思</th></tr>
+  <tr><td><code>armed</code></td><td><code>no</code> 鎖定、<code>arming</code> 解鎖中但偏置還在建立（約 25 ms）、<code>yes</code> 出脈衝中。</td></tr>
+  <tr><td><code>ilock</code></td><td>互鎖 J4：<code>closed</code> 可出光、<code>open</code> 硬體已切斷輸出。</td></tr>
+  <tr><td>第 2 行</td><td>目前設定，與 <code>OK</code> 回應相同。</td></tr>
+  <tr><td><code>comp</code></td><td>上升補償（B &gt; 0 為 9 µs，B = 0 為 339900 / I）。</td></tr>
+  <tr><td><code>dac</code></td><td>DAC 負責的電流 = I − 1.947 × B（其餘由偏置提供）。</td></tr>
+  <tr><td><code>duty</code></td><td>設定的工作週期 LD_EN × F。</td></tr>
+  <tr><td><code>rate</code></td><td>最近 1 秒實際發出的脈衝數（外部觸發時可用來確認觸發率）。</td></tr>
+  <tr><td><code>preset</code></td><td>目前電流是哪一檔（1–4 = 1 / 2 / 4 / 6 A），不是預設檔位時顯示 <code>-</code>。</td></tr>
+  <tr><td><code>i_pulse</code></td><td><b>實測</b>平頂電流（每格 50 mA）。和 I 差很多就要查線或 LD。</td></tr>
+  <tr><td><code>ld_k</code></td><td>實測 LD 陰極（Q1 汲極）電壓。</td></tr>
+  <tr><td><code>p_q1</code></td><td>Q1 平均功耗估算（I × Vds × LD_EN × rate），超過 3 W 持續 5 秒會觸發 HEAT。</td></tr>
+  <tr><td><code>vds_target</code> / <code>vds_meas</code></td><td>Vds 伺服目標 / 實測值。</td></tr>
+  <tr><td><code>vpwr_trim</code></td><td>VPWR 調整量 0–1023：0 = 4.0 V（上限），1023 = 2.4 V（下限），每格 1.56 mV。</td></tr>
+  <tr><td><code>temp_C</code></td><td>Q1 旁 NTC 的板溫。<code>-</code> 尚無讀值；<code>n/a</code> 感測器開路或短路。</td></tr>
+  <tr><td><code>fault</code></td><td><code>none</code> 或目前的故障名稱（第 8 節）。</td></tr>
+</table>
+<p class="small">尚未量測時 <code>ld_k</code>、<code>vds_meas</code> 顯示 <code>-</code>。W &lt; 約 55 µs 時脈衝太短，韌體來不及在平頂取樣：沒有 Vds 伺服、沒有 NO_CURRENT 偵測，VPWR 停在上次的值。</p>
+
+<h2>7. SW1、解鎖與指示燈</h2>
+<table>
+  <tr><th style="width:26%">動作</th><th>效果</th></tr>
+  <tr><td>短按（&lt; 0.8 s）</td><td>解鎖 ↔ 鎖定。解鎖時 ARM 立刻拉高、紅燈亮，偏置建立後才發第一發（B = 50 mA 時 25 ms）。</td></tr>
+  <tr><td>短按（有故障時）</td><td>第一下只清除故障（印 <code>SW1: fault cleared</code>），再按一下才解鎖。</td></tr>
+  <tr><td>長按（≥ 0.8 s）</td><td>電流跳到下一檔 1000 → 2000 → 4000 → 6000 → 1000 mA，<b>立刻套用並存檔</b>（解鎖中也會）。鎖定時紅燈閃 1–4 下表示檔位。主控台印 <code>SW1: I=…</code>。</td></tr>
+</table>
+<ul>
+  <li>上電一律是鎖定狀態；上電時已經按著的按鍵要先放開才算數。</li>
+  <li>互鎖開路或有故障時，按 SW1 不會解鎖。</li>
+  <li>指示燈：<b>綠</b> = 電源；<b>紅（EMIT）</b> = 解鎖／出光中，也用來閃檔位與故障碼；<b>黃</b> = 互鎖閉合。</li>
+</ul>
+<div class="box safe"><b class="t">LD 安全。</b>LZH 還沒確認測試用 LD 料號之前（10/20 寄來的是 3 W 料號，最大 3.5 A），電流不要超過 <code>I 3000</code>，<b>也不要長按 SW1</b>：從 2 A 長按一下就是 4 A，而且會存進 EEPROM。</div>
+
+<h2>8. 故障保護</h2>
+<p>任一故障：ARM 與 LD_EN 立刻拉低（鎖定）、紅燈重複閃故障碼（N 下、停 1.5 秒）、主控台印 <code>FAULT …</code>。只保留第一個故障，<b>按 SW1 一下清除，再按一下才解鎖</b>。主控台在等 UART 或 EEPROM 寫入時，這些檢查照樣執行。</p>
+<table>
+  <tr><th style="width:8%">閃</th><th style="width:15%">故障</th><th>條件</th></tr>
+  <tr><td>1</td><td>NO_CURRENT</td><td>I ≥ 500 mA 時，連續 8 發實測電流 &lt; 20 % 設定值（LD 開路、線斷、驅動失效）。</td></tr>
+  <tr><td>2</td><td>HEAT</td><td>Q1 功耗估算 &gt; 3 W 持續 5 秒，或板溫 NTC 連續 3 次超過 85 °C（鎖定中也會檢查）。</td></tr>
+  <tr><td>3</td><td>ILOCK</td><td>解鎖中（或解鎖建立中）互鎖斷開。硬體本身已在微秒內切斷輸出，韌體再加一層鎖定。</td></tr>
+</table>
+<pre>FAULT NO_CURRENT (LD open / wiring / driver) i_pulse=0mA dac=5611mA - disarmed, press SW1 to clear
+FAULT HEAT P_Q1=3120mW vds=1250mV - disarmed, press SW1 to clear
+FAULT HEAT temp_C=85 - disarmed, press SW1 to clear
+FAULT ILOCK - disarmed, press SW1 to clear
+SW1: fault cleared
+WARN ntc open (1023): 85 C guard off</pre>
+<p class="small"><code>WARN ntc open/short</code>：NTC 開路或短路時只印一次，85 °C 那一半的保護關掉，P_Q1 估算那一半照常運作。</p>
+
+<h2>9. 外部觸發與 SYNC</h2>
+<ul>
+  <li><b><code>T EXT</code> 後，J6-1 每個上升緣發一發</b>，寬度仍由 W 決定，延遲約 6 µs（最多約 12 µs）。輸入 3–24 V 正脈衝，高電位至少 5 µs（10 µs 最保險；更短的毛刺被濾掉），輸入電流 ≤ 10 mA。J6-2 = 地。</li>
+  <li>一個邊緣只發一發；觸發維持高電位也只發一次。脈衝進行中的邊緣會被忽略。</li>
+  <li><b>F 是觸發率上限</b>：要設得比觸發率高（例如觸發 400 Hz 就設 <code>F 800</code>）。工作週期 42 % 規則照樣適用。</li>
+  <li>只在解鎖、互鎖閉合時才會出脈衝。<code>?</code> 的 <code>rate</code> 顯示實際收到的觸發率。</li>
+  <li><b>SYNC（J6-3）= LD_EN</b>，5 V 邏輯直接來自 MCU，負載 ≥ 1 kΩ（示波器設 1 MΩ，不要接 50 Ω）。它標的是電子閘門，光比 SYNC 晚「補償」那麼久才出來。</li>
+</ul>
+
+<h2>10. 設定保存與開機</h2>
+<ul>
+  <li><code>SAVE</code> 或 SW1 長按會把 I、W、F、B、T、V 寫進 EEPROM（13 bytes，含檢查碼）。寫入約 13–65 ms，期間脈衝照常。</li>
+  <li>開機時紀錄的 magic、檢查碼正確且通過全部限制才採用，否則一律用預設值，所以存檔不可能設出超限的值。開機訊息結尾說明來源：</li>
+</ul>
+<table>
+  <tr><th style="width:38%">開機訊息結尾</th><th>意思</th></tr>
+  <tr><td><code>(saved)</code></td><td>用 EEPROM 存的設定。</td></tr>
+  <tr><td><code>(defaults, EEPROM blank)</code></td><td>EEPROM 是空的（剛燒完韌體）。</td></tr>
+  <tr><td><code>(defaults, rev A record ignored)</code></td><td>舊版（rev A）格式，不採用。</td></tr>
+  <tr><td><code>(defaults, saved record invalid)</code></td><td>檢查碼錯或值不合法。</td></tr>
+</table>
+<p><b>重新燒錄韌體會清空 EEPROM</b>（hex 不含 EEPROM 資料），燒完要重新設定並 <code>SAVE</code>。校準常數寫在 <code>main.c</code>，不受影響。</p>
+
+<section class="keep">
+<h2>11. 操作範例</h2>
+<p>目標：3 A、脈寬 500 µs、週期 2.5 ms（400 Hz），存檔後出光，運轉中改成 800 Hz。前提：已照 <code>TEST.md</code> 完成驗收、互鎖 J4 閉合、板子接 12 V。</p>
+<pre><span class="in">?</span>                     <span class="cm">← 先確認 armed=no、ilock=closed、fault=none</span>
+<span class="in">I 3000</span>
+<span class="ok">OK I=3000mA W=500us F=400Hz B=50mA T=INT V=600mV LD_EN=509us (trim reset)</span>
+<span class="in">W 500</span>
+<span class="ok">OK I=3000mA W=500us F=400Hz B=50mA T=INT V=600mV LD_EN=509us</span>
+<span class="in">F 400</span>
+<span class="ok">OK I=3000mA W=500us F=400Hz B=50mA T=INT V=600mV LD_EN=509us</span>
+<span class="in">SAVE</span>
+<span class="ok">OK saved, 13 bytes written</span>
+                      <span class="cm">← 按 SW1 一下：紅燈亮，約 25 ms 後開始出脈衝</span>
+<span class="in">?</span>                     <span class="cm">← 看 i_pulse 是否接近 3000、vds_meas 是否收斂到 ~600、temp_C</span>
+<span class="in">F 800</span>                 <span class="cm">← 解鎖中直接改，下一發生效</span>
+<span class="ok">OK I=3000mA W=500us F=800Hz B=50mA T=INT V=600mV LD_EN=509us</span>
+                      <span class="cm">← 再按 SW1 一下：停止（鎖定）</span></pre>
+</section>
+
+<h2>12. 用程式控制（Python）</h2>
+<p>需要自動化（掃參數、記錄 <code>?</code>）時，用 pyserial（<code>pip install pyserial</code>）。每送一行就等到沒有新資料（0.5 秒）才送下一行，避免 <code>ERR rx</code>：</p>
+<pre><span class="cm"># ld6a_ctl.py — LD-PULSE-6A USB 主控台</span>
+import glob, serial
+
+port = glob.glob("/dev/cu.usbserial-*")[0]     <span class="cm"># Windows 改成 "COM5" 之類</span>
+ser = serial.Serial(port, 9600, timeout=0.5)
+
+def cmd(line):
+    """送一行指令，回傳板子的回應行（去掉回顯）。"""
+    ser.write((line + "\r").encode())
+    out = []
+    while True:
+        s = ser.readline()
+        if not s:                <span class="cm"># 0.5 s 沒有新資料 = 回應結束</span>
+            break
+        out.append(s.decode(errors="replace").strip())
+    out = [x for x in out if x and x != line]
+    for x in out:
+        if x.startswith("FAULT"):
+            raise RuntimeError(x)
+    return out
+
+for c in ["I 3000", "W 500", "F 400"]:
+    r = cmd(c)
+    assert r and r[0].startswith("OK"), r
+print("\n".join(cmd("?")))</pre>
+<p class="small">程式只能改參數與讀狀態；出光仍要人按 SW1。<code>FAULT</code> 與 <code>SW1:</code> 開頭的行是板子主動送出的，隨時可能出現。</p>
+
+<h2>13. 編譯、燒錄與校準常數</h2>
+<pre><span class="in">cd ld6a/firmware</span>
+<span class="in">make</span>                    <span class="cm"># 編譯 main.c → ld_pulse6a.hex（不需要硬體）</span>
+<span class="in">make test</span>               <span class="cm"># host 測試（不需要硬體）</span>
+<span class="in">make program TOOL=ICD5</span>  <span class="cm"># 燒錄：ICD5 經 J5（PICkit 4 用預設 TOOL=PK4，SNAP 用 TOOL=SNAP）</span></pre>
+<ul>
+  <li><b>USB 不能燒錄。</b>板上沒有 bootloader，FT230XS 只接 UART，碰不到 MCLR。燒錄一定要經 J5（ICSP：1 VPP、2 VDD、3 GND、4 PGD、5 PGC），板子接 12 V，燒錄器不供電。</li>
+  <li><b>每片板子的校準常數不同</b>，寫在 <code>main.c</code>，改完重編、各存成 <code>ld_pulse6a_SNxx.hex</code>：<code>ISET_CAL_DEN</code>、<code>BIAS_CAL_DEN</code>、<code>BIAS_PULSE_NUM</code>、<code>RISE_COMP</code>、<code>DEADZONE_CAL</code>、<code>ADC_FVR_MV</code>、<code>VDS_DIV_X1000</code>。量測方法見 <code>firmware/NOTES.md</code> §5。</li>
+  <li>電流上限 <code>I_MAX_MA</code>（6000）與 SW1 檔位 <code>PRESET_TABLE_MA</code>（1/2/4/6 A）是編譯期常數，主控台改不了。</li>
+</ul>
+
+<h2>附錄：<code>H</code> 說明全文</h2>
+<pre>I &lt;mA&gt;     pulse current 50-6000
+W &lt;us&gt;     current-on width 20-600
+F &lt;Hz&gt;     repetition rate 16-2000
+B &lt;mA&gt;     bias between pulses 0-200 (0 = off)
+T INT|EXT  trigger source
+V &lt;mV&gt;     Q1 Vds target 300-1500
+SAVE       keep I W F B T V in EEPROM
+S or ?     status
+H          this help
+LD_EN = W + 9us (B&gt;0) or W + 339900/I us (B=0),
+at most 600 us and 42 % of 1/F; I &gt;= 2 x B
+The bias adds 1947/1001 x B to the flat top; the DAC
+gets I less that (dac= in the status)
+Only SW1 arms; the console cannot. SW1 also clears a FAULT</pre>
+
+</body>
+</html>
