@@ -46,6 +46,12 @@ Angular 原始碼位於 [`aod_angular/aod_ng/`](aod_angular/aod_ng/)。
 
 ---
 
+### LD-PULSE-6A 收板測試指南 [`/ld6a_pcb/`](https://jamyang838.github.io/ld6a_pcb/)
+
+LD-PULSE-6A 雷射二極體脈衝驅動板的收板（bring-up）測試步驟，左側為實板圖，點選步驟會放大對應的量測點。
+
+---
+
 ### PT [`/pt/`](https://jamyang838.github.io/pt/)
 
 Angular 應用程式（P20260226PT）。
