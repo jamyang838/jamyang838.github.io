@@ -54,6 +54,7 @@ LD-PULSE-6A 雷射二極體脈衝驅動板的測試與使用指南，左側為�
 - [LZH 速查表](https://jamyang838.github.io/ld6a_pcb/cheatsheet.html)（[PDF](ld6a_pcb/LD-PULSE-6A_cheatsheet.pdf)）、[單頁版](https://jamyang838.github.io/ld6a_pcb/cheatsheet_1page.html)（[PDF](ld6a_pcb/LD-PULSE-6A_cheatsheet_1page.pdf)）
 - [攜帶清單](https://jamyang838.github.io/ld6a_pcb/packing_list.html)（[PDF](ld6a_pcb/LD-PULSE-6A_packing_list.pdf)）
 - [英文口說練習](https://jamyang838.github.io/ld6a_pcb/phrasebook.html)
+- [板子完整資料 Markdown](https://jamyang838.github.io/ld6a_pcb/LD-PULSE-6A_board_info.md)：主頁左上「✦ 問 Gemini」會把它複製到剪貼簿並開啟 Gemini，貼上後即可詢問這塊板子的任何問題
 
 ---
 
