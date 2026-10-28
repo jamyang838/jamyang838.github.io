@@ -257,7 +257,9 @@ td.n { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
 .step-body a { color: var(--accent); }
 .step-body .dot { vertical-align: -1px; margin: 0 2px; }
 /* ---------- ask Gemini ---------- */
-.brand .ai-open { margin-left: auto; align-self: center; border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); color: var(--accent); font-weight: 600; }
+.brand-tools { margin-left: auto; align-self: center; display: flex; gap: 6px; }
+.brand .ai-open { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); color: var(--accent); font-weight: 600; }
+.brand .tool-link { display: inline-flex; align-items: center; text-decoration: none; color: var(--ink); font-weight: 600; }
 .ai-dlg { width: min(560px, calc(100vw - 32px)); max-height: calc(100svh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); box-shadow: 0 18px 50px rgba(0,0,0,.35); }
 .ai-dlg::backdrop { background: rgba(8,12,10,.55); }
 .ai-dlg .in { padding: 20px 22px 18px; display: flex; flex-direction: column; gap: 14px; }
@@ -277,7 +279,7 @@ td.n { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
 
 .print-head { display: none; }
 @media print {
-  .ai-open, .ai-dlg { display: none !important; }
+  .brand-tools, .ai-dlg { display: none !important; }
   body { background: #fff; color: #000; padding: 0; font-size: 11pt; }
   .app { display: block; max-width: none; }
   .board-panel, .stage-nav, .toolbar, .boardid .btn, .bar, .copyrow, .mk, .lb { display: none !important; }
@@ -298,7 +300,7 @@ td.n { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
     <div class="brand">
       <h1>LD-PULSE-6A <span>收板測試・使用指南</span></h1>
       <div class="meta">rev B0 · 110 × 80 mm · 頂面</div>
-      <button class="btn small ai-open" id="aiOpen" type="button">✦ 問 Gemini</button>
+      <span class="brand-tools"><a class="btn small tool-link" href="console.html">⌨ 指令產生器</a><button class="btn small ai-open" id="aiOpen" type="button">✦ 問 Gemini</button></span>
     </div>
     <div class="toolbar">
       <form class="search" id="searchForm" autocomplete="off">

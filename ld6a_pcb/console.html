@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LD-PULSE-6A 指令產生器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Settings -> the exact characters to type into the USB console (9600 8N1).
+   Limits and command order follow firmware/main.c (settings_set(), Console). Same palette as test_guide.html. */
+:root {
+  --bg: #eef1ee; --surface: #ffffff; --surface-2: #f6f8f6; --ink: #18211c; --muted: #5a6760; --line: #d3dad5;
+  --accent: #9a6a12; --accent-soft: #f6ead2; --stop: #c0362c; --stop-soft: #fbe9e6; --ok: #23824a; --ok-soft: #e3f3e8;
+  --warn: #9a5b00; --warn-soft: #fbefd9; --ctl: #2a6fb0; --ctl-soft: #e3eef8; --sp: #7a7f86;
+  --f-display: "Barlow Condensed", "Arial Narrow", "Noto Sans TC", sans-serif;
+  --f-body: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, "Noto Sans TC", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1311; --surface: #161d1a; --surface-2: #1b2420; --ink: #e4ebe6; --muted: #94a29a; --line: #2b3732;
+    --accent: #e3ac4c; --accent-soft: #3a2e16; --stop: #ff7a6e; --stop-soft: #3a1c19; --ok: #5cc98a; --ok-soft: #173023;
+    --warn: #f0b35a; --warn-soft: #3a2a12; --ctl: #7db6ec; --ctl-soft: #16283a; --sp: #8d949b;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1311; --surface: #161d1a; --surface-2: #1b2420; --ink: #e4ebe6; --muted: #94a29a; --line: #2b3732;
+  --accent: #e3ac4c; --accent-soft: #3a2e16; --stop: #ff7a6e; --stop-soft: #3a1c19; --ok: #5cc98a; --ok-soft: #173023;
+  --warn: #f0b35a; --warn-soft: #3a2a12; --ctl: #7db6ec; --ctl-soft: #16283a; --sp: #8d949b;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; padding: 16px; background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-body); }
+button, input, select { font: inherit; color: inherit; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 16px; }
+header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+header h1 { margin: 0; font: 700 30px/1 var(--f-display); }
+header h1 span { color: var(--accent); }
+header .meta { font: 500 13px var(--f-mono); color: var(--muted); }
+header a.back { margin-left: auto; font-size: 14px; color: var(--accent); text-decoration: none; }
+header a.back:hover { text-decoration: underline; }
+.grid { display: grid; grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.card h2 { margin: 0 0 10px; font: 700 19px/1.2 var(--f-display); letter-spacing: .02em; }
+.card h2 small { font: 500 12px var(--f-mono); color: var(--muted); margin-left: 6px; letter-spacing: 0; }
+.btn { height: 34px; padding: 0 12px; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; cursor: pointer; white-space: nowrap; font-size: 14px; }
+.btn:hover { border-color: var(--accent); }
+.btn.small { height: 28px; padding: 0 9px; font-size: 13px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 600; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.f { display: grid; grid-template-columns: 34px minmax(0, 1fr) 54px; gap: 4px 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.f:first-of-type { border-top: 0; }
+.f .k { font: 700 22px/1 var(--f-display); color: var(--accent); }
+.f label { font-size: 14px; }
+.f label small { display: block; color: var(--muted); font-size: 12px; line-height: 1.3; }
+.f .u { font: 500 12px var(--f-mono); color: var(--muted); }
+.f .in { grid-column: 2 / 4; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.f input[type=number] { width: 110px; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); font-family: var(--f-mono); font-size: 15px; }
+.f input.bad { border-color: var(--stop); background: var(--stop-soft); }
+.chip { height: 26px; padding: 0 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); font: 500 12px var(--f-mono); cursor: pointer; }
+.chip:hover, .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { height: 32px; padding: 0 12px; border: 0; background: var(--surface-2); cursor: pointer; font: 600 13px var(--f-mono); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.opts { display: grid; gap: 10px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; }
+.opts .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.opts .row > span:first-child { min-width: 64px; color: var(--muted); font-size: 13px; }
+.check { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.opts code, details code { font: 600 12.5px var(--f-mono); }
+details { font-size: 13px; color: var(--muted); }
+details summary { cursor: pointer; }
+details .f { padding: 6px 0; }
+.paste textarea { width: 100%; min-height: 84px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); font: 12px/1.5 var(--f-mono); resize: vertical; }
+.paste .row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+.msg { font-size: 13px; color: var(--ok); }
+.msg.err { color: var(--stop); }
+
+.calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.calc div { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.calc b { display: block; font: 600 18px/1.2 var(--f-mono); }
+.calc span { font-size: 12px; color: var(--muted); }
+.calc .over b { color: var(--stop); }
+.notes { display: grid; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+.notes li { padding: 7px 10px; border-radius: 6px; font-size: 13.5px; border-left: 3px solid; }
+.notes .stop { background: var(--stop-soft); border-color: var(--stop); }
+.notes .warn { background: var(--warn-soft); border-color: var(--warn); }
+.notes .ok { background: var(--ok-soft); border-color: var(--ok); }
+
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+.tabs button { height: 30px; padding: 0 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); cursor: pointer; font-size: 13px; }
+.tabs button[aria-selected="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.out { position: relative; }
+.out pre { margin: 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; font: 14px/1.65 var(--f-mono); white-space: pre-wrap; word-break: break-all; min-height: 60px; }
+.out .copy { position: absolute; top: 8px; right: 8px; }
+.sum { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font: 500 12px var(--f-mono); color: var(--muted); }
+
+.lines { display: grid; gap: 10px; margin-top: 4px; }
+.ln { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 4px 10px; align-items: start; padding: 10px 0; border-top: 1px solid var(--line); }
+.ln:first-child { border-top: 0; }
+.ln .no { font: 700 18px/1.4 var(--f-display); color: var(--muted); text-align: right; }
+.ln .why { grid-column: 2; font-size: 13px; color: var(--muted); }
+.ln .why b { color: var(--ink); font-weight: 600; }
+.ln.tmp .no { color: var(--ctl); }
+.chars { display: flex; flex-wrap: wrap; gap: 3px; }
+.ch { display: grid; justify-items: center; min-width: 30px; padding: 3px 4px 2px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface-2); }
+.ch i { font: 600 15px/1.2 var(--f-mono); font-style: normal; }
+.ch s { font: 500 10.5px/1.2 var(--f-mono); text-decoration: none; color: var(--muted); }
+.ch.sp i { color: var(--sp); }
+.ch.ctl { background: var(--ctl-soft); border-color: color-mix(in srgb, var(--ctl) 45%, transparent); }
+.ch.ctl i { color: var(--ctl); font-size: 13px; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.legend .ch { display: inline-grid; vertical-align: middle; min-width: 24px; margin-right: 4px; }
+.how { margin: 0; padding-left: 1.3em; font-size: 14px; display: grid; gap: 4px; }
+.how code { font: 13px var(--f-mono); background: var(--surface-2); padding: 0 4px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>LD-PULSE-6A <span>指令產生器</span></h1>
+    <div class="meta">設定 → USB 主控台字元 · 9600 8N1</div>
+    <a class="back" href="./">← 回測試・使用指南</a>
+  </header>
+
+  <div class="grid">
+    <section class="card" aria-label="設定">
+      <h2>設定 <small>MANUAL §5.3</small></h2>
+      <div class="presets" id="presets"></div>
+
+      <div class="f"><span class="k">I</span><label for="vI">平頂電流<small>50–6000，需 ≥ 2 × B</small></label><span class="u">mA</span>
+        <div class="in"><input type="number" id="vI" min="50" max="6000" inputmode="numeric"><span data-chips="I" data-vals="1000,2000,3000,4000,6000"></span></div></div>
+      <div class="f"><span class="k">W</span><label for="vW">平頂寬度<small>20–600，且 W + comp ≤ 600</small></label><span class="u">µs</span>
+        <div class="in"><input type="number" id="vW" min="20" max="600" inputmode="numeric"><span data-chips="W" data-vals="100,200,300,500"></span></div></div>
+      <div class="f"><span class="k">F</span><label for="vF">重複率<small>16–2000；外部觸發時是上限</small></label><span class="u">Hz</span>
+        <div class="in"><input type="number" id="vF" min="16" max="2000" inputmode="numeric"><span data-chips="F" data-vals="100,400,800"></span></div></div>
+      <div class="f"><span class="k">B</span><label for="vB">脈衝間偏置<small>0–200，要低於 LD 門檻</small></label><span class="u">mA</span>
+        <div class="in"><input type="number" id="vB" min="0" max="200" inputmode="numeric"><span data-chips="B" data-vals="0,10,50"></span></div></div>
+      <div class="f"><span class="k">T</span><label>觸發來源<small>INT 內部自振／EXT 外部 J6-1</small></label><span class="u"></span>
+        <div class="in"><span class="seg" id="segT"><button type="button" data-t="INT">INT</button><button type="button" data-t="EXT">EXT</button></span></div></div>
+      <div class="f"><span class="k">V</span><label for="vV">Q1 伺服目標<small>300–1500，一般不用改</small></label><span class="u">mV</span>
+        <div class="in"><input type="number" id="vV" min="300" max="1500" inputmode="numeric"></div></div>
+
+      <div class="opts">
+        <div class="row"><span>順序</span>
+          <span class="seg" id="segOrder"><button type="button" data-o="safe">安全順序</button><button type="button" data-o="plain">只送設定值</button></span></div>
+        <div class="row"><span>行尾</span>
+          <span class="seg" id="segEol"><button type="button" data-e="CR">CR</button><button type="button" data-e="LF">LF</button><button type="button" data-e="CRLF">CR LF</button></span></div>
+        <div class="row"><span>結尾</span>
+          <label class="check"><input type="checkbox" id="optSave"> 加 <code>SAVE</code>（存 EEPROM）</label>
+          <label class="check"><input type="checkbox" id="optStat"> 加 <code>?</code>（看狀態）</label></div>
+        <details>
+          <summary>校準常數（每片板子不同，預設是韌體出廠值）</summary>
+          <div class="f"><span class="k" style="font-size:15px">RC</span><label for="cRise">RISE_COMP<small>B &gt; 0 時的 comp</small></label><span class="u">µs</span>
+            <div class="in"><input type="number" id="cRise" min="0" max="100"></div></div>
+          <div class="f"><span class="k" style="font-size:15px">DZ</span><label for="cDz">DEADZONE_CAL<small>B = 0 時 comp = DZ ÷ I</small></label><span class="u">µs·mA</span>
+            <div class="in"><input type="number" id="cDz" min="0" max="2000000"></div></div>
+        </details>
+        <details class="paste">
+          <summary>從板子的 <code>?</code> 回應帶入目前設定</summary>
+          <textarea id="statIn" placeholder="armed=no ilock=closed&#10;I=6000mA W=500us F=800Hz B=50mA T=INT V=600mV LD_EN=509us&#10;…" spellcheck="false"></textarea>
+          <div class="row"><button class="btn small" type="button" id="statGo">帶入</button><span class="msg" id="statMsg" aria-live="polite"></span></div>
+        </details>
+      </div>
+    </section>
+
+    <section class="card" aria-label="結果">
+      <h2>檢查 <small>韌體 settings_set() 的三條限制</small></h2>
+      <div class="calc" id="calc"></div>
+      <ul class="notes" id="notes"></ul>
+
+      <h2>要送出的字元</h2>
+      <div class="tabs" role="tablist" id="tabs">
+        <button type="button" role="tab" data-v="text">文字</button>
+        <button type="button" role="tab" data-v="hex">Hex</button>
+        <button type="button" role="tab" data-v="c">C 字串</button>
+        <button type="button" role="tab" data-v="py">Python bytes</button>
+      </div>
+      <div class="out"><pre id="out"></pre><button class="btn small copy" type="button" id="copyOut">複製</button></div>
+      <div class="sum" id="sum"></div>
+      <div class="msg" id="copyMsg" aria-live="polite"></div>
+
+      <div class="lines" id="lines"></div>
+      <div class="legend">
+        <span><span class="ch"><i>I</i><s>49</s></span>可見字元：上面是字、下面是 ASCII hex</span>
+        <span><span class="ch sp"><i>␠</i><s>20</s></span>空白</span>
+        <span><span class="ch ctl"><i>CR</i><s>0D</s></span>行尾控制字元（Enter）</span>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" aria-label="怎麼送">
+    <h2>怎麼送</h2>
+    <ol class="how">
+      <li>USB-C 接 J1，終端機（PuTTY、Tera Term、Arduino Serial Monitor、<code>screen</code>）開 <b>9600 8N1</b>、無流量控制。</li>
+      <li>建議在<b>鎖定狀態</b>（紅燈不亮）下送；主控台不能解鎖，只有 SW1 可以。</li>
+      <li><b>一次一行</b>：送一行、等板子回 <code>OK …</code> 或 <code>ERR …</code> 再送下一行。一口氣貼整段會讓 2 字元的接收 FIFO 溢位，那行會回 <code>ERR rx</code>。</li>
+      <li>被拒絕的指令什麼都不改；照 <code>ERR</code> 給的上限修正後再送。</li>
+      <li>3 W 料號（TY-FM-793±03nm-03.0W-01）最多 <code>I 3000</code>；B 一定要低於 LD 門檻電流。</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+
+/* firmware/main.c */
+const LIM = { I: [50, 6000], W: [20, 600], F: [16, 2000], B: [0, 200], V: [300, 1500] };
+const WIDTH_MAX = 600, DUTY_MAX = 420000;
+const FW = { rise: 9, dz: 339900 };
+const DEF = { I: 1000, W: 500, F: 400, B: 50, T: "INT", V: 600 };   // firmware defaults (no EEPROM record)
+const PRESETS = [
+  { name: "出廠預設", s: DEF },
+  { name: "LZH 6 W 料號", s: { I: 6000, W: 500, F: 400, B: 50, T: "INT", V: 600 } },
+  { name: "LZH 3 W 料號", s: { I: 3000, W: 500, F: 400, B: 50, T: "INT", V: 600 } },
+  { name: "LZH 800 Hz", s: { I: 6000, W: 500, F: 800, B: 50, T: "INT", V: 600 } },
+  { name: "假負載首測", s: { I: 1000, W: 100, F: 100, B: 50, T: "INT", V: 600 } },
+];
+
+let st = Object.assign({}, DEF, { order: "safe", eol: "CR", save: true, stat: false, rise: FW.rise, dz: FW.dz, view: "text" },
+  store.get("ld6a-cmd", {}), fromHash());
+
+function fromHash() {
+  const o = {}; new URLSearchParams(location.hash.slice(1)).forEach((v, k) => {
+    if (k in LIM && /^\d+$/.test(v)) o[k] = +v; else if (k === "T" && /^(INT|EXT)$/i.test(v)) o.T = v.toUpperCase();
+  });
+  return o;
+}
+
+const num = { I: $("vI"), W: $("vW"), F: $("vF"), B: $("vB"), V: $("vV") };
+const comp = (s) => s.B > 0 ? st.rise : Math.floor(st.dz / Math.max(s.I, 1));
+
+/* ---------- build UI ---------- */
+PRESETS.forEach((p) => {
+  const b = document.createElement("button"); b.type = "button"; b.className = "btn small"; b.textContent = p.name;
+  b.addEventListener("click", () => { Object.assign(st, p.s); fill(); render(); }); $("presets").appendChild(b);
+});
+document.querySelectorAll("[data-chips]").forEach((box) => {
+  const k = box.dataset.chips;
+  box.dataset.vals.split(",").forEach((v) => {
+    const c = document.createElement("button"); c.type = "button"; c.className = "chip"; c.textContent = v; c.dataset.k = k; c.dataset.v = v;
+    c.addEventListener("click", () => { st[k] = +v; fill(); render(); }); box.appendChild(c);
+  });
+});
+Object.entries(num).forEach(([k, el]) => el.addEventListener("input", () => { st[k] = el.value === "" ? NaN : Math.round(+el.value); render(); }));
+$("cRise").addEventListener("input", (e) => { st.rise = Math.max(0, +e.target.value || 0); render(); });
+$("cDz").addEventListener("input", (e) => { st.dz = Math.max(0, +e.target.value || 0); render(); });
+function seg(id, key, attr) {
+  $(id).querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { st[key] = b.dataset[attr]; render(); }));
+}
+seg("segT", "T", "t"); seg("segOrder", "order", "o"); seg("segEol", "eol", "e");
+$("optSave").addEventListener("change", (e) => { st.save = e.target.checked; render(); });
+$("optStat").addEventListener("change", (e) => { st.stat = e.target.checked; render(); });
+$("tabs").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { st.view = b.dataset.v; render(); }));
+
+function fill() {
+  Object.entries(num).forEach(([k, el]) => { el.value = Number.isFinite(st[k]) ? st[k] : ""; });
+  $("cRise").value = st.rise; $("cDz").value = st.dz;
+  $("optSave").checked = st.save; $("optStat").checked = st.stat;
+}
+
+/* ---------- checks (same rules as settings_set()) ---------- */
+function check(s) {
+  const stop = [], warn = [], bad = {};
+  for (const k of Object.keys(LIM)) {
+    const [lo, hi] = LIM[k];
+    if (!Number.isInteger(s[k]) || s[k] < lo || s[k] > hi) { bad[k] = true; stop.push(`${k} 要是 ${lo}–${hi} 的整數`); }
+  }
+  if (stop.length) return { stop, warn, bad };
+  const c = comp(s), ld = s.W + c, wMax = Math.min(WIDTH_MAX, Math.floor(DUTY_MAX / s.F)) - c;
+  const fMax = Math.min(LIM.F[1], Math.floor(DUTY_MAX / ld));
+  if (s.I < 2 * s.B) { bad.I = bad.B = true; stop.push(`I 必須 ≥ 2 × B：B ${s.B} mA 時 I 最低 ${2 * s.B} mA（韌體回 ERR I min / ERR B max）`); }
+  if (ld > WIDTH_MAX) { bad.W = true; stop.push(`LD_EN = W + comp = ${s.W} + ${c} = ${ld} µs > 600 µs：W 最多 ${Math.max(0, WIDTH_MAX - c)} µs` + (s.B === 0 ? `（B = 0 時 comp = ${st.dz} ÷ I）` : "")); }
+  if (ld * s.F > DUTY_MAX) { bad.F = bad.W = true; stop.push(`工作週期 ${(ld * s.F / 1e4).toFixed(1)} % > 42 %：W ${s.W} µs 時 F 最多 ${fMax} Hz，或 F ${s.F} Hz 時 W 最多 ${Math.max(0, wMax)} µs`); }
+  if (s.B === 0 && s.I < Math.floor(st.dz / (WIDTH_MAX - LIM.W[0] + 1)) + 1) { bad.I = true; stop.push(`B = 0 時 I 不能低於 ${Math.floor(st.dz / (WIDTH_MAX - LIM.W[0] + 1)) + 1} mA（死區補償塞不進 600 µs）`); }
+  if (s.I > 3000) warn.push("I > 3000 mA：3 W 料號（最大 3.5 A）不能用這個設定，接 LD 前看清本體標籤。");
+  if (s.B === 0) warn.push("B = 0：改用死區補償，comp 隨 I 變大，而且每片板子都要校準 DEADZONE_CAL（TEST.md §7 #5）。");
+  if (s.B >= 100) warn.push(`B = ${s.B} mA：確認比你的 LD 門檻電流低，否則脈衝之間也會出光。`);
+  if (s.V !== 600) warn.push("V 不是 600 mV：一般不用改，改了會影響 Q1 功耗與溫度。");
+  if (s.T === "EXT") warn.push("T EXT：脈衝由 J6-1 上升緣觸發，F 變成重複率上限。");
+  if (ld * s.F > 0.3 * 1e6 && s.I >= 4000) warn.push("高工作週期＋大電流：Q1 會熱，連續運轉請看 ? 的 p_q1 < 1600 mW、temp_C。");
+  return { stop, warn, bad, c, ld, fMax, wMax };
+}
+
+/* ---------- command list ---------- */
+function commands(s) {
+  const L = [];
+  const add = (cmd, why, tmp) => L.push({ cmd, why, tmp: !!tmp });
+  if (st.order === "safe") {
+    add("W 20", "<b>暫時</b>把寬度縮到最小：之後改 I、F、B 都不會撞到 600 µs 或 42 % 的限制", true);
+    add("B 25", "<b>暫時</b>偏置 25 mA：任何 I（≥ 50）都滿足 I ≥ 2B，也讓 comp 先回到 RISE_COMP", true);
+    add(`I ${s.I}`, "平頂電流");
+    add(`F ${s.F}`, "重複率");
+    add(`B ${s.B}`, "脈衝間偏置（正式值）");
+    add(`W ${s.W}`, "平頂寬度（正式值，最後設才不會被前面的限制擋）");
+  } else {
+    add(`I ${s.I}`, "平頂電流"); add(`W ${s.W}`, "平頂寬度"); add(`F ${s.F}`, "重複率"); add(`B ${s.B}`, "脈衝間偏置");
+  }
+  add(`T ${s.T}`, s.T === "INT" ? "內部自振" : "外部觸發（J6-1）");
+  add(`V ${s.V}`, "Q1 伺服目標");
+  if (st.save) add("SAVE", "存到 EEPROM，下次上電沿用");
+  if (st.stat) add("?", "回四行狀態，確認 I／W／F／B 與 LD_EN");
+  return L;
+}
+
+const EOL = { CR: [13], LF: [10], CRLF: [13, 10] };
+const hex2 = (n) => n.toString(16).toUpperCase().padStart(2, "0");
+function bytesOf(cmd) { return [...cmd].map((ch) => ch.charCodeAt(0)).concat(EOL[st.eol]); }
+
+function render() {
+  // controls
+  $("segT").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.t === st.T));
+  $("segOrder").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.o === st.order));
+  $("segEol").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.e === st.eol));
+  $("tabs").querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", b.dataset.v === st.view));
+  document.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", String(st[c.dataset.k]) === c.dataset.v));
+
+  const s = { I: st.I, W: st.W, F: st.F, B: st.B, T: st.T, V: st.V };
+  const r = check(s);
+  Object.entries(num).forEach(([k, el]) => el.classList.toggle("bad", !!r.bad[k]));
+
+  const calc = $("calc"); calc.innerHTML = "";
+  if (r.ld != null) {
+    [["comp", `${r.c} µs`, false], ["LD_EN = W + comp", `${r.ld} µs`, r.ld > WIDTH_MAX],
+     ["工作週期（≤ 42 %）", `${(r.ld * s.F / 1e4).toFixed(2)} %`, r.ld * s.F > DUTY_MAX],
+     [`W ${s.W} 時 F 上限`, `${r.fMax} Hz`, false], [`F ${s.F} 時 W 上限`, `${Math.max(0, r.wMax)} µs`, false],
+     ["示波器 TP1–TP2", `${(s.I * 0.02).toFixed(1)} mV`, false]]
+      .forEach(([k, v, over]) => { const d = document.createElement("div"); if (over) d.className = "over"; d.innerHTML = `<b>${v}</b><span>${k}</span>`; calc.appendChild(d); });
+  }
+  const notes = $("notes"); notes.innerHTML = "";
+  const note = (cls, t) => { const li = document.createElement("li"); li.className = cls; li.textContent = t; notes.appendChild(li); };
+  r.stop.forEach((t) => note("stop", "會被拒絕：" + t));
+  r.warn.forEach((t) => note("warn", t));
+  if (!r.stop.length && !r.warn.length) note("ok", "三條限制都過，韌體會接受這組設定。");
+  if (!r.stop.length) note("ok", st.order === "safe"
+    ? "安全順序：不管板子現在是什麼設定，照這個順序一行一行送都不會被拒絕（暫時值都比正式值保守）。"
+    : "只送設定值：若板子目前的設定和目標差很多，某行可能先被擋（例如先改 F 時舊的 W 太寬），被擋就換「安全順序」。");
+
+  const ok = !r.stop.length;
+  const L = ok ? commands(s) : [];
+  const eolTxt = { CR: "\\r", LF: "\\n", CRLF: "\\r\\n" }[st.eol];
+  let out = "";
+  if (!ok) out = "（設定有誤，先修正左邊紅框）";
+  else if (st.view === "text") out = L.map((l) => l.cmd).join("\n");
+  else if (st.view === "hex") out = L.map((l) => bytesOf(l.cmd).map(hex2).join(" ")).join("\n");
+  else if (st.view === "c") out = L.map((l) => `"${l.cmd}${eolTxt}"`).join("\n");
+  else out = L.map((l) => `b"${l.cmd}${eolTxt}"`).join("\n");
+  $("out").textContent = out;
+  const nb = L.reduce((a, l) => a + bytesOf(l.cmd).length, 0);
+  $("sum").innerHTML = ok ? `<span>${L.length} 行</span><span>${nb} bytes</span><span>行尾 ${st.eol === "CRLF" ? "CR LF (0D 0A)" : st.eol + " (" + EOL[st.eol].map(hex2).join(" ") + ")"}</span><span>9600 8N1 約 ${(nb * 10 / 9.6).toFixed(0)} ms（不含等回應）</span>` : "";
+
+  const box = $("lines"); box.innerHTML = "";
+  L.forEach((l, i) => {
+    const row = document.createElement("div"); row.className = "ln" + (l.tmp ? " tmp" : "");
+    const chars = bytesOf(l.cmd).map((b) => {
+      const ctl = b < 32, sp = b === 32, g = ctl ? (b === 13 ? "CR" : "LF") : sp ? "␠" : String.fromCharCode(b);
+      return `<span class="ch${ctl ? " ctl" : sp ? " sp" : ""}" title="${ctl ? (b === 13 ? "Carriage Return" : "Line Feed") : sp ? "Space" : g} = 0x${hex2(b)} = ${b}"><i>${g}</i><s>${hex2(b)}</s></span>`;
+    }).join("");
+    row.innerHTML = `<span class="no">${i + 1}</span><div class="chars" aria-label="${l.cmd}">${chars}</div><div class="why">${l.why}</div>`;
+    box.appendChild(row);
+  });
+
+  store.set("ld6a-cmd", st);
+  if (ok) history.replaceState(null, "", "#" + new URLSearchParams({ I: s.I, W: s.W, F: s.F, B: s.B, T: s.T, V: s.V }).toString());
+}
+
+$("copyOut").addEventListener("click", () => {
+  const txt = $("out").textContent, msg = $("copyMsg");
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents($("out")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); msg.textContent = "已選取，按 Ctrl+C 複製"; };
+  try { navigator.clipboard.writeText(txt).then(() => { msg.textContent = "已複製（連結也記住了這組設定，可直接分享網址）"; }, fallback); } catch (e) { fallback(); }
+});
+
+$("statGo").addEventListener("click", () => {
+  const t = $("statIn").value, msg = $("statMsg"), got = [];
+  const grab = (k, re) => { const m = t.match(re); if (m) { st[k] = k === "T" ? m[1].toUpperCase() : +m[1]; got.push(k); } };
+  grab("I", /\bI=(\d+)mA/); grab("W", /\bW=(\d+)us/); grab("F", /\bF=(\d+)Hz/); grab("B", /\bB=(\d+)mA/);
+  grab("T", /\bT=(INT|EXT)\b/i); grab("V", /\bV=(\d+)mV/);
+  msg.classList.toggle("err", !got.length);
+  msg.textContent = got.length ? `帶入 ${got.join("、")}` : "找不到 I=…mA W=…us 這種欄位，請貼 ? 的第二行";
+  fill(); render();
+});
+
+fill(); render();
+})();
+</script>
+</body>
+</html>
