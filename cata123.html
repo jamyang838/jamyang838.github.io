@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>網頁目錄</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1f2328; --muted: #656d76;
+    --line: #e3e3df; --link: #0b62c4; --tag: #eef3f9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181b; --card: #1e2125; --text: #e6e6e6; --muted: #9aa1a9;
+      --line: #2e3238; --link: #6cb0ff; --tag: #24303d;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.6 system-ui, -apple-system, "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 28px; font-size: 14px; }
+  section {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px 20px; margin-bottom: 16px;
+  }
+  h2 { font-size: 17px; margin: 0 0 4px; }
+  h2 a { color: var(--text); text-decoration: none; }
+  h2 a:hover { color: var(--link); }
+  .path { font: 12px ui-monospace, Consolas, monospace; color: var(--muted); background: var(--tag);
+          padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 2px; }
+  .desc { color: var(--muted); margin: 0 0 10px; }
+  ul { margin: 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  a { color: var(--link); }
+  .note { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>網頁目錄</h1>
+  <p class="sub">jamyang838.github.io 底下所有頁面的索引 · 更新於 2026-10-28</p>
+
+  <section>
+    <h2><a href="amr_demo/index.html">AMR 人流導航互動展示</a><span class="path">/amr_demo/</span></h2>
+    <p class="desc">環境攝影機全域 MOT × AMR 人流導航，8 個 Canvas 互動場景，純前端、可離線。</p>
+    <ul>
+      <li><a href="amr_demo/amr_flowfield_demo.html">Demo 01 · 人流流向場導航（逆流走廊）</a></li>
+      <li><a href="amr_demo/amr_relay_follow_demo.html">Demo 02 · 接力跟隨與防跟錯人</a></li>
+      <li><a href="amr_demo/amr_gap_threading_demo.html">Demo 03 · 人際間隙穿越與預測</a></li>
+      <li><a href="amr_demo/amr_grid_routing_demo.html">Demo 04 · 棋盤路網人流繞路</a></li>
+      <li><a href="amr_demo/amr_surge_demo.html">Demo 05 · 人潮洩洪預測</a></li>
+      <li><a href="amr_demo/amr_queue_demo.html">Demo 06 · 排隊識別：不插隊的機器人</a></li>
+      <li><a href="amr_demo/amr_group_demo.html">Demo 07 · 群體識別：哪些縫不該鑽</a></li>
+      <li><a href="amr_demo/amr_store_inventory_demo.html">Demo 08 · 超商點貨錯峰作業</a></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><a href="amr_demo2/index.html">AMR 人流 Demo 影片對照</a><span class="path">/amr_demo2/</span></h2>
+    <p class="desc">同樣 8 個場景的模擬錄影，full（有全域感知）vs baseline 並排比較。</p>
+  </section>
+
+  <section>
+    <h2><a href="ld6a_pcb/index.html">LD-PULSE-6A 測試與使用指南</a><span class="path">/ld6a_pcb/</span></h2>
+    <p class="desc">雷射二極體脈衝驅動板收板測試指南，點選步驟會放大實板上的量測點；左上可「問 Gemini」。</p>
+    <ul>
+      <li><a href="ld6a_pcb/console.html">主控台指令產生器</a>：輸入參數產生 USB 主控台指令與 ASCII／Hex，並檢查韌體限制</li>
+      <li><a href="ld6a_pcb/firmware.html">韌體功能說明</a>（<a href="ld6a_pcb/LD-PULSE-6A_firmware.pdf">PDF</a>）</li>
+      <li><a href="ld6a_pcb/cheatsheet.html">現場速查卡（2 頁）</a>（<a href="ld6a_pcb/LD-PULSE-6A_cheatsheet.pdf">PDF</a>）・<a href="ld6a_pcb/cheatsheet_1page.html">一頁版</a>（<a href="ld6a_pcb/LD-PULSE-6A_cheatsheet_1page.pdf">PDF</a>）</li>
+      <li><a href="ld6a_pcb/packing_list.html">採購與攜帶清單</a>（<a href="ld6a_pcb/LD-PULSE-6A_packing_list.pdf">PDF</a>）</li>
+      <li><a href="ld6a_pcb/phrasebook.html">English Phrasebook</a>：現場英文口說練習</li>
+      <li><a href="ld6a_pcb/LD-PULSE-6A_board_info.md">板子完整資料（Markdown）</a></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><a href="aod/index.html">AOD 雷射計算工具</a><span class="path">/aod/</span></h2>
+    <p class="desc">Angular 小工具：計算雷射脈衝週期與數量、AOD clock 延遲、AOD 點數設定。</p>
+  </section>
+
+  <section>
+    <h2><a href="laserpower/index.html">M2R210 雷射功率確認（PowerCheck）</a><span class="path">/laserpower/</span></h2>
+    <p class="desc">Angular + Bootstrap + Firebase 登入的雷射功率確認工具。</p>
+    <ul>
+      <li><a href="laserpower/legacy/index.html">舊版</a></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><a href="pt/index.html">專利批次抓取分析（PT）</a><span class="path">/pt/</span></h2>
+    <p class="desc">輸入專利號批次抓取 IPC／CPC、摘要、請求項，輸出 patent_analysis.csv。</p>
+  </section>
+
+  <section>
+    <h2><a href="gsat-chunk/index.html">學測英文 Chunk 卡</a><span class="path">/gsat-chunk/</span></h2>
+    <p class="desc">學測英文單字片語卡片，附發音音檔；可用 Google 帳號登入同步進度。</p>
+  </section>
+
+  <p class="note">本頁不會被搜尋引擎收錄，也未從其他頁面連入；但網站 repo 是公開的，知道網址的人仍可開啟。</p>
+</main>
+</body>
+</html>
