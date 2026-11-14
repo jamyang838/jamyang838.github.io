@@ -123,10 +123,10 @@ const TIMELINE = [
   {t:'14:51', w:'🚂 蒸汽火車直達下山', d:'16:33 到 Wernigerode，中途不用下車', steam:true},
   {t:'16:33', w:'走回 DB 車站 1 月台', d:'等 17:21 的 RE4'},
   {t:'17:21', w:'RE4 往 Goslar　1 月台', d:'17:52 到 Goslar（5 月台）'},
-  {t:'17:56', w:'RB82　Goslar 4 月台', d:'18:31 到 Kreiensen（51 月台）'},
-  {t:'18:37', w:'RE2 往 Hannover　2 月台', d:'19:26 到漢諾威總站（7 月台）'},
-  {t:'19:36', w:'Kröpcke 搭 4 號電車（往 Roderbruch）', d:'19:52 到 Roderbruchmarkt，走回旅館'},
-  {t:'20:05', w:'回到旅館 🎉', d:'辛苦了，好好休息'}
+  {t:'18:03', w:'RE10 往 Hildesheim　Goslar 4 月台', d:'18:42 到 Hildesheim（3 月台）'},
+  {t:'19:06', w:'S4 往 Hannover　Hildesheim 5 月台', d:'19:38 到漢諾威總站（2 月台）'},
+  {t:'19:46', w:'Kröpcke 搭 4 號電車（往 Roderbruch）', d:'20:02 到 Roderbruchmarkt，走回旅館'},
+  {t:'20:15', w:'回到旅館 🎉', d:'辛苦了，好好休息'}
 ];
 
 // 各地點的班次（m = 主計畫，skip = 不主動建議，只列在其他班次）
@@ -162,8 +162,8 @@ const PLACES = {
    {t:'08:06', m:1, ttl:'RE4 往 Halle', p:'5 月台', d:['08:39 到 Wernigerode','09:40 上山']},
    {t:'09:05', ttl:'RE21 往 Magdeburg', p:'5 月台', d:['09:41 到 Wernigerode','改搭 10:25 上山，12:05 到山頂']},
    {t:'10:06', ttl:'RE4 往 Halle', p:'5 月台', d:['10:39 到 Wernigerode','改搭 11:57 上山，13:44 到山頂']},
-   {t:'17:56', m:1, ttl:'RB82 往 Göttingen', p:'4 月台', d:['18:31 到 Kreiensen（51 月台）','18:37 轉 RE2（2 月台）往 Hannover','19:26 到漢諾威總站']},
-   {t:'18:03', ttl:'RE10 往 Hildesheim', p:'4 月台', d:['18:42 到 Hildesheim（3 月台）','19:06 轉 S4（5 月台）','19:38 到漢諾威總站']},
+   {t:'17:56', ttl:'RB82 往 Göttingen', p:'4 月台', d:['換車只有 4 分鐘，Kreiensen 再換 6 分鐘，很趕','18:31 到 Kreiensen（51 月台）→ 18:37 RE2（2 月台）','19:26 到漢諾威總站']},
+   {t:'18:03', m:1, ttl:'RE10 往 Hildesheim', p:'4 月台', d:['18:42 到 Hildesheim（3 月台）','19:06 轉 S4（5 月台）','19:38 到漢諾威總站']},
    {t:'18:36', ttl:'RB82 往 Göttingen', p:'看看板', d:['19:11 到 Kreiensen','19:31 轉 RE2 → 20:23 漢諾威']},
    {t:'19:03', ttl:'RE10 往 Hildesheim', p:'4 月台', d:['19:42 到 Hildesheim','20:06 轉 S4 → 20:38 漢諾威']}
  ]},
@@ -192,7 +192,7 @@ const PLACES = {
    {t:'14:16', ttl:'RE21 往 Goslar', p:'1 月台', d:['經 Goslar、Hildesheim 轉車','16:38 到漢諾威總站']},
    {t:'15:21', ttl:'RE4 往 Goslar', p:'1 月台', d:['經 Goslar、Kreiensen 轉車','17:26 到漢諾威總站']},
    {t:'16:18', ttl:'RE21 往 Goslar', p:'1 月台', d:['16:53 到 Goslar → 17:03 RE10（4 月台）','17:42 到 Hildesheim → 18:06 S4','18:38 到漢諾威總站']},
-   {t:'17:21', m:1, ttl:'RE4 往 Goslar', p:'1 月台', d:['17:52 到 Goslar → 17:56 RB82（4 月台）','18:31 到 Kreiensen → 18:37 RE2（2 月台）','19:26 到漢諾威總站']},
+   {t:'17:21', m:1, ttl:'RE4 往 Goslar', p:'1 月台', d:['17:52 到 Goslar → 18:03 RE10（4 月台）','18:42 到 Hildesheim → 19:06 S4（5 月台）','19:38 到漢諾威總站']},
    {t:'18:18', ttl:'RE21 往 Goslar', p:'1 月台', d:['18:53 到 Goslar → 19:03 RE10','19:42 到 Hildesheim → 20:06 S4','20:38 到漢諾威總站']}
  ], late:'請用 DB Navigator 查「Wernigerode Hbf → Hannover Hbf」。'},
  hbfpm:{name:'漢諾威總站（晚上）', deps:[], always:{ttl:'走到 Kröpcke 搭 4 號電車（往 Roderbruch）', p:'Kröpcke 地下站', d:['晚上大約每 10 分鐘一班','約 16 分鐘到 Roderbruchmarkt','下車走路約 9 分鐘回旅館']}},
@@ -202,19 +202,8 @@ const PLACES = {
 const ORDER = ['gps','auto','hotel','hbf','bs','vb','kr','gs','hi','wram','brocken','wrpm','hbfpm','train'];
 const LABEL = {gps:'📍 用手機定位（自動判斷我在哪）', auto:'⏰ 照計畫時間（不確定時按這個）', hotel:'🏨 旅館', hbf:'🚉 漢諾威總站（早上）', bs:'Braunschweig', vb:'Vienenburg', kr:'Kreiensen', gs:'Goslar', hi:'Hildesheim', wram:'Wernigerode（上山前）', brocken:'⛰️ 布羅肯山頂', wrpm:'Wernigerode（下山後）', hbfpm:'🚉 漢諾威總站（晚上）', train:'🚆 我在火車上'};
 
-// 主計畫的乘車段（「在火車上」用）
-const LEGS = [
-  {dep:'05:58',arr:'06:14',n:'4 號電車',to:'Kröpcke',then:'走到漢諾威總站，看 IC 2447 的發車看板'},
-  {dep:'06:37',arr:'07:12',n:'IC 2447',to:'Braunschweig（7 月台）',then:'走到 1 月台，搭 07:24 RB42 往 Bad Harzburg'},
-  {dep:'07:24',arr:'07:57',n:'RB42',to:'Vienenburg（2 月台）',then:'走到 3 月台，搭 08:16 RE4 往 Halle'},
-  {dep:'08:16',arr:'08:39',n:'RE4',to:'Wernigerode Hbf（1 月台）',then:'走 2 分鐘到 HSB 車站，買布羅肯來回票'},
-  {dep:'09:40',arr:'11:21',n:'蒸汽火車',to:'布羅肯山頂（終點）',then:'山頂逛逛，14:30 前回到車站'},
-  {dep:'14:51',arr:'16:33',n:'蒸汽火車（直達）',to:'Wernigerode（終點）',then:'走回 DB 車站 1 月台，等 17:21 的 RE4'},
-  {dep:'17:21',arr:'17:52',n:'RE4',to:'Goslar（5 月台）',then:'換到 4 月台，搭 17:56 RB82'},
-  {dep:'17:56',arr:'18:31',n:'RB82',to:'Kreiensen（51 月台）',then:'換到 2 月台，搭 18:37 RE2 往 Hannover'},
-  {dep:'18:37',arr:'19:26',n:'RE2',to:'漢諾威總站（7 月台，終點）',then:'走到 Kröpcke 搭 4 號電車往 Roderbruch'},
-  {dep:'19:36',arr:'19:52',n:'4 號電車',to:'Roderbruchmarkt',then:'走路約 9 分鐘回旅館'}
-];
+// 每一段車（含沿途停靠站）
+const LEGS = [{"id": "L1", "r": "main", "n": "4 號電車（往 Garbsen）", "st": [["Roderbruchmarkt", "05:58", 52.3886, 9.8131], ["Medizinische Hochschule", "05:59", 52.384, 9.8086], ["Misburger Straße", "06:00", 52.379, 9.8085], ["Karl-Wiechert-Allee", "06:01", 52.3748, 9.8077], ["Nackenberg", "06:03", 52.3707, 9.8027], ["Uhlhornstraße", "06:05", 52.3716, 9.7932], ["Kantplatz", "06:06", 52.3724, 9.7858], ["Clausewitzstraße", "06:08", 52.3711, 9.773], ["Braunschweiger Platz", "06:10", 52.3705, 9.7618], ["Marienstraße", "06:11", 52.37, 9.7531], ["Aegidientorplatz", "06:13", 52.3693, 9.7431], ["Kröpcke", "06:14", 52.3737, 9.7393]], "arrPl": "", "nx": {"t": "06:37", "w": "IC 2447 往 Dresden", "pl": "10 月台", "walk": "走約 6 分鐘到漢諾威總站；先看看板，IC 誤點就搭 06:33 RE2（3 月台）"}}, {"id": "L2", "r": "main", "n": "IC 2447（往 Dresden）", "st": [["漢諾威總站 Hannover Hbf", "06:37", 52.3775, 9.7417], ["Braunschweig Hbf", "07:12", 52.2522, 10.5409]], "arrPl": "7", "nx": {"t": "07:24", "w": "RB42 往 Bad Harzburg", "pl": "1 月台"}}, {"id": "L3", "r": "main", "n": "RB42（往 Bad Harzburg）", "st": [["Braunschweig Hbf", "07:24", 52.2526, 10.5403], ["Wolfenbüttel", "07:32", 52.1592, 10.5322], ["Börßum", "07:42", 52.061, 10.5691], ["Schladen", "07:47", 52.0218, 10.5499], ["Vienenburg", "07:57", 51.9552, 10.5622]], "arrPl": "2", "nx": {"t": "08:16", "w": "RE4 往 Halle", "pl": "3 月台"}}, {"id": "L4", "r": "main", "n": "RE4（往 Halle）", "st": [["Vienenburg", "08:16", 51.9552, 10.5621], ["Ilsenburg", "08:27", 51.8696, 10.6828], ["Wernigerode Hbf", "08:39", 51.8402, 10.789]], "arrPl": "1", "nx": {"t": "09:40", "w": "🚂 蒸汽火車往 Brocken（先在 HSB 櫃台買票）", "pl": "HSB 31 月台", "walk": "走 2 分鐘到旁邊的 HSB 車站"}}, {"id": "L5", "r": "main", "n": "🚂 蒸汽火車（往 Brocken）", "st": [["Wernigerode (HSB)", "09:40", 51.8398, 10.7878], ["Wernigerode Westerntor", "09:44", 51.8341, 10.7803], ["Hochschule Harz", "09:48", 51.8285, 10.7745], ["Wernigerode-Hasserode", "09:53", 51.8225, 10.762], ["Steinerne Renne", "09:58", 51.813, 10.74], ["Drei Annen Hohne", "10:17", 51.8126, 10.683], ["Schierke", "10:42", 51.7708, 10.6634], ["Brocken 山頂", "11:21", 51.7998, 10.6181]], "arrPl": "", "approx": 1, "nx": {"end": "終點：布羅肯山頂。下山搭 14:51 直達車，14:30 前回到車站"}}, {"id": "H2", "r": "alt", "n": "🚂 蒸汽火車（往 Brocken）", "st": [["Wernigerode (HSB)", "10:25", 51.8398, 10.7878], ["Wernigerode Westerntor", "10:29", 51.8341, 10.7803], ["Hochschule Harz", "10:33", 51.8285, 10.7745], ["Wernigerode-Hasserode", "10:38", 51.8225, 10.762], ["Steinerne Renne", "10:43", 51.813, 10.74], ["Drei Annen Hohne", "11:02", 51.8126, 10.683], ["Schierke", "11:27", 51.7708, 10.6634], ["Brocken 山頂", "12:05", 51.7998, 10.6181]], "arrPl": "", "approx": 1, "nx": {"end": "終點：布羅肯山頂。下山搭 14:51 直達車"}}, {"id": "L6", "r": "main", "n": "🚂 蒸汽火車（直達 Wernigerode）", "st": [["Brocken 山頂", "14:51", 51.7998, 10.6181], ["Schierke", "15:21", 51.7708, 10.6634], ["Drei Annen Hohne", "15:33", 51.8126, 10.683], ["Steinerne Renne", "16:12", 51.813, 10.74], ["Wernigerode-Hasserode", "16:17", 51.8225, 10.762], ["Hochschule Harz", "16:22", 51.8285, 10.7745], ["Wernigerode Westerntor", "16:28", 51.8341, 10.7803], ["Wernigerode (HSB)", "16:33", 51.8398, 10.7878]], "arrPl": "31", "approx": 1, "nx": {"t": "17:21", "w": "RE4 往 Goslar", "pl": "DB 1 月台", "walk": "走 2 分鐘回 DB 車站"}}, {"id": "H4", "r": "alt", "n": "🚂 蒸汽火車（直達 Wernigerode）", "st": [["Brocken 山頂", "16:22", 51.7998, 10.6181], ["Schierke", "16:52", 51.7708, 10.6634], ["Drei Annen Hohne", "17:04", 51.8126, 10.683], ["Steinerne Renne", "17:43", 51.813, 10.74], ["Wernigerode-Hasserode", "17:48", 51.8225, 10.762], ["Hochschule Harz", "17:53", 51.8285, 10.7745], ["Wernigerode Westerntor", "17:59", 51.8341, 10.7803], ["Wernigerode (HSB)", "17:58", 51.8398, 10.7878]], "arrPl": "31", "approx": 1, "nx": {"t": "18:18", "w": "RE21 往 Goslar", "pl": "DB 1 月台", "walk": "走 2 分鐘回 DB 車站"}}, {"id": "L7", "r": "main", "n": "RE4（往 Goslar）", "st": [["Wernigerode Hbf", "17:21", 51.8402, 10.789], ["Ilsenburg", "17:29", 51.8695, 10.6827], ["Vienenburg", "17:41", 51.9552, 10.5621], ["Goslar", "17:52", 51.9119, 10.4208]], "arrPl": "5", "nx": {"t": "18:03", "w": "RE10 往 Hildesheim", "pl": "4 月台"}}, {"id": "L8", "r": "main", "n": "RE10（往 Hildesheim）", "st": [["Goslar", "18:03", 51.9119, 10.4206], ["SZ-Ringelheim", "18:15", 52.038, 10.3143], ["Baddeckenstedt", "18:22", 52.0892, 10.2289], ["Derneburg", "18:28", 52.0969, 10.1439], ["Hildesheim Ostbahnhof", "18:38", 52.1463, 9.9631], ["Hildesheim Hbf", "18:42", 52.1603, 9.9526]], "arrPl": "3", "nx": {"t": "19:06", "w": "S4 往 Hannover", "pl": "5 月台"}}, {"id": "L9", "r": "main", "n": "S4（往 Hannover）", "st": [["Hildesheim Hbf", "19:06", 52.1604, 9.9525], ["Emmerke", "19:12", 52.1623, 9.8665], ["Barnten", "19:17", 52.1951, 9.8148], ["Sarstedt", "19:21", 52.2323, 9.8425], ["Rethen (Leine)", "19:25", 52.2861, 9.8194], ["Hannover Messe / Laatzen", "19:29", 52.317, 9.7929], ["Hannover Bismarckstr.", "19:34", 52.3566, 9.7696], ["漢諾威總站 Hannover Hbf", "19:38", 52.3769, 9.741]], "arrPl": "2", "nx": {"t": "19:46", "w": "4 號電車往 Roderbruch", "pl": "Kröpcke 地下站", "walk": "走約 6 分鐘到 Kröpcke；每 10 分鐘一班"}}, {"id": "L10", "r": "main", "n": "4 號電車（往 Roderbruch）", "st": [["Kröpcke", "19:46", 52.3737, 9.7391], ["Aegidientorplatz", "19:48", 52.3687, 9.7436], ["Marienstraße", "19:49", 52.3699, 9.7532], ["Braunschweiger Platz", "19:50", 52.3704, 9.7621], ["Clausewitzstraße", "19:52", 52.3711, 9.7734], ["Kantplatz", "19:54", 52.3722, 9.7865], ["Uhlhornstraße", "19:55", 52.3715, 9.7935], ["Nackenberg", "19:57", 52.3706, 9.8033], ["Karl-Wiechert-Allee", "19:58", 52.3751, 9.8079], ["Misburger Straße", "19:59", 52.3792, 9.8088], ["Medizinische Hochschule", "20:00", 52.3842, 9.8086], ["Roderbruchmarkt", "20:02", 52.3887, 9.8135]], "arrPl": "", "nx": {"end": "下車後走路約 9 分鐘回旅館"}}, {"id": "A1", "r": "alt", "n": "RE2（往 Göttingen）", "st": [["漢諾威總站 Hannover Hbf", "06:33", 52.377, 9.741], ["Sarstedt", "06:43", 52.2323, 9.8423], ["Nordstemmen", "06:49", 52.1676, 9.7904], ["Elze", "06:54", 52.1206, 9.747], ["Banteln", "06:59", 52.066, 9.7504], ["Alfeld (Leine)", "07:05", 51.9813, 9.818], ["Freden", "07:12", 51.9285, 9.8988], ["Kreiensen", "07:18", 51.8512, 9.9668]], "arrPl": "3", "nx": {"t": "07:24", "w": "RB82 往 Bad Harzburg", "pl": "52 月台", "walk": "只有 6 分鐘！下車馬上走"}}, {"id": "A2", "r": "alt", "n": "RB82（往 Bad Harzburg）", "st": [["Kreiensen", "07:24", 51.8517, 9.9678], ["Bad Gandersheim", "07:29", 51.8674, 10.0201], ["Seesen", "07:39", 51.8869, 10.1731], ["Langelsheim", "07:51", 51.9301, 10.343], ["Goslar", "07:59", 51.9117, 10.4204]], "arrPl": "1", "nx": {"t": "08:06", "w": "RE4 往 Halle", "pl": "5 月台"}}, {"id": "A3", "r": "alt", "n": "RE4（往 Halle）", "st": [["Goslar", "08:06", 51.9119, 10.4208], ["Vienenburg", "08:16", 51.9552, 10.5621], ["Ilsenburg", "08:27", 51.8696, 10.6828], ["Wernigerode Hbf", "08:39", 51.8402, 10.789]], "arrPl": "1", "nx": {"t": "09:40", "w": "🚂 蒸汽火車往 Brocken（先在 HSB 櫃台買票）", "pl": "HSB 31 月台", "walk": "走 2 分鐘到旁邊的 HSB 車站"}}, {"id": "D1", "r": "alt", "n": "S4（往 Hildesheim）", "st": [["漢諾威總站 Hannover Hbf", "07:19", 52.3768, 9.7409], ["Hannover Bismarckstr.", "07:22", 52.3566, 9.7695], ["Hannover Messe / Laatzen", "07:26", 52.317, 9.7926], ["Rethen (Leine)", "07:29", 52.2863, 9.8189], ["Sarstedt", "07:34", 52.2323, 9.8423], ["Barnten", "07:37", 52.1951, 9.8147], ["Emmerke", "07:43", 52.1622, 9.8664], ["Hildesheim Hbf", "07:49", 52.1604, 9.9525]], "arrPl": "5", "nx": {"t": "08:14", "w": "RE10 往 Bad Harzburg", "pl": "2 月台"}}, {"id": "D2", "r": "alt", "n": "RE10（往 Bad Harzburg）", "st": [["Hildesheim Hbf", "08:14", 52.16, 9.9528], ["Hildesheim Ostbahnhof", "08:17", 52.1462, 9.9628], ["Derneburg", "08:27", 52.0967, 10.1442], ["Baddeckenstedt", "08:33", 52.0891, 10.2289], ["SZ-Ringelheim", "08:40", 52.0379, 10.3143], ["Goslar", "08:53", 51.9117, 10.4209]], "arrPl": "3", "nx": {"t": "09:05", "w": "RE21 往 Magdeburg", "pl": "5 月台"}}, {"id": "D3", "r": "alt", "n": "RE21（往 Magdeburg）", "st": [["Goslar", "09:05", 51.9119, 10.4208], ["Vienenburg", "09:15", 51.9552, 10.5621], ["Stapelburg", "09:23", 51.9, 10.6715], ["Ilsenburg", "09:28", 51.8696, 10.6828], ["Darlingerode", "09:35", 51.8491, 10.7333], ["Wernigerode Elmowerk", "09:38", 51.8388, 10.7698], ["Wernigerode Hbf", "09:41", 51.8402, 10.789]], "arrPl": "1", "nx": {"t": "10:25", "w": "🚂 蒸汽火車往 Brocken（先買票）", "pl": "HSB 31 月台", "walk": "走 2 分鐘到旁邊的 HSB 車站"}}, {"id": "B1", "r": "alt", "n": "RB42（往 Bad Harzburg）", "st": [["Braunschweig Hbf", "08:24", 52.2526, 10.5403], ["Wolfenbüttel", "08:32", 52.1592, 10.5322], ["Börßum", "08:42", 52.061, 10.5691], ["Schladen", "08:47", 52.0218, 10.5499], ["Vienenburg", "08:57", 51.9552, 10.5622]], "arrPl": "2", "nx": {"t": "09:15", "w": "RE21 往 Magdeburg", "pl": "3 月台"}}, {"id": "K1", "r": "alt", "n": "RB82（往 Göttingen）", "st": [["Goslar", "17:56", 51.9119, 10.4206], ["Langelsheim", "18:02", 51.9302, 10.3431], ["Seesen", "18:16", 51.8872, 10.1736], ["Bad Gandersheim", "18:26", 51.8676, 10.0202], ["Kreiensen", "18:31", 51.8515, 9.9674]], "arrPl": "51", "nx": {"t": "18:37", "w": "RE2 往 Hannover", "pl": "2 月台", "walk": "只有 6 分鐘，很趕！下車馬上走"}}, {"id": "K2", "r": "alt", "n": "RE2（往 Hannover）", "st": [["Kreiensen", "18:37", 51.8513, 9.9669], ["Freden", "18:43", 51.9284, 9.8989], ["Alfeld (Leine)", "18:49", 51.9814, 9.8181], ["Banteln", "18:56", 52.0661, 9.7504], ["Elze", "19:02", 52.1206, 9.7471], ["Nordstemmen", "19:08", 52.1675, 9.7905], ["Sarstedt", "19:14", 52.2323, 9.8425], ["漢諾威總站 Hannover Hbf", "19:26", 52.3772, 9.7413]], "arrPl": "7", "nx": {"t": "19:46", "w": "4 號電車往 Roderbruch", "pl": "Kröpcke 地下站", "walk": "走約 6 分鐘到 Kröpcke；每 10 分鐘一班"}}];
 
 let place = 'gps';
 try { const s = localStorage.getItem('brocken_place'); if (s && LABEL[s]) place = s; } catch(e){}
@@ -250,12 +239,39 @@ function locate(){
   }, {enableHighAccuracy:true, timeout:20000, maximumAge:60000});
 }
 function startGps(){ locate(); if(gpsTimer) clearInterval(gpsTimer); gpsTimer=setInterval(()=>{ if(place==='gps') locate(); },120000); }
+
+function activeLegs(now){ return LEGS.filter(l => T(l.st[0][1]) - 3 <= now && now <= T(l.st[l.st.length-1][1]) + 10); }
+function trainInfo(now){
+  let c = activeLegs(now);
+  if (!c.length) return null;
+  if (fix) {
+    let best=null;
+    c.forEach(l=>{ const dmin=Math.min(...l.st.map(x=>km(fix.lat,fix.lon,x[2],x[3]))); if(!best||dmin<best.d) best={l,d:dmin}; });
+    const leg = best.l, st = leg.st;
+    // 找出目前所在的區段
+    let pos = 0, bestDet = Infinity;
+    for (let k=0;k<st.length-1;k++){
+      const det = km(fix.lat,fix.lon,st[k][2],st[k][3]) + km(fix.lat,fix.lon,st[k+1][2],st[k+1][3]) - km(st[k][2],st[k][3],st[k+1][2],st[k+1][3]);
+      if (det < bestDet){ bestDet = det; pos = k; }
+    }
+    if (km(fix.lat,fix.lon,st[pos+1]?.[2]??0,st[pos+1]?.[3]??0) < 0.4) pos = pos+1;
+    return {leg, pos, byGps:true};
+  }
+  const leg = c.find(l=>l.r==='main') || c[0];
+  let pos = 0; leg.st.forEach((x,i)=>{ if (T(x[1]) <= now) pos = i; });
+  return {leg, pos, byGps:false};
+}
+
 function gpsPlace(now){
   if (!fix) return null;
   let best=null;
   STA.forEach(st=>{const d=km(fix.lat,fix.lon,st.lat,st.lon); if(!best||d<best.d) best={...st,d};});
   let k='train', near=best.d<=best.r;
   if (near){
+    // 如果這站只是車子途經的中間站，判斷為在車上
+    const passing = activeLegs(now).some(l => l.st.some((x,i)=> i>0 && i<l.st.length-1 && km(fix.lat,fix.lon,x[2],x[3]) < 0.6));
+    const endsHere = activeLegs(now).some(l => { const a=l.st[0], z=l.st[l.st.length-1]; return km(fix.lat,fix.lon,a[2],a[3])<0.6 || km(fix.lat,fix.lon,z[2],z[3])<0.6; });
+    if (passing && !endsHere) return {k:'train', best, near:false};
     k = best.k;
     if (k==='hbf') k = now < 12*60 ? 'hbf' : 'hbfpm';
     if (k==='wr') k = now < 12*60+30 ? 'wram' : 'wrpm';
@@ -340,22 +356,37 @@ function render(){
         <div class="detail"><div>・${esc(s.d)}</div></div></div>`;
     }
   } else if (eff === 'train') {
-    where.innerHTML = '你在<b>火車上</b>（依主計畫判斷）。如果搭的是備案的車，<b>下車後請按那一站的按鈕</b>。';
-    let leg = LEGS.find(l => T(l.dep) <= now && now <= T(l.arr)+5);
-    if (leg) {
-      const diff = T(leg.arr) - now;
-      card.innerHTML = `<div class="card next">
-        <div class="lbl">你應該在：${esc(leg.n)}</div>
-        <div class="bigtime">${leg.arr}</div>
-        <div class="count ${diff<=5?'urgent':''}">${diff>0?'還有 '+diff+' 分鐘到站':'到站了，準備下車！'}</div>
-        <div class="ttl">在 ${esc(leg.to)} 下車</div>
-        <div class="detail"><div>・下車後：${esc(leg.then)}</div></div></div>`;
-    } else {
-      leg = LEGS.find(l => T(l.dep) > now);
-      card.innerHTML = leg ? `<div class="card next"><div class="lbl">現在不在主計畫的車上時間</div>
-        <div class="ttl">下一班要搭：${esc(leg.n)}（${leg.dep} 開）</div>
-        <div class="detail"><div>・到 ${esc(leg.to)} 下車</div></div></div>`
+    const r = trainInfo(now);
+    where.innerHTML = '你在<b>車上</b>' + (r && r.byGps ? '（用定位判斷位置）' : '（沒有定位，用時刻表推算）') + '。';
+    if (!r) {
+      const nl = LEGS.filter(l=>l.r==='main').find(l => T(l.st[0][1]) > now);
+      card.innerHTML = nl ? `<div class="card next"><div class="lbl">現在不在計畫的車上時間</div>
+        <div class="ttl">下一班要搭：${esc(nl.n)}（${nl.st[0][1]} 開）</div></div>`
         : '<div class="card"><div class="ttl">今天的行程結束了 🎉</div></div>';
+    } else {
+      const {leg, pos} = r, st = leg.st, last = st.length-1, left = last - pos;
+      const dest = st[last], arrDiff = T(dest[1]) - now;
+      const big = left <= 0 ? '到站了！準備下車' : left === 1 ? '下一站就下車！' : '再 ' + left + ' 站下車';
+      let nxHtml = '';
+      if (leg.nx.end) nxHtml = `<div class="altbox"><b>下車後：</b>${esc(leg.nx.end)}</div>`;
+      else {
+        const gap = T(leg.nx.t) - T(dest[1]);
+        nxHtml = `<div class="altbox"><div class="lbl">下車後要搭</div>
+          <div class="ttl">${leg.nx.t}　${esc(leg.nx.w)}</div>
+          <div class="plat">${esc(leg.nx.pl)}</div>
+          <div class="count ${gap<=7?'urgent':''}">換車時間 ${gap} 分鐘${gap<=7?'，很趕！下車馬上走':''}</div>
+          ${leg.nx.walk ? '<div>・'+esc(leg.nx.walk)+'</div>' : ''}</div>`;
+      }
+      const rest = st.slice(Math.min(pos+1,last)).map((x,i)=>`<div class="row ${pos+1+i===last?'now':''}"><div class="t">${x[1]}</div><div class="w"><b>${esc(x[0])}</b>${pos+1+i===last?'　← 在這站下車':''}</div></div>`).join('');
+      card.innerHTML = `<div class="card next ${leg.r==='main'?'':'isalt'}">
+        <div>${leg.r==='main'?'<span class="tag m">主計畫</span>':'<span class="tag a">備案</span>'}</div>
+        <div class="lbl">你在：${esc(leg.n)}</div>
+        <div class="ttl" style="font-size:40px;color:${left<=1?'var(--warn)':'inherit'}">${big}</div>
+        <div class="detail"><div>下車站：<b>${esc(dest[0])}</b>${leg.arrPl?'（'+esc(leg.arrPl)+' 月台）':''}</div>
+          <div>預定 <b>${dest[1]}</b> 到站，${arrDiff>0?'還有 '+arrDiff+' 分鐘':'就是現在'}${leg.approx?'（蒸汽火車時刻為約略）':''}</div>
+          ${left>1 && st[pos+1] ? '<div>下一站：<b>'+esc(st[pos+1][0])+'</b></div>' : ''}</div>
+        ${nxHtml}</div>
+        <div class="other"><div class="lbl">接下來的停靠站</div><div class="rows">${rest}</div></div>`;
     }
   } else {
     const P = PLACES[eff];
