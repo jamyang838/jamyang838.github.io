@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11/14 布羅肯峰一日遊</title>
+<style>
+  :root{
+    --ink:#111; --sub:#333; --line:#bbb; --bg:#fff;
+    --main:#0a6b2f; --mainbg:#e3f5e9; --alt:#9a4a00; --altbg:#fff0dc;
+    --hl:#ffe58a; --warn:#b00020; --steam:#fbe9da;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+    font-size:22px;line-height:1.5;padding:16px 14px 60px}
+  h1{font-size:30px;margin:0 0 4px;line-height:1.25}
+  h2{font-size:27px;margin:34px 0 12px;padding:6px 12px;background:#222;color:#fff;border-radius:10px}
+  .clock{font-size:46px;font-weight:800;letter-spacing:1px;margin:6px 0 0}
+  .clocksub{font-size:20px;color:var(--sub)}
+  .notice{background:#fff3f3;border:3px solid var(--warn);color:var(--warn);border-radius:12px;padding:10px 14px;margin:12px 0;font-weight:700}
+  .card{border:4px solid #111;border-radius:18px;padding:16px;margin:14px 0;background:#fff}
+  .card.next{border-color:var(--main);background:var(--mainbg)}
+  .card.next.isalt{border-color:var(--alt);background:var(--altbg)}
+  .lbl{font-size:22px;font-weight:800;color:var(--sub);margin-bottom:4px}
+  .bigtime{font-size:56px;font-weight:900;line-height:1.1}
+  .count{font-size:28px;font-weight:800;margin:4px 0 8px}
+  .count.urgent{color:var(--warn)}
+  .ttl{font-size:32px;font-weight:900;line-height:1.3;margin:6px 0}
+  .plat{display:inline-block;background:#111;color:#fff;font-size:30px;font-weight:900;border-radius:12px;padding:4px 14px;margin:6px 0}
+  .tag{display:inline-block;font-size:20px;font-weight:800;border-radius:8px;padding:2px 10px;margin-right:6px;vertical-align:middle}
+  .tag.m{background:var(--main);color:#fff}
+  .tag.a{background:var(--alt);color:#fff}
+  .detail{font-size:24px;margin:8px 0 0}
+  .detail div{margin:4px 0}
+  .altbox{margin-top:12px;border-top:3px dashed #777;padding-top:10px;font-size:23px}
+  .where{font-size:23px;margin:8px 0;color:var(--sub)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  button.place{font:inherit;font-size:22px;font-weight:800;min-height:72px;border-radius:14px;
+    border:3px solid #111;background:#f4f4f4;color:#111;padding:8px 6px;line-height:1.25}
+  button.place.on{background:#111;color:#fff}
+  button.wide{grid-column:1 / -1}
+  button.gps{background:#0b57d0;color:#fff;border-color:#0b57d0}
+  button.gps.on{background:#063a8c;color:#fff}
+  .gpsinfo{background:#e8f0fe;border:3px solid #0b57d0;border-radius:12px;padding:10px 14px;margin:8px 0;font-size:22px}
+  .gpsinfo.err{background:#fff3f3;border-color:var(--warn);color:var(--warn);font-weight:700}
+  button.relocate{font:inherit;font-size:22px;font-weight:800;min-height:60px;width:100%;border-radius:14px;border:3px solid #0b57d0;background:#fff;color:#0b57d0;margin-top:8px}
+  .rows .row{display:flex;gap:12px;border-bottom:2px solid var(--line);padding:12px 4px;align-items:flex-start}
+  .rows .row .t{font-size:28px;font-weight:900;min-width:92px}
+  .rows .row .w{flex:1}
+  .rows .row .w b{font-size:24px}
+  .rows .row.past{color:#888}
+  .rows .row.past .t{text-decoration:line-through}
+  .rows .row.now{background:var(--hl);border-radius:10px}
+  .rows .row.steam{background:var(--steam)}
+  .rows .row.now.steam{background:var(--hl)}
+  .small{font-size:20px;color:var(--sub)}
+  ul.big{padding-left:26px;margin:6px 0}
+  ul.big li{margin:10px 0}
+  .tel{font-size:28px;font-weight:900}
+  .k{font-weight:900}
+  .other{margin-top:14px}
+  .other .row{font-size:22px}
+</style>
+</head>
+<body>
+
+<h1>🚂 11/14（六）布羅肯峰一日遊</h1>
+<div class="clock" id="clock">--:--</div>
+<div class="clocksub">德國現在時間</div>
+<div id="datewarn"></div>
+
+<h2>👉 下一步</h2>
+<div id="gpsbar"></div>
+<div id="where" class="where"></div>
+<div id="nextcard"></div>
+<div id="others"></div>
+
+<h2>📍 我現在在哪裡？</h2>
+<div class="small" style="margin-bottom:10px">最上面的<b>「📍 用手機定位」</b>會自動判斷你在哪一站。定位不到時，<b>請按你現在的位置</b>；不確定就按「照計畫時間」。</div>
+<div class="grid" id="places"></div>
+
+<h2>🗓️ 全天行程（主計畫）</h2>
+<div class="rows" id="timeline"></div>
+
+<h2>🎫 車票</h2>
+<ul class="big">
+  <li><span class="k">D-Ticket 月票</span>：電車、DB 區域車（RE / RB / S）、HSB 到 Drei Annen Hohne 都能用。<span class="k">帶護照</span>。</li>
+  <li><span class="k">IC 2447（漢諾威 → Braunschweig）</span>：月票不能用。06:20 在總站看板確認準時，再用 DB Navigator 買票（設定「持有 Deutschlandticket」，選 Flexpreis）。</li>
+  <li><span class="k">布羅肯來回票 €65</span>：到 Wernigerode HSB 櫃台買，問一句持月票有沒有優惠。</li>
+</ul>
+
+<h2>⚠️ 重要提醒</h2>
+<ul class="big">
+  <li>出門前<span class="k">先上廁所</span>；電車上沒有廁所。火車上大多有。</li>
+  <li>山頂最高約 3.6 °C、風很大：羽絨外套、毛帽、手套、防滑鞋。</li>
+  <li>下山 14:51 那班<span class="k">直達</span> Wernigerode，中途在 Drei Annen Hohne 停約 20 分鐘，<span class="k">不用下車</span>。</li>
+  <li>時刻是 11/13 晚上查的，<span class="k">現場以車站看板為準</span>。</li>
+</ul>
+
+<h2>☎️ 電話</h2>
+<ul class="big">
+  <li>緊急求救：<span class="tel">112</span></li>
+  <li>HSB 蒸汽火車：<span class="tel">+49 3943 558 0</span></li>
+  <li>Leonardo 旅館：<span class="tel">+49 511 95660</span></li>
+</ul>
+
+<script>
+const T = s => { const [h,m] = s.split(':').map(Number); return h*60+m; };
+
+// 主計畫時間軸
+const TIMELINE = [
+  {t:'05:45', w:'出旅館', d:'走路約 9 分鐘到 Roderbruchmarkt 電車站'},
+  {t:'05:58', w:'搭 4 號電車（往 Garbsen）', d:'06:14 到 Kröpcke，走約 6 分鐘到漢諾威總站'},
+  {t:'06:20', w:'總站看發車看板', d:'IC 2447 準時 → 買票上 IC；誤點 5 分以上 → 06:33 RE2（3 月台）'},
+  {t:'06:37', w:'IC 2447　10 月台', d:'07:12 到 Braunschweig（7 月台）'},
+  {t:'07:24', w:'RB42 往 Bad Harzburg　1 月台', d:'07:57 到 Vienenburg（2 月台）'},
+  {t:'08:16', w:'RE4 往 Halle　3 月台', d:'08:39 到 Wernigerode（1 月台）'},
+  {t:'08:39', w:'走 2 分鐘到 HSB 車站', d:'買布羅肯來回票 €65'},
+  {t:'09:40', w:'🚂 蒸汽火車上山　31 月台', d:'11:21 到布羅肯山頂', steam:true},
+  {t:'11:21', w:'山頂逛逛、吃午餐', d:'環頂步道約 45 分鐘；14:30 前回到山頂車站'},
+  {t:'14:51', w:'🚂 蒸汽火車直達下山', d:'16:33 到 Wernigerode，中途不用下車', steam:true},
+  {t:'16:33', w:'走回 DB 車站 1 月台', d:'等 17:21 的 RE4'},
+  {t:'17:21', w:'RE4 往 Goslar　1 月台', d:'17:52 到 Goslar（5 月台）'},
+  {t:'17:56', w:'RB82　Goslar 4 月台', d:'18:31 到 Kreiensen（51 月台）'},
+  {t:'18:37', w:'RE2 往 Hannover　2 月台', d:'19:26 到漢諾威總站（7 月台）'},
+  {t:'19:36', w:'Kröpcke 搭 4 號電車（往 Roderbruch）', d:'19:52 到 Roderbruchmarkt，走回旅館'},
+  {t:'20:05', w:'回到旅館 🎉', d:'辛苦了，好好休息'}
+];
+
+// 各地點的班次（m = 主計畫，skip = 不主動建議，只列在其他班次）
+const PLACES = {
+ hotel:{name:'旅館', deps:[
+   {t:'05:58', m:1, ttl:'4 號電車（往 Garbsen）', p:'Roderbruchmarkt 站', d:['05:45 出門，走路約 9 分鐘','06:14 到 Kröpcke','走約 6 分鐘到漢諾威總站']},
+   {t:'06:13', ttl:'4 號電車（往 Garbsen）', p:'Roderbruchmarkt 站', d:['06:29 到 Kröpcke','IC 和 RE2 都趕不上了','到總站改搭 07:19 S4（1 月台）往 Hildesheim','（10:25 上山，12:05 到山頂）']},
+   {t:'06:28', ttl:'4 號電車（往 Garbsen）', p:'Roderbruchmarkt 站', d:['06:44 到 Kröpcke','到總站改搭 07:19 S4（1 月台）往 Hildesheim']},
+   {t:'06:43', ttl:'4 號電車（往 Garbsen）', p:'Roderbruchmarkt 站', d:['06:59 到 Kröpcke','到總站改搭 07:19 S4（1 月台）往 Hildesheim']}
+ ], late:'早上的班次都過了。請用 DB Navigator 查「Hannover Hbf → Wernigerode Hbf」，或改天再去。'},
+ hbf:{name:'漢諾威總站（早上）', deps:[
+   {t:'06:33', alt:1, ttl:'RE2 往 Göttingen', p:'3 月台', d:['IC 誤點時搭這班（月票可）','07:18 到 Kreiensen → 跑到 52 月台','07:24 RB82 → 07:59 Goslar','08:06 RE4（5 月台）→ 08:39 Wernigerode']},
+   {t:'06:37', m:1, ttl:'IC 2447 往 Dresden', p:'10 月台', d:['先看看板：準時才搭，用 DB Navigator 買 IC 票','07:12 到 Braunschweig（7 月台）','07:24 轉 RB42（1 月台）']},
+   {t:'07:19', ttl:'S4 往 Hildesheim（月票可）', p:'1 月台', d:['07:49 到 Hildesheim（5 月台）','08:14 轉 RE10（2 月台）→ 08:53 Goslar','09:05 轉 RE21 → 09:41 Wernigerode','10:25 上山，12:05 到山頂']}
+ ], late:'早上的班次都過了。請用 DB Navigator 查「Hannover Hbf → Wernigerode Hbf」。'},
+ bs:{name:'Braunschweig', deps:[
+   {t:'07:24', m:1, ttl:'RB42 往 Bad Harzburg', p:'1 月台', d:['07:57 到 Vienenburg（2 月台）','08:16 轉 RE4（3 月台）往 Halle','08:39 到 Wernigerode → 09:40 上山']},
+   {t:'08:24', ttl:'RB42 往 Bad Harzburg', p:'1 月台', d:['08:57 到 Vienenburg（2 月台）','09:15 轉 RE21（3 月台）','09:41 到 Wernigerode','改搭 10:25 上山，12:05 到山頂']},
+   {t:'09:24', ttl:'RB42 往 Bad Harzburg', p:'1 月台', d:['09:57 到 Vienenburg','10:16 轉 RE4 → 10:39 Wernigerode','改搭 11:57 上山，13:44 到山頂']}
+ ]},
+ vb:{name:'Vienenburg', deps:[
+   {t:'08:16', m:1, ttl:'RE4 往 Halle', p:'3 月台', d:['08:39 到 Wernigerode（1 月台）','走 2 分鐘到 HSB 車站買票','09:40 上山']},
+   {t:'09:15', ttl:'RE21 往 Magdeburg', p:'3 月台', d:['09:41 到 Wernigerode','改搭 10:25 上山，12:05 到山頂']},
+   {t:'10:16', ttl:'RE4 往 Halle', p:'3 月台', d:['10:39 到 Wernigerode','改搭 11:57 上山，13:44 到山頂']}
+ ]},
+ kr:{name:'Kreiensen', deps:[
+   {t:'07:24', m:1, ttl:'RB82 往 Bad Harzburg', p:'52 月台', d:['07:59 到 Goslar（1 月台）','08:06 轉 RE4（5 月台）往 Halle','08:39 到 Wernigerode → 09:40 上山']},
+   {t:'09:24', ttl:'RB82 往 Bad Harzburg', p:'52 月台', d:['09:59 到 Goslar','10:06 轉 RE4 → 10:39 Wernigerode','改搭 11:57 上山，13:44 到山頂']},
+   {t:'18:37', m:1, ttl:'RE2 往 Hannover', p:'2 月台', d:['19:26 到漢諾威總站（7 月台）','走到 Kröpcke 搭 4 號電車回旅館']},
+   {t:'19:31', ttl:'RE2 往 Hannover', p:'看看板', d:['20:23 到漢諾威總站']}
+ ]},
+ gs:{name:'Goslar', deps:[
+   {t:'08:06', m:1, ttl:'RE4 往 Halle', p:'5 月台', d:['08:39 到 Wernigerode','09:40 上山']},
+   {t:'09:05', ttl:'RE21 往 Magdeburg', p:'5 月台', d:['09:41 到 Wernigerode','改搭 10:25 上山，12:05 到山頂']},
+   {t:'10:06', ttl:'RE4 往 Halle', p:'5 月台', d:['10:39 到 Wernigerode','改搭 11:57 上山，13:44 到山頂']},
+   {t:'17:56', m:1, ttl:'RB82 往 Göttingen', p:'4 月台', d:['18:31 到 Kreiensen（51 月台）','18:37 轉 RE2（2 月台）往 Hannover','19:26 到漢諾威總站']},
+   {t:'18:03', ttl:'RE10 往 Hildesheim', p:'4 月台', d:['18:42 到 Hildesheim（3 月台）','19:06 轉 S4（5 月台）','19:38 到漢諾威總站']},
+   {t:'18:36', ttl:'RB82 往 Göttingen', p:'看看板', d:['19:11 到 Kreiensen','19:31 轉 RE2 → 20:23 漢諾威']},
+   {t:'19:03', ttl:'RE10 往 Hildesheim', p:'4 月台', d:['19:42 到 Hildesheim','20:06 轉 S4 → 20:38 漢諾威']}
+ ]},
+ hi:{name:'Hildesheim', deps:[
+   {t:'08:14', m:1, ttl:'RE10 往 Bad Harzburg', p:'2 月台', d:['08:53 到 Goslar（3 月台）','09:05 轉 RE21（5 月台）','09:41 到 Wernigerode → 10:25 上山']},
+   {t:'09:14', ttl:'RE10 往 Bad Harzburg', p:'2 月台', d:['09:53 到 Goslar','10:06 轉 RE4 → 10:39 Wernigerode','改搭 11:57 上山']},
+   {t:'19:06', m:1, ttl:'S4 往 Hannover', p:'5 月台', d:['19:38 到漢諾威總站']},
+   {t:'20:06', ttl:'S4 往 Hannover', p:'5 月台', d:['20:38 到漢諾威總站']}
+ ]},
+ wram:{name:'Wernigerode（上山前）', deps:[
+   {t:'09:40', m:1, ttl:'🚂 蒸汽火車往 Brocken', p:'HSB 31 月台', d:['先在 HSB 櫃台買布羅肯來回票 €65','11:21 到布羅肯山頂','直達，不用換車']},
+   {t:'10:25', ttl:'🚂 蒸汽火車往 Brocken', p:'HSB 31 月台', d:['12:05 到布羅肯山頂','下山一樣搭 14:51']},
+   {t:'11:57', ttl:'🚂 蒸汽火車往 Brocken', p:'HSB 31 月台', d:['13:44 到布羅肯山頂','14:51 或 16:22 下山']},
+   {t:'14:55', ttl:'🚂 蒸汽火車往 Brocken（下午票 €55）', p:'HSB 31 月台', d:['16:52 到山頂，天已黑','17:07 末班下山 → 18:45 Wernigerode']}
+ ]},
+ brocken:{name:'布羅肯山頂', deps:[
+   {t:'11:36', skip:1, ttl:'🚂 下山', p:'山頂車站', d:['13:33 到 Wernigerode']},
+   {t:'12:32', skip:1, ttl:'🚂 下山（只到 Drei Annen Hohne）', p:'山頂車站', d:['中途要換車，不建議']},
+   {t:'13:59', skip:1, ttl:'🚂 下山（只到 Drei Annen Hohne）', p:'山頂車站', d:['14:51 到 Drei Annen Hohne','15:04 轉 264 公車 → 15:26 Wernigerode']},
+   {t:'14:51', m:1, ttl:'🚂 蒸汽火車直達下山', p:'山頂車站', d:['14:30 前回到車站','16:33 到 Wernigerode','中途停 Drei Annen Hohne 約 20 分鐘，不用下車']},
+   {t:'16:22', ttl:'🚂 蒸汽火車直達下山', p:'山頂車站', d:['17:58 到 Wernigerode','18:18 轉 RE21（1 月台）往 Goslar','20:38 到漢諾威總站']},
+   {t:'17:07', ttl:'🚂 末班下山', p:'山頂車站', d:['18:45 到 Wernigerode','回漢諾威請用 DB Navigator 查']}
+ ], late:'下山的火車都開走了！請打 HSB 電話 +49 3943 558 0 或 112 求助。'},
+ wrpm:{name:'Wernigerode（下山後）', deps:[
+   {t:'13:21', ttl:'RE4 往 Goslar', p:'1 月台', d:['經 Goslar、Kreiensen 轉車','15:26 到漢諾威總站']},
+   {t:'14:16', ttl:'RE21 往 Goslar', p:'1 月台', d:['經 Goslar、Hildesheim 轉車','16:38 到漢諾威總站']},
+   {t:'15:21', ttl:'RE4 往 Goslar', p:'1 月台', d:['經 Goslar、Kreiensen 轉車','17:26 到漢諾威總站']},
+   {t:'16:18', ttl:'RE21 往 Goslar', p:'1 月台', d:['16:53 到 Goslar → 17:03 RE10（4 月台）','17:42 到 Hildesheim → 18:06 S4','18:38 到漢諾威總站']},
+   {t:'17:21', m:1, ttl:'RE4 往 Goslar', p:'1 月台', d:['17:52 到 Goslar → 17:56 RB82（4 月台）','18:31 到 Kreiensen → 18:37 RE2（2 月台）','19:26 到漢諾威總站']},
+   {t:'18:18', ttl:'RE21 往 Goslar', p:'1 月台', d:['18:53 到 Goslar → 19:03 RE10','19:42 到 Hildesheim → 20:06 S4','20:38 到漢諾威總站']}
+ ], late:'請用 DB Navigator 查「Wernigerode Hbf → Hannover Hbf」。'},
+ hbfpm:{name:'漢諾威總站（晚上）', deps:[], always:{ttl:'走到 Kröpcke 搭 4 號電車（往 Roderbruch）', p:'Kröpcke 地下站', d:['晚上大約每 10 分鐘一班','約 16 分鐘到 Roderbruchmarkt','下車走路約 9 分鐘回旅館']}},
+ train:{name:'在火車上', deps:[]}
+};
+
+const ORDER = ['gps','auto','hotel','hbf','bs','vb','kr','gs','hi','wram','brocken','wrpm','hbfpm','train'];
+const LABEL = {gps:'📍 用手機定位（自動判斷我在哪）', auto:'⏰ 照計畫時間（不確定時按這個）', hotel:'🏨 旅館', hbf:'🚉 漢諾威總站（早上）', bs:'Braunschweig', vb:'Vienenburg', kr:'Kreiensen', gs:'Goslar', hi:'Hildesheim', wram:'Wernigerode（上山前）', brocken:'⛰️ 布羅肯山頂', wrpm:'Wernigerode（下山後）', hbfpm:'🚉 漢諾威總站（晚上）', train:'🚆 我在火車上'};
+
+// 主計畫的乘車段（「在火車上」用）
+const LEGS = [
+  {dep:'05:58',arr:'06:14',n:'4 號電車',to:'Kröpcke',then:'走到漢諾威總站，看 IC 2447 的發車看板'},
+  {dep:'06:37',arr:'07:12',n:'IC 2447',to:'Braunschweig（7 月台）',then:'走到 1 月台，搭 07:24 RB42 往 Bad Harzburg'},
+  {dep:'07:24',arr:'07:57',n:'RB42',to:'Vienenburg（2 月台）',then:'走到 3 月台，搭 08:16 RE4 往 Halle'},
+  {dep:'08:16',arr:'08:39',n:'RE4',to:'Wernigerode Hbf（1 月台）',then:'走 2 分鐘到 HSB 車站，買布羅肯來回票'},
+  {dep:'09:40',arr:'11:21',n:'蒸汽火車',to:'布羅肯山頂（終點）',then:'山頂逛逛，14:30 前回到車站'},
+  {dep:'14:51',arr:'16:33',n:'蒸汽火車（直達）',to:'Wernigerode（終點）',then:'走回 DB 車站 1 月台，等 17:21 的 RE4'},
+  {dep:'17:21',arr:'17:52',n:'RE4',to:'Goslar（5 月台）',then:'換到 4 月台，搭 17:56 RB82'},
+  {dep:'17:56',arr:'18:31',n:'RB82',to:'Kreiensen（51 月台）',then:'換到 2 月台，搭 18:37 RE2 往 Hannover'},
+  {dep:'18:37',arr:'19:26',n:'RE2',to:'漢諾威總站（7 月台，終點）',then:'走到 Kröpcke 搭 4 號電車往 Roderbruch'},
+  {dep:'19:36',arr:'19:52',n:'4 號電車',to:'Roderbruchmarkt',then:'走路約 9 分鐘回旅館'}
+];
+
+let place = 'gps';
+try { const s = localStorage.getItem('brocken_place'); if (s && LABEL[s]) place = s; } catch(e){}
+
+
+const STA = [
+ {k:'hotel', n:'旅館／Roderbruchmarkt', lat:52.3880, lon:9.8150, r:1.6},
+ {k:'hbf', n:'漢諾威總站／Kröpcke', lat:52.3760, lon:9.7400, r:1.0},
+ {k:'bs', n:'Braunschweig 車站', lat:52.2524, lon:10.5397, r:1.2},
+ {k:'vb', n:'Vienenburg 車站', lat:51.9535, lon:10.5635, r:1.2},
+ {k:'kr', n:'Kreiensen 車站', lat:51.8537, lon:9.9665, r:1.2},
+ {k:'gs', n:'Goslar 車站', lat:51.9109, lon:10.4285, r:1.2},
+ {k:'hi', n:'Hildesheim 車站', lat:52.1608, lon:9.9537, r:1.2},
+ {k:'wr', n:'Wernigerode 車站', lat:51.8403, lon:10.7888, r:1.3},
+ {k:'brocken', n:'布羅肯山頂', lat:51.7998, lon:10.6181, r:1.5},
+ {k:'dah', n:'Drei Annen Hohne', lat:51.8130, lon:10.6820, r:1.0},
+ {k:'schierke', n:'Schierke', lat:51.7706, lon:10.6640, r:1.0}
+];
+let fix = null, gpsErr = '', gpsBusy = false, gpsTimer = null;
+function km(a,b,c,d){const R=6371,r=x=>x*Math.PI/180;const dl=r(c-a),dn=r(d-b);
+  const h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
+function locate(){
+  if (!navigator.geolocation){ gpsErr='這個瀏覽器不支援定位。'; render(); return; }
+  gpsBusy = true; render();
+  navigator.geolocation.getCurrentPosition(pos => {
+    gpsBusy=false; gpsErr=''; fix={lat:pos.coords.latitude, lon:pos.coords.longitude, acc:Math.round(pos.coords.accuracy), at:berlin().hm}; render();
+  }, err => {
+    gpsBusy=false;
+    gpsErr = err.code===1 ? '你沒有允許定位（或這個網頁不能定位）。請在瀏覽器設定允許「位置」，或按下面的位置按鈕。'
+           : err.code===3 ? '定位太久沒有回應，請再按一次「重新定位」，或按下面的位置按鈕。'
+           : '暫時抓不到位置，請再試一次，或按下面的位置按鈕。';
+    render();
+  }, {enableHighAccuracy:true, timeout:20000, maximumAge:60000});
+}
+function startGps(){ locate(); if(gpsTimer) clearInterval(gpsTimer); gpsTimer=setInterval(()=>{ if(place==='gps') locate(); },120000); }
+function gpsPlace(now){
+  if (!fix) return null;
+  let best=null;
+  STA.forEach(st=>{const d=km(fix.lat,fix.lon,st.lat,st.lon); if(!best||d<best.d) best={...st,d};});
+  let k='train', near=best.d<=best.r;
+  if (near){
+    k = best.k;
+    if (k==='hbf') k = now < 12*60 ? 'hbf' : 'hbfpm';
+    if (k==='wr') k = now < 12*60+30 ? 'wram' : 'wrpm';
+    if (k==='dah'||k==='schierke') k='train';
+  }
+  return {k, best, near};
+}
+
+function berlin(){
+  const f = new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+  const o = {}; f.formatToParts(new Date()).forEach(p=>o[p.type]=p.value);
+  const h = Number(o.hour)%24, m = Number(o.minute);
+  return {date:`${o.year}-${o.month}-${o.day}`, mins:h*60+m, hm:`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`};
+}
+function countText(diff){
+  if (diff <= 0) return '就是現在！';
+  const h = Math.floor(diff/60), m = diff%60;
+  return '還有 ' + (h ? h+' 小時 ' : '') + m + ' 分鐘';
+}
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+function depCard(dep, now, isAlt){
+  const diff = T(dep.t) - now;
+  const tag = dep.m ? '<span class="tag m">主計畫</span>' : '<span class="tag a">備案</span>';
+  return `<div class="card next ${dep.m?'':'isalt'}">
+    <div>${tag}</div>
+    <div class="bigtime">${dep.t}</div>
+    <div class="count ${diff<=10?'urgent':''}">${countText(diff)}</div>
+    <div class="ttl">${esc(dep.ttl)}</div>
+    <div class="plat">${esc(dep.p)}</div>
+    <div class="detail">${dep.d.map(x=>'<div>・'+esc(x)+'</div>').join('')}</div>
+    ${isAlt ? `<div class="altbox"><b>如果${isAlt.why}：</b><br>${isAlt.t} ${esc(isAlt.ttl)}（${esc(isAlt.p)}）<br>${isAlt.d.map(esc).join('<br>')}</div>` : ''}
+  </div>`;
+}
+
+function render(){
+  const b = berlin(), now = b.mins;
+  document.getElementById('clock').textContent = b.hm;
+  document.getElementById('datewarn').innerHTML = b.date !== '2026-11-14'
+    ? '<div class="notice">今天不是 11/14，下面的「下一步」只看時間，僅供參考。</div>' : '';
+
+  // 地點按鈕
+  document.getElementById('places').innerHTML = ORDER.map(k =>
+    `<button class="place ${k===place?'on':''} ${(k==='auto'||k==='gps')?'wide':''} ${k==='gps'?'gps':''}" data-k="${k}">${LABEL[k]}</button>`).join('');
+  document.querySelectorAll('button.place').forEach(btn => btn.onclick = () => {
+    place = btn.dataset.k; try{localStorage.setItem('brocken_place',place);}catch(e){}
+    if (place === 'gps') startGps();
+    render(); window.scrollTo({top:document.getElementById('nextcard').offsetTop-120,behavior:'smooth'});
+  });
+
+  const where = document.getElementById('where');
+  let eff = place, gpsNote = '';
+  const bar = document.getElementById('gpsbar');
+  if (place === 'gps') {
+    const g = gpsPlace(now);
+    if (gpsBusy && !fix) bar.innerHTML = '<div class="gpsinfo">📍 定位中…請稍等（第一次會問你要不要允許位置）</div>';
+    else if (gpsErr && !fix) bar.innerHTML = '<div class="gpsinfo err">📍 ' + esc(gpsErr) + '</div>';
+    else if (g) bar.innerHTML = '<div class="gpsinfo">📍 定位結果（' + fix.at + '，誤差約 ' + fix.acc + ' 公尺）：<br><b>' +
+        (g.near ? '你在「' + esc(g.best.n) + '」附近' : '你在路上（離「' + esc(g.best.n) + '」約 ' + g.best.d.toFixed(1) + ' 公里），判斷為在車上') + '</b>' +
+        (gpsErr ? '<br><span class="small">（剛才更新失敗，顯示的是上一次的位置）</span>' : '') + '</div>';
+    else bar.innerHTML = '';
+    bar.innerHTML += '<button class="relocate" id="relocate">🔄 重新定位</button>';
+    document.getElementById('relocate').onclick = locate;
+    eff = g ? g.k : 'auto';
+  } else { bar.innerHTML = ''; }
+  const card = document.getElementById('nextcard');
+  const others = document.getElementById('others');
+  others.innerHTML = '';
+
+  if (eff === 'auto') {
+    where.innerHTML = place==='gps' ? '還沒有定位結果，先依照<b>計畫時間</b>判斷。' : '依照<b>計畫時間</b>判斷。不在計畫的位置時，請到下面按你的位置。';
+    let i = TIMELINE.findIndex(s => T(s.t) > now);
+    if (i === -1) { card.innerHTML = '<div class="card"><div class="ttl">今天的行程結束了 🎉</div></div>'; }
+    else {
+      const s = TIMELINE[i], prev = TIMELINE[i-1];
+      const diff = T(s.t) - now;
+      card.innerHTML = `<div class="card next">
+        ${prev ? `<div class="lbl">現在應該：${esc(prev.w)}</div>` : ''}
+        <div class="bigtime">${s.t}</div>
+        <div class="count ${diff<=10?'urgent':''}">${countText(diff)}</div>
+        <div class="ttl">${esc(s.w)}</div>
+        <div class="detail"><div>・${esc(s.d)}</div></div></div>`;
+    }
+  } else if (eff === 'train') {
+    where.innerHTML = '你在<b>火車上</b>（依主計畫判斷）。如果搭的是備案的車，<b>下車後請按那一站的按鈕</b>。';
+    let leg = LEGS.find(l => T(l.dep) <= now && now <= T(l.arr)+5);
+    if (leg) {
+      const diff = T(leg.arr) - now;
+      card.innerHTML = `<div class="card next">
+        <div class="lbl">你應該在：${esc(leg.n)}</div>
+        <div class="bigtime">${leg.arr}</div>
+        <div class="count ${diff<=5?'urgent':''}">${diff>0?'還有 '+diff+' 分鐘到站':'到站了，準備下車！'}</div>
+        <div class="ttl">在 ${esc(leg.to)} 下車</div>
+        <div class="detail"><div>・下車後：${esc(leg.then)}</div></div></div>`;
+    } else {
+      leg = LEGS.find(l => T(l.dep) > now);
+      card.innerHTML = leg ? `<div class="card next"><div class="lbl">現在不在主計畫的車上時間</div>
+        <div class="ttl">下一班要搭：${esc(leg.n)}（${leg.dep} 開）</div>
+        <div class="detail"><div>・到 ${esc(leg.to)} 下車</div></div></div>`
+        : '<div class="card"><div class="ttl">今天的行程結束了 🎉</div></div>';
+    }
+  } else {
+    const P = PLACES[eff];
+    where.innerHTML = `你在：<b>${esc(P.name)}</b>`;
+    if (P.always) {
+      card.innerHTML = `<div class="card next"><div class="ttl">${esc(P.always.ttl)}</div>
+        <div class="plat">${esc(P.always.p)}</div>
+        <div class="detail">${P.always.d.map(x=>'<div>・'+esc(x)+'</div>').join('')}</div></div>`;
+    } else {
+      const up = P.deps.filter(d => T(d.t) >= now && !d.skip);
+      if (eff==='hotel' && now >= 12*60) {
+        card.innerHTML = '<div class="card next"><div class="ttl">你已經回到旅館附近了 🎉</div><div class="detail"><div>・辛苦了，好好休息！</div></div></div>';
+      } else if (!up.length) {
+        card.innerHTML = `<div class="card"><div class="ttl">${esc(P.late || '這裡的班次都過了，請用 DB Navigator 查。')}</div></div>`;
+      } else {
+        let pick = up[0], alt = null;
+        const m = up.find(d => d.m && T(d.t) - T(up[0].t) <= 10);
+        if (m && m !== up[0]) { alt = Object.assign({why: up[0].alt ? 'IC 誤點 5 分鐘以上' : '趕不上上面這班'}, up[0]); pick = m; }
+        card.innerHTML = depCard(pick, now, alt);
+      }
+      // 這裡的所有班次
+      others.innerHTML = '<div class="other"><div class="lbl">這裡的所有班次</div><div class="rows">' +
+        P.deps.map(d => {
+          const past = T(d.t) < now;
+          return `<div class="row ${past?'past':''}"><div class="t">${d.t}</div><div class="w"><b>${esc(d.ttl)}</b>（${esc(d.p)}）${d.m?' <span class="tag m">主計畫</span>':''}<br><span class="small">${d.d.map(esc).join('；')}</span></div></div>`;
+        }).join('') + '</div></div>';
+    }
+  }
+
+  // 時間軸
+  const nextIdx = TIMELINE.findIndex(s => T(s.t) > now);
+  const curIdx = nextIdx === -1 ? TIMELINE.length-1 : nextIdx-1;
+  document.getElementById('timeline').innerHTML = TIMELINE.map((s,i) =>
+    `<div class="row ${i<curIdx?'past':''} ${i===curIdx?'now':''} ${s.steam?'steam':''}">
+      <div class="t">${s.t}</div><div class="w"><b>${esc(s.w)}</b><br>${esc(s.d)}</div></div>`).join('');
+}
+
+if (place === 'gps') startGps();
+render();
+setInterval(render, 20000);
+</script>
+</body>
+</html>
