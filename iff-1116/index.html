@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11/16 去程：漢諾威 → 馬德堡 IFF</title>
+<style>
+  :root{
+    --ink:#111; --sub:#333; --line:#bbb; --bg:#fff;
+    --main:#0a6b2f; --mainbg:#e3f5e9; --alt:#9a4a00; --altbg:#fff0dc;
+    --hl:#ffe58a; --warn:#b00020; --ice:#e8eefc;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+    font-size:22px;line-height:1.5;padding:16px 14px 60px}
+  h1{font-size:30px;margin:0 0 4px;line-height:1.25}
+  h2{font-size:27px;margin:34px 0 12px;padding:6px 12px;background:#222;color:#fff;border-radius:10px}
+  .clock{font-size:46px;font-weight:800;letter-spacing:1px;margin:6px 0 0}
+  .clocksub{font-size:20px;color:var(--sub)}
+  .notice{background:#fff3f3;border:3px solid var(--warn);color:var(--warn);border-radius:12px;padding:10px 14px;margin:12px 0;font-weight:700}
+  .goal{background:#f4f4f4;border:3px solid #111;border-radius:12px;padding:10px 14px;margin:12px 0;font-size:22px}
+  .card{border:4px solid #111;border-radius:18px;padding:16px;margin:14px 0;background:#fff}
+  .card.next{border-color:var(--main);background:var(--mainbg)}
+  .card.next.isalt{border-color:var(--alt);background:var(--altbg)}
+  .card.bad{border-color:var(--warn);background:#fff3f3}
+  .lbl{font-size:22px;font-weight:800;color:var(--sub);margin-bottom:4px}
+  .bigtime{font-size:56px;font-weight:900;line-height:1.1}
+  .count{font-size:28px;font-weight:800;margin:4px 0 8px}
+  .count.urgent{color:var(--warn)}
+  .ttl{font-size:32px;font-weight:900;line-height:1.3;margin:6px 0}
+  .plat{display:inline-block;background:#111;color:#fff;font-size:26px;font-weight:900;border-radius:12px;padding:4px 14px;margin:6px 0}
+  .tag{display:inline-block;font-size:20px;font-weight:800;border-radius:8px;padding:2px 10px;margin-right:6px;vertical-align:middle}
+  .tag.m{background:var(--main);color:#fff}
+  .tag.a{background:var(--alt);color:#fff}
+  .tag.x{background:var(--warn);color:#fff}
+  .detail{font-size:24px;margin:8px 0 0}
+  .detail div{margin:4px 0}
+  .altbox{margin-top:12px;border-top:3px dashed #777;padding-top:10px;font-size:23px}
+  .altbox div{margin:4px 0}
+  .where{font-size:23px;margin:8px 0;color:var(--sub)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  button.place{font:inherit;font-size:22px;font-weight:800;min-height:72px;border-radius:14px;
+    border:3px solid #111;background:#f4f4f4;color:#111;padding:8px 6px;line-height:1.25}
+  button.place.on{background:#111;color:#fff}
+  button.wide{grid-column:1 / -1}
+  button.gps{background:#0b57d0;color:#fff;border-color:#0b57d0}
+  button.gps.on{background:#063a8c;color:#fff}
+  button.place:focus-visible,button.relocate:focus-visible{outline:4px solid #0b57d0;outline-offset:2px}
+  .gpsinfo{background:#e8f0fe;border:3px solid #0b57d0;border-radius:12px;padding:10px 14px;margin:8px 0;font-size:22px}
+  .gpsinfo.err{background:#fff3f3;border-color:var(--warn);color:var(--warn);font-weight:700}
+  button.relocate{font:inherit;font-size:22px;font-weight:800;min-height:60px;width:100%;border-radius:14px;border:3px solid #0b57d0;background:#fff;color:#0b57d0;margin-top:8px}
+  .rows .row{display:flex;gap:12px;border-bottom:2px solid var(--line);padding:12px 4px;align-items:flex-start}
+  .rows .row .t{font-size:28px;font-weight:900;min-width:92px}
+  .rows .row .w{flex:1}
+  .rows .row .w b{font-size:24px}
+  .rows .row.past{color:#888}
+  .rows .row.past .t{text-decoration:line-through}
+  .rows .row.now{background:var(--hl);border-radius:10px}
+  .rows .row.ice{background:var(--ice)}
+  .rows .row.now.ice{background:var(--hl)}
+  .rows .row.stopwarn .w b{color:var(--warn)}
+  .small{font-size:20px;color:var(--sub)}
+  ul.big{padding-left:26px;margin:6px 0}
+  ul.big li{margin:10px 0}
+  .tel{font-size:28px;font-weight:900;color:inherit}
+  .k{font-weight:900}
+  .other{margin-top:14px}
+  .other .row{font-size:22px}
+  .de{font-family:ui-monospace,Menlo,monospace;font-weight:800}
+</style>
+</head>
+<body>
+
+<h1>🚄 11/16（一）去程<br>漢諾威 → 馬德堡 Fraunhofer IFF</h1>
+<div class="clock" id="clock">--:--</div>
+<div class="clocksub">德國現在時間</div>
+<div id="datewarn"></div>
+<div class="goal">🎯 <b>10:00</b> 到 Fraunhofer IFF 主樓<br><b>Sandtorstraße 22, 39106 Magdeburg</b>（不是 Elbfabrik）</div>
+
+<h2>👉 下一步</h2>
+<div id="gpsbar"></div>
+<div id="where" class="where"></div>
+<div id="nextcard"></div>
+<div id="others"></div>
+
+<h2>📍 我現在在哪裡？</h2>
+<div class="small" style="margin-bottom:10px">最上面的<b>「📍 用手機定位」</b>會自動判斷你在哪裡。在車上定位分不出是哪一班，<b>請按你搭的那班車</b>；不確定就按「照計畫時間」。</div>
+<div class="grid" id="places"></div>
+
+<h2>🗓️ 主計畫時間表</h2>
+<div class="rows" id="timeline"></div>
+
+<h2>🚦 三個決策點</h2>
+<ul class="big">
+  <li><span class="k">07:10 漢諾威總站</span>：ICE 551 準點或誤點 30 分鐘內 → 照搭 551。取消或誤點超過 30 分鐘 → 改搭 <span class="k">07:31 ICE 541</span>。</li>
+  <li><span class="k">541 也取消</span> → 先打給 IFF，搭最早往 Braunschweig 的車，到了坐計程車（見「漢諾威總站」那頁）。</li>
+  <li><span class="k">08:03 Braunschweig</span>：趕得上 <span class="k">08:16 RB 40</span> → 搭；接不上 → 在總站門口坐計程車到 IFF（約 1 小時、€250–300）。RB 40 每小時一班，下一班 10:28 才到 Magdeburg，會遲到。</li>
+</ul>
+
+<h2>⚠️ 重要提醒（11/15 晚上核對）</h2>
+<ul class="big">
+  <li>班次已核對：<span class="k">07:22 ICE 551</span> 直達，<span class="k">08:54</span> 到 Magdeburg 總站；備案 <span class="k">07:31 ICE 541</span> → 08:03 Braunschweig → <span class="k">08:16 RB 40</span> → 09:28 Magdeburg 總站。</li>
+  <li>551 和 541 都是<span class="k">往 Berlin 的改道 ICE</span>（漢諾威–柏林整修期間），看板目的地寫 Berlin。<span class="k">551 停 Magdeburg、541 停 Braunschweig</span>，不要搭錯。</li>
+  <li><span class="k">08:37 IC 2445 不能當備案</span>：IC 55 線 Dortmund–Magdeburg 11/14 08:00 到 11/25 18:00 停駛。</li>
+  <li>漢諾威 Linden 換道岔（11/12–19）期間，總站調度受限，<span class="k">月台可能臨時改</span>，以看板為準。</li>
+  <li>即時誤點這頁查不到：<span class="k">今晚睡前、明早 06:30</span> 各用 DB Navigator 查一次 16.11. 的 ICE 551。</li>
+  <li>RB 40 上 <span class="k">09:23 Magdeburg-Sudenburg 不要下車</span>，下一站 09:28 才是總站。</li>
+  <li>車票 Flexpreis 不綁班次，改搭不用換票；帶護照。</li>
+</ul>
+
+<h2>✅ 今晚／出門前</h2>
+<ul class="big">
+  <li>DB Navigator 查 16.11.：ICE 551（07:22）、ICE 541（07:31）、Braunschweig 08:16 RB 40</li>
+  <li>LINE 群組：<span class="k">07:10 漢諾威總站會合</span></li>
+  <li>飯店櫃台：預約 <span class="k">06:50 計程車</span>；問早餐幾點開，太晚就要早餐袋</li>
+  <li>截圖這頁存相簿（沒網路也看得到）</li>
+  <li>護照、名片、筆電與簡報、充電線、行動電源</li>
+</ul>
+
+<h2>☎️ 電話</h2>
+<ul class="big">
+  <li>緊急求救：<a class="tel" href="tel:112">112</a></li>
+  <li>Elkmann 辦公室（IFF）：<a class="tel" href="tel:+493914090222">+49 391 4090-222</a></li>
+  <li>IFF 總機：<a class="tel" href="tel:+4939140900">+49 391 4090-0</a></li>
+  <li>Hallo Taxi（漢諾威）：<a class="tel" href="tel:+495113811">+49 511 3811</a></li>
+  <li>Taxi-Ruf（Braunschweig）：<a class="tel" href="tel:+49531666666">+49 531 666666</a></li>
+  <li>Taxen-Zentrale（Braunschweig）：<a class="tel" href="tel:+4953155555">+49 531 55555</a></li>
+  <li>Leonardo 旅館：<a class="tel" href="tel:+4951195660">+49 511 95660</a></li>
+  <li>歐辦林盈位：用 LINE 或 Email 聯絡</li>
+</ul>
+
+<h2>🗣️ 德文小抄</h2>
+<ul class="big">
+  <li><span class="de">Zum Fraunhofer IFF, Sandtorstraße 22, bitte.</span><br><span class="small">請到 IFF，Sandtorstraße 22。</span></li>
+  <li><span class="de">Festpreis nach Magdeburg, Sandtorstraße 22?</span><br><span class="small">到馬德堡 Sandtorstraße 22，可以給固定價嗎？</span></li>
+  <li><span class="de">Wir haben um 10 Uhr einen Termin bei Herrn Professor Elkmann.</span><br><span class="small">我們 10 點跟 Elkmann 教授有約。</span></li>
+  <li><span class="de">Wir kommen etwa 30 Minuten später.</span><br><span class="small">我們大約會晚 30 分鐘到。</span></li>
+  <li><span class="de">Könnten Sie uns bitte ein Taxi zum Hauptbahnhof rufen?</span><br><span class="small">可以幫我們叫計程車到總站嗎？</span></li>
+  <li><span class="de">Eine Quittung, bitte.</span><br><span class="small">請給我收據。</span></li>
+</ul>
+
+<p class="small">班次依 2026-11-15 晚上查到的時刻表；計程車時間與費用是依當地費率推算。當天一律以車站看板與 DB Navigator 為準。</p>
+
+<script>
+const T = s => { const [h,m] = s.split(':').map(Number); return h*60+m; };
+const DAY = '2026-11-16';
+
+// 主計畫時間軸
+const TIMELINE = [
+  {t:'06:30', w:'飯店吃早餐', d:'早餐太晚開就拿早餐袋'},
+  {t:'06:50', w:'搭計程車到漢諾威總站', d:'飯店門口上車，約 20 分鐘'},
+  {t:'07:10', w:'漢諾威總站會合、看出發看板', d:'551 正常就搭；取消或誤點超過 30 分鐘改搭 07:31 ICE 541'},
+  {t:'07:22', w:'ICE 551 往 Berlin（經 Magdeburg）', d:'不用換車，08:54 到 Magdeburg 總站', ice:true},
+  {t:'08:54', w:'Magdeburg 總站下車', d:'買咖啡、四人順一次分工'},
+  {t:'09:20', w:'城區側 Willy-Brandt-Platz 搭計程車', d:'到 Sandtorstraße 22，約 10–15 分鐘、€10–15'},
+  {t:'09:35', w:'到 IFF 櫃台登記', d:'主樓 Sandtorstraße 22（不是 Elbfabrik）'},
+  {t:'10:00', w:'會談開始', d:'10:00–12:00'},
+  {t:'12:00', w:'散會', d:'請櫃台叫計程車回 Magdeburg 總站'}
+];
+
+// 各地點的班次（m = 主計畫；skip = 不主動建議，只列在班次表；grace = 開車後幾分鐘內仍顯示）
+const PLACES = {
+ hotel:{name:'Leonardo 旅館', deps:[
+   {t:'06:35', skip:1, ttl:'（計程車叫不到時）走到 Roderbruchmarkt 搭 4 號電車', p:'Roderbruchmarkt（往 Garbsen）', d:['走路約 9 分鐘到電車站','約 16 分鐘到 Kröpcke','走約 6 分鐘到總站，約 07:10 到']},
+   {t:'06:50', m:1, grace:10, ttl:'搭預約的計程車到漢諾威總站', p:'飯店門口', d:['約 20 分鐘，07:10 前到總站','跟司機說：Hauptbahnhof, bitte.'],
+     ifnot:{why:'06:55 計程車還沒來', lines:['再打 Hallo Taxi +49 511 3811，或用 Uber / FREE NOW 叫車','07:22 趕不上就目標 07:31 ICE 541']}}
+ ], late:['還在旅館：馬上叫計程車到漢諾威總站（約 20 分鐘）','07:31 ICE 541 還來得及就搭它','都趕不上：先打給 IFF 說會晚到，再看「漢諾威總站」那頁的做法']},
+ hhbf:{name:'漢諾威總站 Hannover Hbf', deps:[
+   {t:'07:22', m:1, grace:2, ttl:'ICE 551 往 Berlin（經 Magdeburg）', p:'看出發看板找月台', d:['不用換車，08:54 到 Magdeburg 總站','看板目的地寫 Berlin，確認有停 Magdeburg Hbf','誤點 30 分鐘內：照樣等 551'],
+     ifnot:{why:'551 取消或誤點超過 30 分鐘', lines:['改搭 07:31 ICE 541 往 Berlin（經 Braunschweig）','08:03 到 Braunschweig，轉 08:16 RB 40','09:28 到 Magdeburg 總站，直接坐計程車，約 09:45 到 IFF']}},
+   {t:'07:31', grace:2, ttl:'ICE 541 往 Berlin（經 Braunschweig）', p:'看出發看板找月台', d:['08:03 到 Braunschweig，換車 13 分鐘','轉 08:16 RB 40 往 Magdeburg','09:28 到 Magdeburg 總站，直接坐計程車，約 09:45 到 IFF','551 只是誤點（30 分鐘內）還沒開：繼續等 551'],
+     ifnot:{why:'541 也取消', lines:['先打 Elkmann 辦公室 +49 391 4090-222 說會晚到','搭最早往 Braunschweig 的車（ICE 或 RE 都可）','到 Braunschweig 直接坐計程車到 IFF（約 1 小時）']}}
+ ], late:['551、541 都搭不到了','① 先打 Elkmann 辦公室 +49 391 4090-222，說會晚到多久','② 搭最早往 Braunschweig 的車（ICE 或 RE 都可，約 35–45 分鐘），到了在總站門口坐計程車到 IFF（約 1 小時、€250–300，先談固定價）','③ 09:22 ICE 553 直達 Magdeburg 10:54，會遲到約 1 小時','④ 從漢諾威直接坐計程車約 150 km、€400 以上，週一早上 A2 容易塞，只當最後手段']},
+ bs:{name:'Braunschweig 總站', deps:[
+   {t:'08:16', m:1, grace:1, ttl:'RB 40 往 Magdeburg', p:'看月台看板（不一定在對面月台）', d:['09:28 到 Magdeburg 總站','09:23 Magdeburg-Sudenburg 不要下車，下一站才是總站','下車直接坐計程車，約 09:45 到 IFF'],
+     ifnot:{why:'ICE 晚到、接不上 08:16', lines:['先用 DB Navigator 查有沒有馬上開往 Magdeburg 的 IC/ICE，有就搭','沒有就在總站門口坐計程車到 Magdeburg Sandtorstraße 22，約 1 小時','上車前談固定價（Festpreis），約 €250；照表約 €270','上車後打給 IFF 說預計到達時間','Taxi-Ruf +49 531 666666／Taxen-Zentrale +49 531 55555']}},
+   {t:'09:16', skip:1, ttl:'RB 40 往 Magdeburg（下一班，會遲到）', p:'看月台看板', d:['10:28 到 Magdeburg 總站，約 10:45 到 IFF']}
+ ], late:['RB 40 開走了（下一班 09:16 要 10:28 才到，會遲到）','① 先用 DB Navigator 查有沒有馬上開往 Magdeburg 的 IC/ICE，有就搭','② 沒有就在總站門口坐計程車到 Magdeburg Sandtorstraße 22，約 1 小時','③ 上車前談固定價：「Festpreis nach Magdeburg, Sandtorstraße 22?」約 €250','④ 上車後打給 IFF 說預計到達時間','Taxi-Ruf +49 531 666666／Taxen-Zentrale +49 531 55555']}
+};
+
+// 每一段車
+const LEGS = {
+ t551:{n:'ICE 551 往 Berlin（經 Magdeburg）', r:'main',
+   st:[['漢諾威總站 Hannover Hbf','07:22'],['Magdeburg 總站 Magdeburg Hbf','08:54']],
+   via:'中途停靠站以車上螢幕為準，聽到「Magdeburg Hauptbahnhof」就下車',
+   nx:{end:'到城區側 Willy-Brandt-Platz 搭計程車到 Sandtorstraße 22（約 10–15 分鐘）。時間還早就先買咖啡，09:20 前上車。'}},
+ t541:{n:'ICE 541 往 Berlin（經 Braunschweig）', r:'alt',
+   st:[['漢諾威總站 Hannover Hbf','07:31'],['Braunschweig 總站 Braunschweig Hbf','08:03']],
+   via:'坐一站就下車（約 32 分鐘）',
+   nx:{t:'08:16', w:'RB 40 往 Magdeburg', pl:'看月台看板', walk:'不一定在對面月台，下車先看看板',
+       fail:'ICE 晚到、接不上 08:16：從 Braunschweig 總站門口直接坐計程車到 IFF（約 1 小時、€250–300，先談固定價），上車後打給 IFF。'}},
+ trb:{n:'RB 40 往 Magdeburg', r:'alt', warn:'Magdeburg-Sudenburg',
+   st:[['Braunschweig Hbf','08:16'],['Weddel','08:21'],['Schandelah','08:25'],['Königslutter','08:31'],['Frellstedt','08:38'],['Helmstedt','08:44'],['Marienborn','08:52'],['Wefensleben','08:56'],['Eilsleben','09:00'],['Ovelgünne','09:03'],['Dreileben-Drackenstedt','09:07'],['Ochtmersleben','09:11'],['Wellen','09:14'],['Niederndodeleben','09:18'],['Magdeburg-Sudenburg','09:23'],['Magdeburg 總站 Magdeburg Hbf','09:28']],
+   nx:{end:'在城區側直接坐計程車到 Sandtorstraße 22（約 10–15 分鐘），約 09:45 到 IFF。'}}
+};
+
+const ORDER = ['gps','auto','hotel','hhbf','t551','t541','bs','trb','mdhbf','iff'];
+const LABEL = {gps:'📍 用手機定位（自動判斷我在哪）', auto:'⏰ 照計畫時間（不確定時按這個）', hotel:'🏨 旅館', hhbf:'🚉 漢諾威總站',
+  t551:'🚄 我在 ICE 551', t541:'🚄 我在 ICE 541', bs:'🚉 Braunschweig 總站', trb:'🚆 我在 RB 40', mdhbf:'🚉 Magdeburg 總站', iff:'🏢 IFF 附近'};
+
+let place = 'gps';
+try { const s = localStorage.getItem('iff1116_place'); if (s && LABEL[s]) place = s; } catch(e){}
+
+const STA = [
+ {k:'hotel', n:'Leonardo 旅館', lat:52.3880, lon:9.8150, r:1.0},
+ {k:'hhbf', n:'漢諾威總站', lat:52.3769, lon:9.7410, r:0.7},
+ {k:'bs', n:'Braunschweig 總站', lat:52.2525, lon:10.5397, r:0.8},
+ {k:'mdhbf', n:'Magdeburg 總站', lat:52.1306, lon:11.6271, r:0.6},
+ {k:'iff', n:'Fraunhofer IFF', lat:52.1405, lon:11.6440, r:0.45}
+];
+let fix = null, gpsErr = '', gpsBusy = false, gpsTimer = null;
+function km(a,b,c,d){const R=6371,r=x=>x*Math.PI/180;const dl=r(c-a),dn=r(d-b);
+  const h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
+function locate(){
+  if (!navigator.geolocation){ gpsErr='這個瀏覽器不支援定位。'; render(); return; }
+  gpsBusy = true; render();
+  navigator.geolocation.getCurrentPosition(pos => {
+    gpsBusy=false; gpsErr=''; fix={lat:pos.coords.latitude, lon:pos.coords.longitude, acc:Math.round(pos.coords.accuracy), at:berlin().hm}; render();
+  }, err => {
+    gpsBusy=false;
+    gpsErr = err.code===1 ? '你沒有允許定位（或這個網頁不能定位）。請在瀏覽器設定允許「位置」，或按下面的位置按鈕。'
+           : err.code===3 ? '定位太久沒有回應，請再按一次「重新定位」，或按下面的位置按鈕。'
+           : '暫時抓不到位置，請再試一次，或按下面的位置按鈕。';
+    render();
+  }, {enableHighAccuracy:true, timeout:20000, maximumAge:60000});
+}
+function startGps(){ locate(); if(gpsTimer) clearInterval(gpsTimer); gpsTimer=setInterval(()=>{ if(place==='gps') locate(); },120000); }
+
+// 不在任何車站附近時，依時間猜在哪班車上
+function trainByTime(now){
+  if (now >= T('07:15') && now <= T('08:59')) return 't551';
+  if (now > T('08:59') && now <= T('09:33')) return 'trb';
+  return null;
+}
+function gpsPlace(now){
+  if (!fix) return null;
+  let best=null;
+  STA.forEach(st=>{const d=km(fix.lat,fix.lon,st.lat,st.lon); if(!best||d<best.d) best={...st,d};});
+  if (best.d <= best.r) return {k:best.k, best, near:true};
+  const tk = trainByTime(now);
+  return {k: tk || 'auto', best, near:false, train:!!tk};
+}
+
+function berlin(){
+  const f = new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+  const o = {}; f.formatToParts(new Date()).forEach(p=>o[p.type]=p.value);
+  const h = Number(o.hour)%24, m = Number(o.minute);
+  return {date:`${o.year}-${o.month}-${o.day}`, mins:h*60+m, hm:`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`};
+}
+function countText(diff){
+  if (diff <= 0) return '就是現在！';
+  const h = Math.floor(diff/60), m = diff%60;
+  return '還有 ' + (h ? h+' 小時 ' : '') + m + ' 分鐘';
+}
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+const tagOf = main => main ? '<span class="tag m">主計畫</span>' : '<span class="tag a">備案</span>';
+
+function depCard(dep, now){
+  const diff = T(dep.t) - now;
+  return `<div class="card next ${dep.m?'':'isalt'}">
+    <div>${tagOf(dep.m)}</div>
+    <div class="bigtime">${dep.t}</div>
+    <div class="count ${diff<=10?'urgent':''}">${diff < 0 ? '表定已過 ' + (-diff) + ' 分鐘，看看板有沒有誤點' : countText(diff)}</div>
+    <div class="ttl">${esc(dep.ttl)}</div>
+    <div class="plat">${esc(dep.p)}</div>
+    <div class="detail">${dep.d.map(x=>'<div>・'+esc(x)+'</div>').join('')}</div>
+    ${dep.ifnot ? `<div class="altbox"><b>如果${esc(dep.ifnot.why)}：</b>${dep.ifnot.lines.map(x=>'<div>・'+esc(x)+'</div>').join('')}</div>` : ''}
+  </div>`;
+}
+function lateCard(lines){
+  return `<div class="card bad"><div><span class="tag x">改走這個</span></div>
+    <div class="ttl">${esc(lines[0])}</div>
+    <div class="detail">${lines.slice(1).map(x=>'<div>'+esc(x)+'</div>').join('')}</div></div>`;
+}
+
+function legCard(key, now){
+  const leg = LEGS[key], st = leg.st, last = st.length-1;
+  const dep = st[0], dest = st[last];
+  const depDiff = T(dep[1]) - now, arrDiff = T(dest[1]) - now;
+  let pos = 0; st.forEach((x,i)=>{ if (T(x[1]) <= now) pos = i; });
+  const left = last - pos;
+  let big, sub = '';
+  if (depDiff > 0) { big = '還沒開車'; sub = `預定 <b>${dep[1]}</b> 從 ${esc(dep[0])} 開（${countText(depDiff)}）`; }
+  else if (arrDiff <= 0) big = '到站了！準備下車';
+  else if (last === 1) big = '坐到 ' + dest[0].split(' ')[0] + ' 下車';
+  else big = left === 1 ? '下一站就下車！' : '再 ' + left + ' 站下車';
+  const nextStop = st[Math.min(pos+1,last)];
+  let warnHtml = '';
+  if (leg.warn && depDiff <= 0 && arrDiff > 0 && nextStop[0] === leg.warn)
+    warnHtml = `<div class="notice">下一站是 ${esc(leg.warn)}，<u>不要下車</u>！再下一站才是 Magdeburg 總站。</div>`;
+  let nxHtml = '';
+  if (leg.nx.end) nxHtml = `<div class="altbox"><b>下車後：</b>${esc(leg.nx.end)}</div>`;
+  else {
+    const gap = T(leg.nx.t) - T(dest[1]);
+    nxHtml = `<div class="altbox"><div class="lbl">下車後要搭</div>
+      <div class="ttl">${leg.nx.t}　${esc(leg.nx.w)}</div>
+      <div class="plat">${esc(leg.nx.pl)}</div>
+      <div class="count ${gap<=10?'urgent':''}">換車時間 ${gap} 分鐘${gap<=10?'，下車馬上走':''}</div>
+      ${leg.nx.walk ? '<div>・'+esc(leg.nx.walk)+'</div>' : ''}
+      ${leg.nx.fail ? '<div>・<b>'+esc(leg.nx.fail)+'</b></div>' : ''}</div>`;
+  }
+  const rest = last > 1 ? `<div class="other"><div class="lbl">接下來的停靠站（依時刻表推算）</div><div class="rows">` +
+    st.slice(Math.min(pos+1,last)).map((x,i)=>{ const isEnd = pos+1+i===last, isWarn = x[0]===leg.warn;
+      return `<div class="row ${isEnd?'now':''} ${isWarn?'stopwarn':''}"><div class="t">${x[1]}</div><div class="w"><b>${esc(x[0])}</b>${isEnd?'　← 在這站下車':isWarn?'　← 不要下車':''}</div></div>`; }).join('') + '</div></div>' : '';
+  return `<div class="card next ${leg.r==='main'?'':'isalt'}">
+    <div>${tagOf(leg.r==='main')}</div>
+    <div class="lbl">你在：${esc(leg.n)}</div>
+    <div class="ttl" style="font-size:40px;color:${(left<=1 && depDiff<=0 && last>1) || arrDiff<=3 ? 'var(--warn)' : 'inherit'}">${big}</div>
+    ${warnHtml}
+    <div class="detail">${sub ? '<div>'+sub+'</div>' : ''}
+      <div>下車站：<b>${esc(dest[0])}</b></div>
+      <div>預定 <b>${dest[1]}</b> 到站，${arrDiff>0?'還有 '+arrDiff+' 分鐘':'就是現在'}</div>
+      ${leg.via ? '<div>・'+esc(leg.via)+'</div>' : ''}</div>
+    ${nxHtml}</div>${rest}`;
+}
+
+function mdhbfCard(now){
+  if (now >= T('12:00')) return returnCard('你在 Magdeburg 總站，準備回漢諾威');
+  const early = now < T('09:20'), diff = T('09:20') - now;
+  return `<div class="card next">
+    <div>${tagOf(true)}</div>
+    ${early ? `<div class="bigtime">09:20</div><div class="count">${countText(diff)}</div>` : ''}
+    <div class="ttl">${early ? '先買咖啡，09:20 前去搭計程車' : '直接搭計程車到 IFF'}</div>
+    <div class="plat">城區側 Willy-Brandt-Platz 計程車排班</div>
+    <div class="detail">
+      <div>・跟司機說：<span class="de">Zum Fraunhofer IFF, Sandtorstraße 22, bitte.</span></div>
+      <div>・約 10–15 分鐘、€10–15</div>
+      <div>・排班沒車：打 IFF 總機 +49 391 4090-0 請櫃台幫忙叫車</div>
+      <div>・10:00 前到不了：先打 Elkmann 辦公室 +49 391 4090-222</div></div></div>`;
+}
+function iffCard(now){
+  if (now >= T('12:00')) return returnCard('散會了：請櫃台叫計程車回 Magdeburg 總站');
+  return `<div class="card next">
+    <div>${tagOf(true)}</div>
+    <div class="ttl">到了 🎉 去櫃台登記</div>
+    <div class="plat">主樓 Sandtorstraße 22</div>
+    <div class="detail">
+      <div>・跟櫃台說：<span class="de">Wir haben um 10 Uhr einen Termin bei Herrn Professor Elkmann.</span></div>
+      <div>・會談 10:00–12:00</div>
+      <div>・散會前請櫃台幫忙叫計程車回 Magdeburg 總站</div></div></div>`;
+}
+function returnCard(title){
+  return `<div class="card next">
+    <div class="ttl">${esc(title)}</div>
+    <div class="detail">
+      <div>・叫車：<span class="de">Könnten Sie uns bitte ein Taxi zum Hauptbahnhof rufen?</span></div>
+      <div>・回程車用 DB Navigator 查 Magdeburg Hbf → Hannover Hbf 最近一班（Flexpreis 不綁班次）</div>
+      <div>・施工期間班次常改，以看板為準</div>
+      <div>・到漢諾威總站後走到 Kröpcke 搭 4 號電車（往 Roderbruch）回旅館，或直接搭計程車</div></div></div>`;
+}
+
+function render(){
+  const b = berlin(), now = b.mins;
+  document.getElementById('clock').textContent = b.hm;
+  document.getElementById('datewarn').innerHTML = b.date !== DAY
+    ? '<div class="notice">今天不是 11/16，下面的「下一步」只看時間，僅供參考。</div>' : '';
+
+  document.getElementById('places').innerHTML = ORDER.map(k =>
+    `<button class="place ${k===place?'on':''} ${(k==='auto'||k==='gps')?'wide':''} ${k==='gps'?'gps':''}" data-k="${k}">${LABEL[k]}</button>`).join('');
+  document.querySelectorAll('button.place').forEach(btn => btn.onclick = () => {
+    place = btn.dataset.k; try{localStorage.setItem('iff1116_place',place);}catch(e){}
+    if (place === 'gps') startGps();
+    render(); window.scrollTo({top:document.getElementById('nextcard').offsetTop-120,behavior:'smooth'});
+  });
+
+  const where = document.getElementById('where');
+  const bar = document.getElementById('gpsbar');
+  let eff = place;
+  if (place === 'gps') {
+    const g = gpsPlace(now);
+    if (gpsBusy && !fix) bar.innerHTML = '<div class="gpsinfo">📍 定位中…請稍等（第一次會問你要不要允許位置）</div>';
+    else if (gpsErr && !fix) bar.innerHTML = '<div class="gpsinfo err">📍 ' + esc(gpsErr) + '</div>';
+    else if (g) bar.innerHTML = '<div class="gpsinfo">📍 定位結果（' + fix.at + '，誤差約 ' + fix.acc + ' 公尺）：<br><b>' +
+        (g.near ? '你在「' + esc(g.best.n) + '」附近'
+          : g.train ? '你在路上（離「' + esc(g.best.n) + '」約 ' + g.best.d.toFixed(1) + ' 公里），判斷為在車上'
+          : '你不在計畫的地點附近（離「' + esc(g.best.n) + '」約 ' + g.best.d.toFixed(1) + ' 公里）') + '</b>' +
+        (g.train ? '<br><span class="small">依時間猜是 ' + (g.k==='t551'?'ICE 551':'RB 40') + '；不是的話請按下面你搭的那班車。</span>' : '') +
+        (gpsErr ? '<br><span class="small">（剛才更新失敗，顯示的是上一次的位置）</span>' : '') + '</div>';
+    else bar.innerHTML = '';
+    bar.innerHTML += '<button class="relocate" id="relocate">🔄 重新定位</button>';
+    document.getElementById('relocate').onclick = locate;
+    eff = g ? g.k : 'auto';
+  } else { bar.innerHTML = ''; }
+
+  const card = document.getElementById('nextcard');
+  const others = document.getElementById('others');
+  others.innerHTML = '';
+
+  if (eff === 'auto') {
+    where.innerHTML = place==='gps' ? '先依照<b>計畫時間</b>判斷。' : '依照<b>計畫時間</b>判斷。不在計畫的位置時，請到下面按你的位置。';
+    const i = TIMELINE.findIndex(s => T(s.t) > now);
+    if (i === -1) card.innerHTML = returnCard('會談結束了，準備回漢諾威');
+    else {
+      const s = TIMELINE[i], prev = TIMELINE[i-1], diff = T(s.t) - now;
+      card.innerHTML = `<div class="card next">
+        ${prev ? `<div class="lbl">現在應該：${esc(prev.w)}</div>` : ''}
+        <div class="bigtime">${s.t}</div>
+        <div class="count ${diff<=10?'urgent':''}">${countText(diff)}</div>
+        <div class="ttl">${esc(s.w)}</div>
+        <div class="detail"><div>・${esc(s.d)}</div></div></div>`;
+    }
+  } else if (LEGS[eff]) {
+    where.innerHTML = '你在<b>車上</b>（位置依時刻表推算）。';
+    card.innerHTML = legCard(eff, now);
+  } else if (eff === 'mdhbf') {
+    where.innerHTML = '你在：<b>Magdeburg 總站</b>';
+    card.innerHTML = mdhbfCard(now);
+  } else if (eff === 'iff') {
+    where.innerHTML = '你在：<b>Fraunhofer IFF 附近</b>';
+    card.innerHTML = iffCard(now);
+  } else {
+    const P = PLACES[eff];
+    where.innerHTML = `你在：<b>${esc(P.name)}</b>`;
+    const up = P.deps.filter(d => T(d.t) + (d.grace||0) >= now && !d.skip);
+    card.innerHTML = up.length ? depCard(up[0], now) : lateCard(P.late);
+    others.innerHTML = '<div class="other"><div class="lbl">這裡的班次</div><div class="rows">' +
+      P.deps.map(d => `<div class="row ${T(d.t) + (d.grace||0) < now ? 'past' : ''}"><div class="t">${d.t}</div><div class="w"><b>${esc(d.ttl)}</b>（${esc(d.p)}）${d.m?' <span class="tag m">主計畫</span>':''}<br><span class="small">${d.d.map(esc).join('；')}</span></div></div>`).join('') +
+      '</div></div>';
+  }
+
+  const nextIdx = TIMELINE.findIndex(s => T(s.t) > now);
+  const curIdx = nextIdx === -1 ? TIMELINE.length-1 : nextIdx-1;
+  document.getElementById('timeline').innerHTML = TIMELINE.map((s,i) =>
+    `<div class="row ${i<curIdx?'past':''} ${i===curIdx?'now':''} ${s.ice?'ice':''}">
+      <div class="t">${s.t}</div><div class="w"><b>${esc(s.w)}</b><br>${esc(s.d)}</div></div>`).join('');
+}
+
+if (place === 'gps') startGps();
+render();
+setInterval(render, 20000);
+</script>
+</body>
+</html>
