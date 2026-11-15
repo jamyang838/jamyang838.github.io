@@ -102,7 +102,7 @@
 <h2>⚠️ 重要提醒（11/15 晚上核對）</h2>
 <ul class="big">
   <li>班次已核對：<span class="k">07:22 ICE 551</span> 直達，<span class="k">08:54</span> 到 Magdeburg 總站；備案 <span class="k">07:31 ICE 541</span> → 08:03 Braunschweig → <span class="k">08:16 RB 40</span> → 09:28 Magdeburg 總站。</li>
-  <li>551 和 541 都是<span class="k">往 Berlin 的改道 ICE</span>（漢諾威–柏林整修期間），看板目的地寫 Berlin。<span class="k">551 停 Magdeburg、541 停 Braunschweig</span>，不要搭錯。</li>
+  <li>551 和 541 都是<span class="k">往 Berlin 的改道 ICE</span>（漢諾威–柏林整修期間），看板目的地寫 Berlin。<span class="k">551 中途不停，第一站就是 Magdeburg 總站</span>，坐到底就對了；541 才停 Braunschweig，不要搭錯。</li>
   <li><span class="k">08:37 IC 2445 不能當備案</span>：IC 55 線 Dortmund–Magdeburg 11/14 08:00 到 11/25 18:00 停駛。</li>
   <li>漢諾威 Linden 換道岔（11/12–19）期間，總站調度受限，<span class="k">月台可能臨時改</span>，以看板為準。</li>
   <li>即時誤點這頁查不到：<span class="k">今晚睡前、明早 06:30</span> 各用 DB Navigator 查一次 16.11. 的 ICE 551。</li>
@@ -152,7 +152,7 @@ const TIMELINE = [
   {t:'06:30', w:'飯店吃早餐', d:'早餐太晚開就拿早餐袋'},
   {t:'06:50', w:'搭計程車到漢諾威總站', d:'飯店門口上車，約 20 分鐘'},
   {t:'07:10', w:'漢諾威總站會合、看出發看板', d:'551 正常就搭；取消或誤點超過 30 分鐘改搭 07:31 ICE 541'},
-  {t:'07:22', w:'ICE 551 往 Berlin（經 Magdeburg）', d:'不用換車，08:54 到 Magdeburg 總站', ice:true},
+  {t:'07:22', w:'ICE 551 往 Berlin（經 Magdeburg）', d:'直達不換車，中途不停，08:54 到 Magdeburg 總站', ice:true},
   {t:'08:54', w:'Magdeburg 總站下車', d:'買咖啡、四人順一次分工'},
   {t:'09:20', w:'城區側 Willy-Brandt-Platz 搭計程車', d:'到 Sandtorstraße 22，約 10–15 分鐘、€10–15'},
   {t:'09:35', w:'到 IFF 櫃台登記', d:'主樓 Sandtorstraße 22（不是 Elbfabrik）'},
@@ -168,7 +168,7 @@ const PLACES = {
      ifnot:{why:'06:55 計程車還沒來', lines:['再打 Hallo Taxi +49 511 3811，或用 Uber / FREE NOW 叫車','07:22 趕不上就目標 07:31 ICE 541']}}
  ], late:['還在旅館：馬上叫計程車到漢諾威總站（約 20 分鐘）','07:31 ICE 541 還來得及就搭它','都趕不上：先打給 IFF 說會晚到，再看「漢諾威總站」那頁的做法']},
  hhbf:{name:'漢諾威總站 Hannover Hbf', deps:[
-   {t:'07:22', m:1, grace:2, ttl:'ICE 551 往 Berlin（經 Magdeburg）', p:'看出發看板找月台', d:['不用換車，08:54 到 Magdeburg 總站','看板目的地寫 Berlin，確認有停 Magdeburg Hbf','誤點 30 分鐘內：照樣等 551'],
+   {t:'07:22', m:1, grace:2, ttl:'ICE 551 往 Berlin（經 Magdeburg）', p:'看出發看板找月台', d:['直達不換車，中途不停，08:54 第一站就是 Magdeburg 總站','看板目的地寫 Berlin','誤點 30 分鐘內：照樣等 551'],
      ifnot:{why:'551 取消或誤點超過 30 分鐘', lines:['改搭 07:31 ICE 541 往 Berlin（經 Braunschweig）','08:03 到 Braunschweig，轉 08:16 RB 40','09:28 到 Magdeburg 總站，直接坐計程車，約 09:45 到 IFF']}},
    {t:'07:31', grace:2, ttl:'ICE 541 往 Berlin（經 Braunschweig）', p:'看出發看板找月台', d:['08:03 到 Braunschweig，換車 13 分鐘','轉 08:16 RB 40 往 Magdeburg','09:28 到 Magdeburg 總站，直接坐計程車，約 09:45 到 IFF','551 只是誤點（30 分鐘內）還沒開：繼續等 551'],
      ifnot:{why:'541 也取消', lines:['先打 Elkmann 辦公室 +49 391 4090-222 說會晚到','搭最早往 Braunschweig 的車（ICE 或 RE 都可）','到 Braunschweig 直接坐計程車到 IFF（約 1 小時）']}}
@@ -184,7 +184,7 @@ const PLACES = {
 const LEGS = {
  t551:{n:'ICE 551 往 Berlin（經 Magdeburg）', r:'main',
    st:[['漢諾威總站 Hannover Hbf','07:22'],['Magdeburg 總站 Magdeburg Hbf','08:54']],
-   via:'中途停靠站以車上螢幕為準，聽到「Magdeburg Hauptbahnhof」就下車',
+   via:'中途不停，第一站就是 Magdeburg 總站；聽到「Magdeburg Hauptbahnhof」就下車',
    nx:{end:'到城區側 Willy-Brandt-Platz 搭計程車到 Sandtorstraße 22（約 10–15 分鐘）。時間還早就先買咖啡，09:20 前上車。'}},
  t541:{n:'ICE 541 往 Berlin（經 Braunschweig）', r:'alt',
    st:[['漢諾威總站 Hannover Hbf','07:31'],['Braunschweig 總站 Braunschweig Hbf','08:03']],
