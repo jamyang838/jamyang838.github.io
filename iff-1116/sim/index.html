@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+<title>Facility-level perception for mobile robots</title>
+<style>
+:root{--bg:#0B1220;--panel:#0E1626;--edge:#26364F;--ink:#EEF2F8;--dim:#B4C1D3;--accent:#7DBBFF;--a:#FF9B70;--b:#6CCFFF;--good:#86E3AA;}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:clamp(16px,min(1.25vw,2.2222vh),28px);}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  height:100vh;display:flex;flex-direction:column;padding:1.3rem 2.2rem .35rem;gap:.85rem;line-height:1.35;}
+h1{font-size:1.9rem;font-weight:800;}
+.lead{font-size:1.2rem;color:var(--ink);margin-top:.35rem;max-width:62rem;}
+.flow{flex:1;min-height:0;display:grid;grid-template-columns:1fr 3.2rem 1fr 3.2rem 1fr;align-items:stretch;align-content:center;}
+.box{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:1rem 1.3rem 1.2rem;display:flex;flex-direction:column;gap:.5rem;}
+.box .hd{display:flex;align-items:center;gap:.7rem;font-size:1.7rem;font-weight:800;color:var(--b);}
+.box svg.ic{width:2.8rem;height:2.8rem;flex:0 0 auto;stroke:var(--b);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.box p{font-size:1.3rem;line-height:1.3;color:var(--ink);}
+.arrow{display:flex;align-items:center;justify-content:center;}
+.arrow svg{width:2.8rem;height:1.9rem;stroke:var(--accent);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+.status{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.9rem;row-gap:.2rem;font-size:1.05rem;color:var(--ink);
+  border-top:1px solid var(--edge);border-bottom:1px solid var(--edge);padding:.45rem 0;}
+.status .sl{font-weight:800;color:var(--accent);}
+.status .sep{color:var(--dim);}
+.section{font-size:1.05rem;color:var(--dim);}
+.section b{color:var(--ink);}
+.grid{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:.9rem;}
+a.card{display:flex;gap:.8rem;align-items:flex-start;text-decoration:none;color:var(--ink);background:var(--panel);
+  border:1px solid var(--edge);border-radius:12px;padding:.8rem 1rem;}
+a.card:hover,a.card:focus-visible{border-color:var(--accent);outline:none;background:#122036;}
+.n{flex:0 0 auto;width:2.1rem;height:2.1rem;border-radius:50%;background:var(--accent);color:#06101F;font-weight:800;font-size:1.15rem;
+  display:flex;align-items:center;justify-content:center;}
+.t{display:block;font-size:1.15rem;font-weight:800;margin-bottom:.15rem;}
+.d{display:block;font-size:1rem;color:var(--dim);}
+.keys{font-size:1rem;color:#8E9DB3;}
+.keys kbd{font-family:inherit;font-weight:700;color:var(--dim);border:1px solid var(--edge);border-radius:4px;padding:0 .3rem;}
+footer{display:flex;justify-content:space-between;gap:1.5rem;font-size:1rem;color:var(--dim);border-top:1px solid var(--edge);padding-top:.3rem;}
+footer .org{white-space:nowrap;font-weight:700;color:var(--ink);}
+</style>
+</head>
+<body>
+<header>
+  <h1>Facility-level perception for mobile robots</h1>
+  <p class="lead">Fixed cameras a site already has track people across camera views. Mobile robots receive anonymous positions and motion vectors as an additional planning input.</p>
+</header>
+<section class="flow" aria-label="Information flow">
+  <div class="box"><div class="hd"><svg class="ic" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="10" width="17" height="12" rx="2"/><path d="M21 14l7-3.5v11L21 18"/><circle cx="12.5" cy="16" r="3"/></svg>Site</div><p>Existing fixed cameras; people tracked across camera views</p></div>
+  <div class="arrow" aria-hidden="true"><svg viewBox="0 0 40 24"><path d="M4 12h30M25 4l9 8-9 8"/></svg></div>
+  <div class="box"><div class="hd"><svg class="ic" viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="8" width="22" height="16" rx="2"/><path d="M9 13h8M9 17h5"/><circle cx="22" cy="15" r="1.2"/><path d="M10 24v3M22 24v3"/></svg>Edge computer</div><p>Per person: anonymous ID, position, motion vector, timestamp. No video leaves the edge computer.</p></div>
+  <div class="arrow" aria-hidden="true"><svg viewBox="0 0 40 24"><path d="M4 12h30M25 4l9 8-9 8"/></svg></div>
+  <div class="box"><div class="hd"><svg class="ic" viewBox="0 0 32 32" aria-hidden="true"><rect x="6" y="11" width="20" height="13" rx="3"/><path d="M16 11V6"/><circle cx="16" cy="5" r="1.4"/><circle cx="12" cy="17" r="1.6"/><circle cx="20" cy="17" r="1.6"/><path d="M10 24v3M22 24v3"/></svg>Robot</div><p>Uses the information for planning. Onboard sensing keeps real-time decisions and the safety functions.</p></div>
+</section>
+<div class="status"><span class="sl">Status</span><span>Camera side: measured on real corridor CCTV</span><span class="sep">·</span><span>Robot side: simulation only</span><span class="sep">·</span><span>Next step: trial with a physical robot</span></div>
+<p class="section"><b>Interactive scenarios:</b> simplified 2D simulations. A: onboard sensing only. B: onboard sensing plus facility-level information.</p>
+<nav class="grid" style="--n:3"><a class="card" href="1_opposing_flow_corridor.html"><span class="n">1</span><span><span class="t">Opposing-flow corridor</span><span class="d">Corridor with people walking both ways</span></span></a><a class="card" href="2_off_peak_store_work.html"><span class="n">2</span><span><span class="t">Off-peak work in a store</span><span class="d">Stock-taking while customers shop</span></span></a><a class="card" href="3_passing_a_queue.html"><span class="n">3</span><span><span class="t">Passing a queue at a counter</span><span class="d">Round trip past a queue at a counter</span></span></a></nav>
+<div class="keys">Press <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> to open a scenario</div>
+<footer><span>Simplified 2D simulation for illustration. The facility-level layer is advisory only and never replaces safety-rated onboard sensing.</span><span class="org">ITRI South Campus</span></footer>
+<script>
+(()=>{
+const files=['1_opposing_flow_corridor.html','2_off_peak_store_work.html','3_passing_a_queue.html'];
+document.addEventListener('keydown',e=>{
+  if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;
+  const i=['1','2','3'].indexOf(e.key);
+  if(i>=0){ location.href=files[i]; }
+});
+})();
+</script>
+</body>
+</html>

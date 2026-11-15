@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+<title>Off-peak work in a store</title>
+<style>
+:root{
+  --bg:#0B1220; --panel:#0E1626; --edge:#26364F; --ink:#EEF2F8; --dim:#B4C1D3;
+  --accent:#7DBBFF; --a:#FF9B70; --b:#6CCFFF; --good:#86E3AA; --bad:#FF8080; --amber:#FFD166;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:clamp(16px,min(1.25vw,2.2222vh),28px);}
+body{background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  height:100vh;display:flex;flex-direction:column;padding:.55rem 1rem .35rem;gap:.45rem;line-height:1.3;}
+.num,.v{font-variant-numeric:tabular-nums;}
+.titlerow{display:flex;align-items:center;gap:1rem;}
+h1{font-size:1.5rem;font-weight:800;letter-spacing:.01em;}
+.back{margin-left:auto;color:var(--accent);text-decoration:none;font-size:1rem;font-weight:700;
+  border:1px solid var(--edge);border-radius:999px;padding:.12rem .8rem;background:var(--panel);white-space:nowrap;}
+.back:hover,.back:focus-visible{border-color:var(--accent);outline:none;}
+.setup{font-size:1rem;color:var(--ink);margin-top:.2rem;}
+.watch{display:grid;grid-template-columns:auto 1fr;column-gap:.7rem;row-gap:.15rem;align-items:baseline;font-size:1rem;color:var(--dim);}
+.watch .wl{grid-row:1 / span 2;font-weight:800;color:var(--accent);font-size:1rem;white-space:nowrap;}
+.tag{display:inline-block;font-size:1rem;font-weight:800;padding:0 .5rem;border-radius:99px;margin-right:.35rem;line-height:1.45;}
+.tagA{background:#41291E;color:var(--a);} .tagB{background:#143347;color:var(--b);}
+main{flex:1;min-height:0;display:flex;gap:1rem;}
+.panels{display:flex;flex-direction:column;gap:.45rem;flex:0 0 auto;}
+.strip{display:flex;align-items:center;gap:.8rem;height:1.75rem;white-space:nowrap;}
+.plabel{font-size:1.1rem;font-weight:800;}
+.status{margin-left:auto;font-size:1rem;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;}
+.status.bad{color:var(--bad);} .status.ok{color:var(--good);} .status.wait{color:var(--amber);}
+canvas{display:block;border-radius:8px;border:1px solid var(--edge);background:var(--panel);}
+.side{flex:1;min-width:0;display:flex;flex-direction:column;gap:.5rem;}
+table{border-collapse:separate;border-spacing:0;width:100%;background:var(--panel);border:1px solid var(--edge);border-radius:8px;overflow:hidden;}
+th,td{padding:.22rem .55rem;border-bottom:1px solid var(--edge);text-align:left;}
+tr:last-child td{border-bottom:none;}
+.score th{font-size:1rem;font-weight:800;}
+.score th.ca,.score th.cb,.score td.v{text-align:right;}
+.score th.ca{color:var(--a);} .score th.cb{color:var(--b);}
+.score td.m{font-size:1rem;color:var(--dim);line-height:1.2;}
+.score td.v{font-size:1.2rem;font-weight:800;white-space:nowrap;width:4.6rem;}
+.score td.na{font-size:1rem;font-weight:600;color:var(--dim);}
+.controls{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;}
+button{background:#16233A;color:var(--ink);border:1px solid #34496B;border-radius:7px;
+  padding:.28rem .8rem;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;}
+button:hover{background:#1D2E4B;}
+button.primary{background:var(--accent);color:#06101F;border-color:var(--accent);min-width:5rem;}
+button:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+.seg{display:flex;align-items:center;border:1px solid #34496B;border-radius:7px;overflow:hidden;}
+.seg .sl{font-size:1rem;color:var(--dim);padding:0 .5rem;}
+.seg button{border:none;border-radius:0;padding:.28rem .6rem;background:#101B2E;font-weight:600;}
+.seg button.on{background:var(--accent);color:#06101F;font-weight:800;}
+label.chk{display:flex;align-items:center;gap:.4rem;font-size:1rem;color:var(--ink);cursor:pointer;user-select:none;}
+label.chk input{accent-color:var(--accent);width:1rem;height:1rem;}
+.legend{display:flex;flex-wrap:wrap;column-gap:.9rem;row-gap:.1rem;font-size:1rem;color:var(--dim);}
+.dot{display:inline-block;width:.7rem;height:.7rem;border-radius:50%;margin-right:.35rem;vertical-align:-.02rem;}
+.sq{display:inline-block;width:.7rem;height:.6rem;margin-right:.35rem;background:#6FB3FF;}
+.dash{display:inline-block;width:1.1rem;border-top:2px dashed var(--amber);margin-right:.35rem;vertical-align:.25rem;}
+.keys{font-size:1rem;color:#8E9DB3;margin-top:auto;}
+.keys kbd{font-family:inherit;font-weight:700;color:var(--dim);border:1px solid var(--edge);border-radius:4px;padding:0 .3rem;}
+.assume{display:flex;gap:.8rem;align-items:baseline;border-top:1px solid var(--edge);padding-top:.35rem;}
+.assume .al{font-weight:800;color:var(--accent);font-size:1rem;white-space:nowrap;}
+.assume ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;column-gap:1.4rem;row-gap:.1rem;font-size:1rem;color:var(--dim);}
+.assume li::before{content:"\2022";color:var(--accent);margin-right:.4rem;}
+footer{display:flex;justify-content:space-between;gap:1.5rem;font-size:1rem;color:var(--dim);border-top:1px solid var(--edge);padding-top:.3rem;}
+footer .org{white-space:nowrap;font-weight:700;color:var(--ink);}
+.gap caption{caption-side:top;text-align:left;font-weight:800;color:var(--b);font-size:1rem;padding:0 0 .15rem;}
+.gap th{font-size:1rem;color:var(--dim);font-weight:700;line-height:1.15;vertical-align:bottom;}
+.gap{table-layout:fixed;} .gap th,.gap td{padding:.18rem .4rem;} .gap th:nth-child(1){width:21%;} .gap th:nth-child(5){width:23%;}
+.gap td{font-size:1rem;font-weight:700;white-space:nowrap;} .gap td:nth-child(n+2):nth-child(-n+4){text-align:right;} .gap th:nth-child(n+2):nth-child(-n+4){text-align:right;}
+.gap tr.take td{color:var(--good);} .gap tr.skip td{color:var(--bad);}
+.gap td.none{color:var(--dim);font-weight:600;}
+</style>
+</head>
+<body>
+<header>
+  <div class="titlerow"><h1>Off-peak work in a store</h1><a class="back" href="index.html">Scenarios</a></div>
+  <p class="setup">A stock-taking robot has to scan three aisles while twelve customers finish shopping and leave one by one.</p>
+</header>
+<div class="watch"><span class="wl">What to watch</span>
+  <span><span class="tag tagA">A</span>Scans the nearest unscanned aisle next, whether or not customers are in it.</span>
+  <span><span class="tag tagB">B</span>Receives the number of people per aisle and waits; it enters an aisle once that aisle is empty and nobody is within 6 m of its ends.</span>
+</div>
+<main>
+  <section class="panels">
+    <div class="strip"><span class="plabel"><span class="tag tagA">A</span>Onboard sensing only</span><span class="status" id="statusA">Ready</span></div>
+    <canvas id="cvA" width="1140" height="310" aria-label="Panel A: onboard sensing only"></canvas>
+    <div class="strip"><span class="plabel"><span class="tag tagB">B</span>Onboard sensing + facility-level information</span><span class="status" id="statusB">Ready</span></div>
+    <canvas id="cvB" width="1140" height="310" aria-label="Panel B: onboard sensing plus facility-level information"></canvas>
+  </section>
+  <aside class="side">
+    <table class="score"><thead><tr><th></th><th class="ca">A</th><th class="cb">B</th></tr></thead><tbody><tr><td class="m">Aisles scanned</td><td class="v" id="doneA">0 / 3</td><td class="v" id="doneB">0 / 3</td></tr><tr><td class="m">Total time (s)</td><td class="v" id="timeA">0.0</td><td class="v" id="timeB">0.0</td></tr><tr><td class="m">Customer disturbances (robot within 2 m)</td><td class="v" id="itfA">0</td><td class="v" id="itfB">0</td></tr><tr><td class="m">Time in the same aisle as customers (s)</td><td class="v" id="coA">0.0</td><td class="v" id="coB">0.0</td></tr><tr><td class="m">Distance travelled (m)</td><td class="v" id="odoA">0</td><td class="v" id="odoB">0</td></tr></tbody></table>
+    
+    <div class="controls">
+      <button id="btnPlay" class="primary">Play</button>
+      <button id="btnReset">Reset</button>
+      <div class="seg" id="speedSeg"><span class="sl">Speed</span><button data-s="1">1×</button><button data-s="2" class="on">2×</button><button data-s="4">4×</button><button data-s="8">8×</button></div>
+      
+    </div>
+    <div class="legend"><span><span class="dot" style="background:var(--a)"></span>Customer</span><span><span class="dot" style="background:#fff"></span>Robot</span><span><span class="dot" style="background:none;border:2px solid var(--bad)"></span>Disturbed customer</span><span><span class="dot" style="background:var(--a);opacity:.3"></span>Faded: hidden from A</span><span><span class="sq"></span>Fixed camera</span></div>
+    <div class="keys"><kbd>Space</kbd> play/pause · <kbd>R</kbd> reset · <kbd>1</kbd> <kbd>2</kbd> <kbd>4</kbd> <kbd>8</kbd> speed · <kbd>Esc</kbd> scenarios</div>
+  </aside>
+</main>
+<section class="assume"><span class="al">Assumptions</span><ul><li>Same 12 customers and plans (identical seed); they step aside for robots</li><li>Both robots slow down or stop near customers by the same rule</li><li>Speed to an aisle: A 1.5 m/s, B 1.7 m/s; both scan at 0.85 m/s</li><li>B gets exact people counts per aisle; no latency, noise or drop-outs</li></ul></section>
+<footer><span>Simplified 2D simulation for illustration. The facility-level layer is advisory only and never replaces safety-rated onboard sensing.</span><span class="org">ITRI South Campus</span></footer>
+<script>(()=>{
+/* ================= World: store ================= */
+const FF='system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+const S=10, W=114, H=31;
+// four shelves form three aisles
+const SHELVES=[
+  {x:28,y:7,w:6,h:17},{x:46,y:7,w:6,h:17},{x:64,y:7,w:6,h:17},{x:82,y:7,w:6,h:17},
+];
+const WALLS=[...SHELVES,{x:0,y:0,w:W,h:2},{x:0,y:29,w:W,h:2}];
+const AISLES=[
+  {id:1,x0:34,x1:46,cx:40},
+  {id:2,x0:52,x1:64,cx:58},
+  {id:3,x0:70,x1:82,cx:76},
+];
+const AY0=7, AY1=24;                       // aisle extent along y
+const DOCK={x:9,y:26.5};
+const ENT=a=>({x:a.cx,y:AY1+1.4});          // lower aisle end
+const EXT=a=>({x:a.cx,y:AY0-1.4});          // upper aisle end
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function inWall(x,y,m=0){for(const w of WALLS){if(x>w.x-m&&x<w.x+w.w+m&&y>w.y-m&&y<w.y+w.h+m)return true}return false}
+function segRect(x1,y1,x2,y2,r){
+  const inside=(px,py)=>px>r.x&&px<r.x+r.w&&py>r.y&&py<r.y+r.h;
+  if(inside(x1,y1)||inside(x2,y2))return true;
+  const E=[[r.x,r.y,r.x+r.w,r.y],[r.x+r.w,r.y,r.x+r.w,r.y+r.h],[r.x+r.w,r.y+r.h,r.x,r.y+r.h],[r.x,r.y+r.h,r.x,r.y]];
+  for(const[a,b,c,d]of E){
+    const d1=(c-a)*(y1-b)-(d-b)*(x1-a), d2=(c-a)*(y2-b)-(d-b)*(x2-a);
+    const d3=(x2-x1)*(b-y1)-(y2-y1)*(a-x1), d4=(x2-x1)*(d-y1)-(y2-y1)*(c-x1);
+    if(((d1>0)!==(d2>0))&&((d3>0)!==(d4>0)))return true;
+  }
+  return false;
+}
+function hasLOS(x1,y1,x2,y2){ for(const r of SHELVES) if(segRect(x1,y1,x2,y2,r))return false; return true; }
+function aisleOf(x,y){
+  if(y<AY0||y>AY1)return 0;
+  for(const a of AISLES) if(x>=a.x0&&x<=a.x1)return a.id;
+  return 0;
+}
+
+/* ================= Customers (in the store at start, leave one by one; same plan in both panels) ================= */
+class Cust{
+  constructor(rng, idx){
+    this.rng=rng; this.r=0.38; this.active=true;
+    const a=AISLES[Math.floor(idx/4)];            // 4 per aisle; leaving time increases with idx
+    this.x=a.cx+(rng()*4-2);
+    this.y=AY0+2+rng()*(AY1-AY0-4);
+    this.speed=0.55+rng()*0.35;
+    // dwell time grows with idx, so aisles 1, 2, 3 empty in that order
+    const dwell=()=>3.5+idx*1.6+rng()*1.5;
+    const stops=[];
+    let ys=[this.y, AY0+2+rng()*(AY1-AY0-4)];
+    ys.sort((p,q)=>q-p);
+    for(const y of ys)stops.push([a.cx+(rng()*3-1.5),y,dwell()]);
+    if(rng()<0.55){
+      // some customers walk through another aisle on the way to the checkout
+      const b=AISLES[(Math.floor(idx/4)+1+Math.floor(rng()*2))%3];
+      stops.push([a.cx,AY0-1.5,0.2]);
+      stops.push([b.cx,AY0-1.5,0.3]);
+      stops.push([b.cx+(rng()*2-1),AY0+4+rng()*8,0.8+rng()*1.2]);
+      stops.push([b.cx,AY1+1.5,0.2]);
+    }else{
+      stops.push([a.cx,AY1+1.5,0.2]);
+    }
+    stops.push([104,27+rng()*1.5,0.6]);           // checkout
+    stops.push([113,27.5,0]);                     // leave
+    this.plan=stops; this.pi=0; this.pause=rng()*1.5;
+  }
+  step(dt, others, robot){
+    if(!this.active)return;
+    if(this.x>111){this.active=false; return;}
+    if(this.flash>0)this.flash-=dt;
+    if(this.pause>0){
+      this.pause-=dt;
+      // a standing customer steps aside when the robot comes close
+      if(robot){
+        const ox=this.x-robot.x, oy=this.y-robot.y, d2=ox*ox+oy*oy;
+        if(d2<4.8&&d2>1e-6){
+          const d=Math.sqrt(d2);
+          this.x+=ox/d*0.8*dt*2.2; this.y+=oy/d*0.8*dt*2.2;
+          this.x=clamp(this.x,2,W-2); this.y=clamp(this.y,2.6,28.4);
+        }
+      }
+      return;
+    }
+    const wp=this.plan[this.pi];
+    if(!wp){this.active=false; return;}
+    let dx=wp[0]-this.x, dy=wp[1]-this.y, dd=Math.hypot(dx,dy);
+    if(dd<0.5){ this.pause=wp[2]; this.pi++; return; }
+    dd=dd||1;
+    let vx=dx/dd*this.speed, vy=dy/dd*this.speed;
+    for(const o of others){ if(o===this||!o.active)continue;
+      const ox=this.x-o.x, oy=this.y-o.y, d2=ox*ox+oy*oy;
+      if(d2<1.2&&d2>1e-6){const d=Math.sqrt(d2);vx+=ox/d*0.5;vy+=oy/d*0.5;}
+    }
+    if(robot){
+      const ox=this.x-robot.x, oy=this.y-robot.y, d2=ox*ox+oy*oy;
+      if(d2<4&&d2>1e-6){const d=Math.sqrt(d2);vx+=ox/d*0.5;vy+=oy/d*0.5;}
+    }
+    this.x+=vx*dt; this.y+=vy*dt;
+    this.x=clamp(this.x,2,W-2); this.y=clamp(this.y,2.6,28.4);
+  }
+}
+
+/* ================= Grid planner ================= */
+const CELL=2, GX=W/CELL|0, GY=Math.ceil(H/CELL);
+const blocked=new Uint8Array(GX*GY);
+for(let gy=0;gy<GY;gy++)for(let gx=0;gx<GX;gx++){
+  const x=gx*CELL+1, y=gy*CELL+1;
+  if(inWall(x,y,0.8)||x<0.8||x>W-0.8)blocked[gy*GX+gx]=1;
+}
+function planTo(sx,sy,tx,ty){
+  const s=[clamp(sx/CELL|0,0,GX-1),clamp(sy/CELL|0,0,GY-1)];
+  const t=[clamp(tx/CELL|0,0,GX-1),clamp(ty/CELL|0,0,GY-1)];
+  const N=GX*GY,g=new Float32Array(N).fill(1e9),came=new Int32Array(N).fill(-1);
+  const si=s[1]*GX+s[0]; let ti=t[1]*GX+t[0];
+  const open=[[0,si]]; g[si]=0;
+  const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+  while(open.length){
+    let bi=0;for(let i=1;i<open.length;i++)if(open[i][0]<open[bi][0])bi=i;
+    const[,cur]=open.splice(bi,1)[0];
+    if(cur===ti)break;
+    const cx=cur%GX, cy=cur/GX|0;
+    for(const[dx,dy]of dirs){
+      const nx=cx+dx,ny=cy+dy;
+      if(nx<0||ny<0||nx>=GX||ny>=GY)continue;
+      const ni=ny*GX+nx; if(blocked[ni])continue;
+      if(dx&&dy&&(blocked[cy*GX+nx]||blocked[ny*GX+cx]))continue;
+      const c=g[cur]+((dx&&dy)?1.414:1);
+      if(c<g[ni]){g[ni]=c;came[ni]=cur;open.push([c+Math.hypot(nx-t[0],ny-t[1]),ni]);}
+    }
+  }
+  const path=[];let cur=ti;
+  if(came[ti]<0&&ti!==si)return[[tx,ty]];
+  while(cur>=0){path.push([(cur%GX)*CELL+1,(cur/GX|0)*CELL+1]);cur=came[cur];}
+  path.reverse(); path.push([tx,ty]); return path;
+}
+
+/* ================= Robot ================= */
+class Robot{
+  constructor(mode){ this.mode=mode; this.reset(); }   // 'patrol' | 'global'
+  reset(){
+    this.x=DOCK.x; this.y=DOCK.y; this.hd=0; this.speed=0;
+    this.scanned=new Set(); this.mission='idle'; this.targetAisle=null;
+    this.time=0; this.coT=0; this.odo=0;
+    this.disturb=0; this.dCd=new Map();
+    this.path=null; this.replanT=0; this.done=false;
+    this.state='Standby'; this.trail=[]; this.doneT=null;
+  }
+  occ(aid,custs){ let n=0; for(const c of custs) if(c.active&&aisleOf(c.x,c.y)===aid)n++; return n; }
+  nearEntrance(a,custs){
+    for(const c of custs){
+      if(!c.active)continue;
+      const d1=Math.hypot(c.x-a.cx,c.y-(AY1+1.4));
+      const d2=Math.hypot(c.x-a.cx,c.y-(AY0-1.4));
+      if(d1<6||d2<6)return true;
+    }
+    return false;
+  }
+  goTo(tx,ty,dt,spd,custs){
+    this.replanT-=dt;
+    if(!this.path||this.replanT<=0){this.path=planTo(this.x,this.y,tx,ty);this.replanT=0.6;}
+    let li=0,best=1e9;
+    for(let i=0;i<this.path.length;i++){
+      const d=Math.hypot(this.path[i][0]-this.x,this.path[i][1]-this.y);
+      if(d<best){best=d;li=i;}
+    }
+    const look=this.path[Math.min(li+2,this.path.length-1)];
+    const dx=look[0]-this.x,dy=look[1]-this.y,dd=Math.hypot(dx,dy)||1;
+    const hx=dx/dd,hy=dy/dd; this.hd=Math.atan2(hy,hx);
+    let cap=spd;
+    for(const c of custs){
+      if(!c.active)continue;
+      const px=c.x-this.x,py=c.y-this.y,d=Math.hypot(px,py);
+      if(d<1.6&&(px*hx+py*hy)/d>0.3){cap=0;break;}
+      if(d<2.6)cap=Math.min(cap,0.6);
+    }
+    this.speed+=(cap-this.speed)*Math.min(dt*6,1);
+    this.x+=hx*this.speed*dt; this.y+=hy*this.speed*dt;
+    this.odo+=this.speed*dt;
+    return Math.hypot(tx-this.x,ty-this.y)<1.0;
+  }
+  step(dt, world){
+    const custs=world.custs;
+    if(this.done){ return; }
+    this.time+=dt;
+    // time in the same aisle as customers
+    const myA=aisleOf(this.x,this.y);
+    if(myA>0&&this.occ(myA,custs)>0)this.coT+=dt;
+    // customer disturbance: robot within 2.0 m; same customer counted at most once per 4 s
+    for(const cst of custs){
+      if(!cst.active)continue;
+      if(Math.hypot(cst.x-this.x,cst.y-this.y)<2.0){
+        const lastT=this.dCd.get(cst)??-9;
+        if(this.time-lastT>4){ this.disturb++; this.dCd.set(cst,this.time); cst.flash=1.2; }
+      }
+    }
+
+    if(this.mode==='patrol'){
+      if(this.mission==='idle'){
+        // fixed schedule: nearest unscanned aisle next, occupancy not considered
+        let best=null,bd=1e9;
+        for(const a of AISLES){ if(this.scanned.has(a.id))continue;
+          const d=Math.abs(a.cx-this.x); if(d<bd){bd=d;best=a;} }
+        if(!best){ this.mission='home'; }
+        else{ this.targetAisle=best; this.mission='toEnt'; this.path=null; }
+      }
+      else if(this.mission==='toEnt'){
+        const a=this.targetAisle, e=ENT(a);
+        this.state=`Heading to aisle ${a.id} (occupancy unknown)`;
+        if(this.goTo(e.x,e.y,dt,1.5,custs)){ this.mission='scan'; this.path=null; }
+      }
+      else if(this.mission==='scan'){
+        const a=this.targetAisle, xEnd=EXT(a);
+        const n=this.occ(a.id,custs);
+        this.state = n>0? `Scanning aisle ${a.id} – ${n} customer${n>1?'s':''} in the aisle` : `Scanning aisle ${a.id}`;
+        if(this.goTo(a.cx,xEnd.y,dt,0.85,custs)){
+          this.scanned.add(a.id); this.mission='idle'; this.path=null;
+        }
+      }
+      else if(this.mission==='home'){
+        this.state='All aisles scanned – returning to standby';
+        if(this.goTo(DOCK.x,DOCK.y,dt,1.6,custs)){ this.done=true; this.doneT=this.time; this.state='All aisles scanned'; }
+      }
+    }
+    else{ /* B: wait on standby until an aisle is empty */
+      if(this.mission==='idle'){
+        this.state='Standby – watching people per aisle';
+        let pick=null;
+        for(const a of AISLES){
+          if(this.scanned.has(a.id))continue;
+          if(this.occ(a.id,custs)===0&&!this.nearEntrance(a,custs)){pick=a;break;}
+        }
+        if(pick){ this.targetAisle=pick; this.mission='toEnt'; this.path=null; }
+        else if(this.scanned.size>=3){ this.mission='home'; }
+      }
+      else if(this.mission==='toEnt'){
+        const a=this.targetAisle, e=ENT(a);
+        this.state=`Aisle ${a.id} empty – heading in`;
+        // if the aisle is no longer empty on the way, return to standby
+        if(this.occ(a.id,custs)>0){ this.mission='back'; this.path=null; }
+        else if(this.goTo(e.x,e.y,dt,1.7,custs)){ this.mission='scan'; this.path=null; }
+      }
+      else if(this.mission==='scan'){
+        const a=this.targetAisle, xEnd=EXT(a);
+        this.state=`Scanning aisle ${a.id}`;
+        if(this.goTo(a.cx,xEnd.y,dt,0.85,custs)){
+          this.scanned.add(a.id); this.mission= this.scanned.size>=3?'home':'idle2'; this.path=null;
+        }
+      }
+      else if(this.mission==='idle2'){
+        // after one aisle, wait at the far end instead of returning to the corner
+        this.state='Waiting at the aisle end for an empty aisle';
+        let pick=null;
+        for(const a of AISLES){
+          if(this.scanned.has(a.id))continue;
+          if(this.occ(a.id,custs)===0&&!this.nearEntrance(a,custs)){pick=a;break;}
+        }
+        if(pick){
+          this.targetAisle=pick; this.mission='toExt'; this.path=null;
+        }
+      }
+      else if(this.mission==='toExt'){
+        const a=this.targetAisle, e=EXT(a);
+        this.state=`Aisle ${a.id} empty – heading in`;
+        if(this.occ(a.id,custs)>0){ this.mission='idle2'; this.path=null; }
+        else if(this.goTo(e.x,e.y,dt,1.7,custs)){ this.mission='scanDown'; this.path=null; }
+      }
+      else if(this.mission==='scanDown'){
+        const a=this.targetAisle;
+        this.state=`Scanning aisle ${a.id}`;
+        if(this.goTo(a.cx,AY1+1.4,dt,0.85,custs)){
+          this.scanned.add(a.id); this.mission=this.scanned.size>=3?'home':'idle2'; this.path=null;
+        }
+      }
+      else if(this.mission==='back'){
+        this.state='Aisle no longer empty – back to standby';
+        if(this.goTo(DOCK.x,DOCK.y,dt,1.6,custs))this.mission='idle';
+      }
+      else if(this.mission==='home'){
+        this.state='All aisles scanned – returning to standby';
+        if(this.goTo(DOCK.x,DOCK.y,dt,1.6,custs)){ this.done=true; this.doneT=this.time; this.state='All aisles scanned'; }
+      }
+    }
+    this.trail.push([this.x,this.y]); if(this.trail.length>320)this.trail.shift();
+  }
+}
+
+/* ================= Panel ================= */
+class Panel{
+  constructor(cv,mode,seed){ this.cv=cv; this.ctx=cv.getContext('2d'); this.mode=mode; this.seed=seed; this.reset(); }
+  reset(){
+    const rng=mulberry32(this.seed);
+    this.custs=[]; for(let i=0;i<12;i++)this.custs.push(new Cust(rng,i));
+    this.robot=new Robot(this.mode);
+  }
+  step(dt){
+    for(const c of this.custs)c.step(dt,this.custs,this.robot);
+    this.robot.step(dt,this);
+  }
+  draw(){
+    const c=this.ctx,r=this.robot;
+    c.clearRect(0,0,this.cv.width,this.cv.height);
+    // B: fixed cameras
+    if(this.mode==='global'){
+      for(const[cx,cy]of [[22,1.4],[58,1.4],[94,1.4]]){
+        c.fillStyle='rgba(111,179,255,.045)';
+        c.beginPath(); c.moveTo(cx*S,cy*S); c.arc(cx*S,cy*S,25*S,Math.PI*0.12,Math.PI*0.88); c.closePath(); c.fill();
+        c.fillStyle='#6FB3FF'; c.fillRect(cx*S-6,cy*S-4,12,10);
+      }
+    }
+    // shelves
+    for(const w of SHELVES){
+      c.fillStyle='#1B2A3C'; c.fillRect(w.x*S,w.y*S,w.w*S,w.h*S);
+      c.strokeStyle='#28405C'; c.lineWidth=1; c.strokeRect(w.x*S,w.y*S,w.w*S,w.h*S);
+      c.save(); c.translate((w.x+w.w/2)*S,(w.y+w.h/2)*S); c.rotate(-Math.PI/2);
+      c.fillStyle='rgba(170,185,205,.75)'; c.font='700 18px '+FF; c.textAlign='center';
+      c.fillText('SHELF',0,6); c.restore(); c.textAlign='left';
+    }
+    // outer walls
+    c.fillStyle='#1B2A3C'; c.fillRect(0,0,W*S,2*S); c.fillRect(0,29*S,W*S,2*S);
+    // robot trail and planned path (drawn under the aisle badges)
+    if(r.trail.length>2){
+      c.strokeStyle='rgba(232,238,247,.5)'; c.lineWidth=2.5; c.beginPath();
+      c.moveTo(r.trail[0][0]*S,r.trail[0][1]*S);
+      for(const[tx,ty]of r.trail)c.lineTo(tx*S,ty*S); c.stroke();
+    }
+    if(r.path&&r.mission!=='idle'&&r.mission!=='idle2'&&!r.done){
+      c.strokeStyle=this.mode==='global'?'rgba(92,200,255,.6)':'rgba(255,209,102,.55)';
+      c.setLineDash([5,5]); c.lineWidth=2; c.beginPath();
+      c.moveTo(r.x*S,r.y*S);
+      for(const[px,py]of r.path)c.lineTo(px*S,py*S);
+      c.stroke(); c.setLineDash([]);
+    }
+    // aisle badges
+    for(const a of AISLES){
+      const occ=r.occ(a.id,this.custs);
+      const done=r.scanned.has(a.id);
+      let label,color;
+      if(this.mode==='global'){
+        label=done?`Aisle ${a.id}: scanned`:`Aisle ${a.id}: ${occ} ${occ===1?'person':'people'}`;
+        color=done?'#7ADFA0':(occ===0?'#7ADFA0':'#FF8A5C');
+      }else{
+        const seen=hasLOS(r.x,r.y,a.cx,(AY0+AY1)/2)||aisleOf(r.x,r.y)===a.id||Math.abs(r.y-(AY1+1.4))<1.6&&Math.abs(r.x-a.cx)<2;
+        label=done?`Aisle ${a.id}: scanned`:(seen?`Aisle ${a.id}: ${occ} ${occ===1?'person':'people'}`:`Aisle ${a.id}: ?`);
+        color=done?'#7ADFA0':(seen?(occ===0?'#7ADFA0':'#FF8A5C'):'#A9B7CB');
+      }
+      c.fillStyle='rgba(8,14,26,.9)';
+      c.strokeStyle='#2A3E5E';
+      const bw=172;
+      c.fillRect(a.cx*S-bw/2,3.6*S,bw,28); c.strokeRect(a.cx*S-bw/2,3.6*S,bw,28);
+      c.fillStyle=color; c.font='700 18px '+FF; c.textAlign='center';
+      c.fillText(label,a.cx*S,3.6*S+20); c.textAlign='left';
+      if(done){
+        c.fillStyle='rgba(122,223,160,.07)';
+        c.fillRect(a.x0*S,AY0*S,(a.x1-a.x0)*S,(AY1-AY0)*S);
+      }
+    }
+    // exit and customers in store
+    c.fillStyle='rgba(122,223,160,.12)'; c.fillRect(108*S,25*S,5.5*S,4*S);
+    c.fillStyle='rgba(122,223,160,.95)'; c.font='700 18px '+FF; c.textAlign='right';
+    c.fillText('Checkout / exit',1134,24.2*S); c.textAlign='left';
+    const inStore=this.custs.filter(p=>p.active).length;
+    c.fillStyle='rgba(200,212,228,.95)'; c.font='700 17px '+FF;
+    c.fillText(`Customers in store: ${inStore}`,150,(H-1.9)*S+16);
+    // standby position
+    c.strokeStyle='rgba(255,209,102,.7)'; c.setLineDash([5,4]); c.lineWidth=1.6;
+    c.strokeRect((DOCK.x-2.2)*S,(DOCK.y-1.8)*S,4.4*S,3.6*S); c.setLineDash([]);
+    c.fillStyle='rgba(255,209,102,.95)'; c.font='700 18px '+FF;
+    c.fillText('Standby',(DOCK.x-3.4)*S,(DOCK.y-2.5)*S);
+    // customers (A: hidden by shelves or > 15 m away drawn faded; departed not drawn; disturbed ones flash red)
+    for(const p of this.custs){
+      if(!p.active)continue;
+      const seen=this.mode==='global'||(Math.hypot(p.x-r.x,p.y-r.y)<15&&hasLOS(r.x,r.y,p.x,p.y));
+      if(p.flash>0){
+        c.strokeStyle=`rgba(255,107,107,${Math.min(p.flash,0.9)})`; c.lineWidth=2.5;
+        c.beginPath(); c.arc(p.x*S,p.y*S,9,0,7); c.stroke();
+      }
+      c.fillStyle=`rgba(255,138,92,${seen?0.95:0.25})`;
+      c.beginPath(); c.arc(p.x*S,p.y*S,p.r*S,0,7); c.fill();
+    }
+    // robot
+    // scanning highlight
+    if(r.mission==='scan'||r.mission==='scanDown'){
+      c.fillStyle='rgba(122,223,160,.13)';
+      c.beginPath(); c.arc(r.x*S,r.y*S,22,0,7); c.fill();
+    }
+    c.fillStyle=r.done?'#7ADFA0':'#FFFFFF';
+    c.beginPath(); c.arc(r.x*S,r.y*S,8,0,7); c.fill();
+    c.strokeStyle='#0B1220'; c.lineWidth=2.5; c.beginPath();
+    c.moveTo(r.x*S,r.y*S); c.lineTo(r.x*S+Math.cos(r.hd)*8,r.y*S+Math.sin(r.hd)*8); c.stroke();
+  }
+}
+
+/* ================= Main loop and controls ================= */
+const pA=new Panel(document.getElementById('cvA'),'patrol',20260603);
+const pB=new Panel(document.getElementById('cvB'),'global',20260603);
+let playing=false,speedMult=2,last=null;
+// Fixed time step: the simulation always advances in steps of exactly 1/60 s.
+// Real elapsed time x speed feeds an accumulator; catch-up per frame is capped.
+const STEP=1/60, MAX_FRAME_DT=0.1; let acc=0;
+const $=id=>document.getElementById(id);
+function setPlay(on){ playing=on; acc=0; $('btnPlay').textContent=on?'Pause':'Play'; $('btnPlay').classList.toggle('on',on); }
+function setStatus(id, r){
+  let t=r.state, cl='';
+  if(r.time===0) t='Ready';
+  else if(r.done){ t=`All aisles scanned (${r.doneT.toFixed(1)} s)`; cl='ok'; }
+  const el=$(id); if(el.textContent!==t)el.textContent=t; el.className='status '+cl;
+}
+function updateHUD(){
+  $('doneA').textContent=pA.robot.scanned.size+' / 3';
+  $('doneB').textContent=pB.robot.scanned.size+' / 3';
+  $('timeA').textContent=(pA.robot.doneT??pA.robot.time).toFixed(1);
+  $('timeB').textContent=(pB.robot.doneT??pB.robot.time).toFixed(1);
+  $('itfA').textContent=pA.robot.disturb; $('itfB').textContent=pB.robot.disturb;
+  $('coA').textContent=pA.robot.coT.toFixed(1);
+  $('coB').textContent=pB.robot.coT.toFixed(1);
+  $('odoA').textContent=pA.robot.odo.toFixed(0);
+  $('odoB').textContent=pB.robot.odo.toFixed(0);
+  setStatus('statusA', pA.robot); setStatus('statusB', pB.robot);
+  if(pA.robot.done&&pB.robot.done&&playing){ setPlay(false); }
+}
+function frame(t){
+  requestAnimationFrame(frame);
+  if(last===null)last=t;
+  const el=Math.min(Math.max((t-last)/1000,0),MAX_FRAME_DT); last=t;
+  if(playing){ acc+=el*speedMult; while(acc>=STEP){ acc-=STEP; pA.step(STEP); pB.step(STEP); } }
+  pA.draw(); pB.draw(); updateHUD();
+}
+$('btnPlay').onclick=()=>{ if(pA.robot.done&&pB.robot.done)return; setPlay(!playing); };
+$('btnReset').onclick=()=>{ pA.reset(); pB.reset(); setPlay(false); };
+document.querySelectorAll('#speedSeg button').forEach(b=>{
+  b.onclick=()=>{speedMult=+b.dataset.s;
+    document.querySelectorAll('#speedSeg button').forEach(x=>x.classList.toggle('on',x===b));};
+});
+requestAnimationFrame(frame);
+})();
+</script>
+<script>
+(()=>{
+const CW=1140, CH=310;
+const panels=document.querySelector('.panels'), main=document.querySelector('main');
+const cvs=[...document.querySelectorAll('canvas')];
+function layout(){
+  const rem=parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const strip=panels.querySelector('.strip').offsetHeight;
+  const gap=parseFloat(getComputedStyle(panels).rowGap)||0;
+  const colGap=parseFloat(getComputedStyle(main).columnGap)||0;
+  const mh=main.clientHeight, mw=main.clientWidth;
+  let h=(mh-2*strip-3*gap-2)/2, w=h*CW/CH;
+  const maxW=mw-colGap-22*rem;
+  if(w>maxW){ w=maxW; h=w*CH/CW; }
+  w=Math.floor(w); h=Math.floor(w*CH/CW);
+  panels.style.width=w+'px';
+  const k=Math.min(3,Math.max(1,w*(window.devicePixelRatio||1)/CW));
+  for(const cv of cvs){
+    cv.style.width=w+'px'; cv.style.height=h+'px';
+    const bw=Math.round(CW*k), bh=Math.round(CH*k);
+    if(cv.width!==bw||cv.height!==bh){ cv.width=bw; cv.height=bh; }
+    cv.getContext('2d').setTransform(bw/CW,0,0,bh/CH,0,0);
+  }
+}
+window.addEventListener('resize',layout); layout();
+// keep keyboard focus off the controls after mouse use, so shortcuts keep working
+document.addEventListener('click',e=>{ const t=e.target.closest('button,input'); if(t&&e.detail>0)t.blur(); });
+const click=id=>{ const el=document.getElementById(id); if(el)el.click(); };
+document.addEventListener('keydown',e=>{
+  if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;
+  const onCtl=e.target&&(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT');
+  if(e.code==='Space'){ if(onCtl)return; e.preventDefault(); click('btnPlay'); return; }
+  if(e.key==='Escape'){ e.preventDefault(); location.href='index.html'; return; }
+  const k=e.key.toLowerCase();
+  if(k==='r'){ click('btnReset'); return; }
+  if(k==='l'){ const c=document.getElementById('chkLayer'); if(c){ c.click(); } return; }
+  if(k==='d'){ const bs=[...document.querySelectorAll('#densSeg button')]; if(bs.length){ const i=bs.findIndex(b=>b.classList.contains('on')); bs[(i+1)%bs.length].click(); } return; }
+  const sb=document.querySelector('#speedSeg button[data-s="'+e.key+'"]'); if(sb){ sb.click(); }
+});
+})();
+</script>
+</body>
+</html>
